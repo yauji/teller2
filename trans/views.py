@@ -85,13 +85,39 @@ def add_pmgroup(request):
     pgmethod = PmethodGroup(name=request.POST['name'])
     pgmethod.save()
 
+    pgmethod.order = pgmethod.id
+    pgmethod.save()
+
     #TODO
     return redirect('/t/pmethod')
     
-
-
 def delete_pmgroup(request, pmgroup_id):
-    pmg = PmethodGroup.objects.get(pk=pmgroup_id).delete()
+    PmethodGroup.objects.get(pk=pmgroup_id).delete()
+
+    return redirect('/t/pmethod')
+
+def up_pmgroup(request, pmgroup_id):
+    pmg = PmethodGroup.objects.get(pk=pmgroup_id)
+
+    pmgs = PmethodGroup.objects.order_by('order')
+
+    #find uppper pmg
+    fTargetNext = False
+    target = None
+    for p in pmgs:
+        if fTargetNext:
+            target = p
+            break
+        if pmg.id == p.id:
+            fTargetNext = True
+            
+    if target != None:
+        lowerOrder = pmg.order
+        pmg.order = target.order
+        pmg.save()
+
+        target.order = lowerOrder
+        target.save()
 
     return redirect('/t/pmethod')
 
