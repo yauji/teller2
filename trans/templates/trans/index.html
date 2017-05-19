@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block nav_trans %}active{% endblock %}
+
+
+{% block contents %} 
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<form action="{% url 'trans:add' %}" method="post">
+  {% csrf_token %}
+  name:<input type="text" name="name" id="name"  />
+  <input type="submit" value="Add" />
+</form>
+
+
+
+    <form action="{% url 'trans:delete' %}" method="post">
+	<!--	-->
+      {% csrf_token %}
+    
+    <table border="1" class="table table-striped">
+      <tr>
+	<th>質問内容</th>
+	<th>公開日</th>
+	<th></th>
+      </tr>
+      {% for trans in latest_trans_list %}
+      <tr>
+	<td> <input type="checkbox" name="cb" value="{{ trans.id }}" /></td>
+	<td>{{ trans.id }}</td>
+	<td>{{ trans.trans_text }}</td>
+	<td>{{ trans.pub_date }}</td>
+	<td><a href="{% url 'trans:add' trans.id %}">{{ trans.trans_text }}</a></td>
+
+      </tr>
+      {% endfor %}
+    </table>
+      <input type="submit" value="Delete" />
+</form>
+
+
+
+    <form action="{% url 'trans:add' %}" method="post">
+      {% csrf_token %}
+      <input type="textbox" name="name" id="idname" value="hoge" />
+      
+      <input type="submit" value="Add" />
+    </form>
+
+{% endblock contents %}
+
+
+

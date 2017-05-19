@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block nav_pmethod %}active{% endblock %}
+
+{% block contents %} 
+
+<p class="h2"> Payment method group</p>
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+
+<form action="{% url 'trans:add_pmgroup' %}" method="post">
+  {% csrf_token %}
+  name:<input type="text" name="name" id="name"  />
+  <input type="submit" value="Add" />
+</form>
+
+
+  <table border="1" class="table table-striped">
+    <thead>
+    <tr>
+      <th></th>
+      <th>Name</th>
+      <th></th>
+    </tr>
+    </thead>
+    {% for pmg in pmgroup_list %}
+    <tbody>
+    <tr>
+      <td> <input type="checkbox" name="cb" value="{{ pmg.id }}" /></td>
+      <td>{{ pmg.name }}</td>
+      <td>Edit | <a href="{% url 'trans:delete_pmgroup' pmg.id %}">Delete</a></td>
+    </tr>
+    </tbody>
+    {% endfor %}
+  </table>
+
+
+
+<p class="h2"> Payment method</p>
+
+
+    <form action="{% url 'trans:add' %}" method="post">
+      {% csrf_token %}
+      <input type="textbox" name="name" id="idname" value="hoge" />
+      
+      <input type="submit" value="Add" />
+    </form>
+
+{% endblock contents %}
+
+
+
