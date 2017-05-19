@@ -14,6 +14,15 @@ urlpatterns = [
     #url(r'^(?P<question_id>[0-9]+)/vote/$', views.vote, name='vote'),
     #url(r'^$', views.index, name='index'),
 
+    #trans
     url(r'^add$', views.add, name='add'),
     url(r'^delete$', views.delete, name='delete'),
+
+    #pmethod
+    url(r'^pmethod$', views.index_pmethod, name='index'),
+
+    #pmgroup
+    url(r'^pmgroup/add$', views.add_pmgroup, name='add_pmgroup'),
+    url(r'^pmgroup/(?P<pmgroup_id>[0-9]+)/delete/$', views.delete_pmgroup, name='delete_pmgroup'),
+
 ]

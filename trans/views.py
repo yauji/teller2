@@ -58,9 +58,11 @@ def vote(request, question_id):
 
 def add(request):
     today = datetime.date.today()
-    
-    q = Question(question_text=request.POST['name'],pub_date=today)
-    q.save()
+
+    trans = Trans(name=request.POST['name'],date=today)
+    trans.save()
+    #q = Question(question_text=request.POST['name'],pub_date=today)
+    #q.save()
                         
     return HttpResponse("add,,,,You're looking at question %s." +  request.POST['name'])
     #return HttpResponse("add,,,,You're looking at question %s.", request)
@@ -68,3 +70,29 @@ def add(request):
 def delete(request):
     return HttpResponse("deleted %s." +  str(len(request.POST['cb'])))
     
+
+
+# pmethod-----------------------
+def index_pmethod(request):
+    pmethod_list = Pmethod.objects.order_by('-id')[:30]
+    pmgroup_list = PmethodGroup.objects.order_by('-id')[:30]
+
+    context = {'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list}
+    return render(request, 'trans/index_pmethod.html', context)
+
+#pmgroup------------------------------
+def add_pmgroup(request):
+    pgmethod = PmethodGroup(name=request.POST['name'])
+    pgmethod.save()
+                        
+    return HttpResponse("add,,,,You're looking at question %s." +  request.POST['name'])
+
+def delete_pmgroup(request, pmgroup_id):
+    pmg = PmethodGroup.objects.get(pk=pmgroup_id).delete()
+
+    return HttpResponse("deleted payment method group %s." +  pmgroup_id)
+
+
+
+
+
