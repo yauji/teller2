@@ -19,7 +19,7 @@ urlpatterns = [
     url(r'^delete$', views.delete, name='delete'),
 
     #pmethod
-    url(r'^pmethod$', views.index_pmethod, name='index'),
+    url(r'^pmethod$', views.index_pmethod, name='index_pmethod'),
 
     #pmgroup
     url(r'^pmgroup/add$', views.add_pmgroup, name='add_pmgroup'),
