@@ -2,11 +2,14 @@ from django.db import models
 
 class PmethodGroup(models.Model):
     name = models.CharField(max_length=200)
+    order = models.IntegerField(default=0)
+
     
 # Payment method    
 class Pmethod(models.Model):
     name = models.CharField(max_length=200)
     group = models.ForeignKey(PmethodGroup, on_delete=models.CASCADE)
+    order = models.IntegerField(default=0)
     
 
 class Trans(models.Model):

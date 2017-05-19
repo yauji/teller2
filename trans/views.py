@@ -1,6 +1,6 @@
 import datetime
 
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.template import loader
@@ -74,8 +74,8 @@ def delete(request):
 
 # pmethod-----------------------
 def index_pmethod(request):
-    pmethod_list = Pmethod.objects.order_by('-id')[:30]
-    pmgroup_list = PmethodGroup.objects.order_by('-id')[:30]
+    pmethod_list = Pmethod.objects.order_by('-order')[:30]
+    pmgroup_list = PmethodGroup.objects.order_by('-order')[:30]
 
     context = {'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list}
     return render(request, 'trans/index_pmethod.html', context)
@@ -84,13 +84,17 @@ def index_pmethod(request):
 def add_pmgroup(request):
     pgmethod = PmethodGroup(name=request.POST['name'])
     pgmethod.save()
-                        
-    return HttpResponse("add,,,,You're looking at question %s." +  request.POST['name'])
+
+    #TODO
+    return redirect('/t/pmethod')
+    
+
 
 def delete_pmgroup(request, pmgroup_id):
     pmg = PmethodGroup.objects.get(pk=pmgroup_id).delete()
 
-    return HttpResponse("deleted payment method group %s." +  pmgroup_id)
+    return redirect('/t/pmethod')
+
 
 
 
