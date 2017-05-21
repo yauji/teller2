@@ -92,11 +92,11 @@ def add_pmethod(request):
     return redirect('/t/pmethod')
     
 def edit_pmethod(request, pmethod_id):
-    pmg = PmethodGroup.objects.get(pk=pmethod_id)
+    pm = Pmethod.objects.get(pk=pmethod_id)
 
-    print (pmg.name)
-    
-    context = {'pmg': pmg}
+    pmgroup_list = PmethodGroup.objects.order_by('-order')[:30]
+
+    context = {'pm': pm, 'pmgroup_list': pmgroup_list}
     return render(request, 'trans/edit_pmethod.html', context)
 
 def update_pmethod(request, pmethod_id):
@@ -109,7 +109,7 @@ def update_pmethod(request, pmethod_id):
 
 
 def delete_pmethod(request, pmethod_id):
-    PmethodGroup.objects.get(pk=pmethod_id).delete()
+    Pmethod.objects.get(pk=pmethod_id).delete()
 
     return redirect('/t/pmethod')
 
@@ -155,8 +155,6 @@ def add_pmgroup(request):
 def edit_pmgroup(request, pmgroup_id):
     pmg = PmethodGroup.objects.get(pk=pmgroup_id)
 
-    print (pmg.name)
-    
     context = {'pmg': pmg}
     return render(request, 'trans/edit_pmgroup.html', context)
 
