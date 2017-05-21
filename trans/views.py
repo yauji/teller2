@@ -80,6 +80,67 @@ def index_pmethod(request):
     context = {'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list}
     return render(request, 'trans/index_pmethod.html', context)
 
+def add_pmethod(request):
+    pmg = PmethodGroup.objects.get(pk=request.POST['pmg'])
+    pmethod = Pmethod(name=request.POST['name'], group=pmg)
+    pmethod.save()
+
+    pmethod.order = pmethod.id
+    pmethod.save()
+
+    #TODO
+    return redirect('/t/pmethod')
+    
+def edit_pmethod(request, pmethod_id):
+    pmg = PmethodGroup.objects.get(pk=pmethod_id)
+
+    print (pmg.name)
+    
+    context = {'pmg': pmg}
+    return render(request, 'trans/edit_pmethod.html', context)
+
+def update_pmethod(request, pmethod_id):
+    pmg = PmethodGroup.objects.get(pk=pmethod_id)
+
+    pmg.name = request.POST['name']
+    pmg.save()
+
+    return redirect('/t/pmethod')
+
+
+def delete_pmethod(request, pmethod_id):
+    PmethodGroup.objects.get(pk=pmethod_id).delete()
+
+    return redirect('/t/pmethod')
+
+def up_pmethod(request, pmethod_id):
+    pmg = PmethodGroup.objects.get(pk=pmethod_id)
+
+    pmgs = PmethodGroup.objects.order_by('order')
+
+    #find uppper pmg
+    fTargetNext = False
+    target = None
+    for p in pmgs:
+        if fTargetNext:
+            target = p
+            break
+        if pmg.id == p.id:
+            fTargetNext = True
+            
+    if target != None:
+        lowerOrder = pmg.order
+        pmg.order = target.order
+        pmg.save()
+
+        target.order = lowerOrder
+        target.save()
+
+    return redirect('/t/pmethod')
+
+
+
+
 #pmgroup------------------------------
 def add_pmgroup(request):
     pgmethod = PmethodGroup(name=request.POST['name'])
