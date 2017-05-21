@@ -14,6 +14,8 @@ urlpatterns = [
 
     #pmgroup
     url(r'^pmgroup/add$', views.add_pmgroup, name='add_pmgroup'),
+    url(r'^pmgroup/(?P<pmgroup_id>[0-9]+)/$', views.edit_pmgroup, name='edit_pmgroup'),
+    url(r'^pmgroup/(?P<pmgroup_id>[0-9]+)/update/$', views.update_pmgroup, name='update_pmgroup'),
     url(r'^pmgroup/(?P<pmgroup_id>[0-9]+)/delete/$', views.delete_pmgroup, name='delete_pmgroup'),
     url(r'^pmgroup/(?P<pmgroup_id>[0-9]+)/up/$', views.up_pmgroup, name='up_pmgroup'),
 

@@ -29,7 +29,8 @@
       <td>
 	<!--<input type="checkbox" name="cb" value="{{ pmg.id }}" />-->{{pmg.order}}</td>
       <td>{{ pmg.name }}</td>
-      <td>Edit | <a href="{% url 'trans:delete_pmgroup' pmg.id %}">Delete</a>
+      <td> <a href="{% url 'trans:edit_pmgroup' pmg.id %}">Edit</a>
+	| <a href="{% url 'trans:delete_pmgroup' pmg.id %}">Delete</a>
 	| <a href="{% url 'trans:up_pmgroup' pmg.id %}">Up</a>
       </td>
     </tr>

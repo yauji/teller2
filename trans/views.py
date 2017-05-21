@@ -91,6 +91,23 @@ def add_pmgroup(request):
     #TODO
     return redirect('/t/pmethod')
     
+def edit_pmgroup(request, pmgroup_id):
+    pmg = PmethodGroup.objects.get(pk=pmgroup_id)
+
+    print (pmg.name)
+    
+    context = {'pmg': pmg}
+    return render(request, 'trans/edit_pmgroup.html', context)
+
+def update_pmgroup(request, pmgroup_id):
+    pmg = PmethodGroup.objects.get(pk=pmgroup_id)
+
+    pmg.name = request.POST['name']
+    pmg.save()
+
+    return redirect('/t/pmethod')
+
+
 def delete_pmgroup(request, pmgroup_id):
     PmethodGroup.objects.get(pk=pmgroup_id).delete()
 
