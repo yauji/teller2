@@ -74,11 +74,19 @@ def delete(request):
 
 # pmethod-----------------------
 def index_pmethod(request):
-    pmethod_list = Pmethod.objects.order_by('-order')[:30]
-    pmgroup_list = PmethodGroup.objects.order_by('-order')[:30]
+    #pmethod_list = Pmethod.objects.order_by('-group')
+    #pmethod_list = Pmethod.objects.order_by('-order')[:30]
+    pmgroup_list = PmethodGroup.objects.order_by('order')
+
+    #sort with group and order---
+    pmethod_list = []
+    for pmg in pmgroup_list:
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
+        pmethod_list.extend(pmlist)
 
     context = {'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list}
     return render(request, 'trans/index_pmethod.html', context)
+
 
 def add_pmethod(request):
     pmg = PmethodGroup.objects.get(pk=request.POST['pmg'])
@@ -114,24 +122,24 @@ def delete_pmethod(request, pmethod_id):
     return redirect('/t/pmethod')
 
 def up_pmethod(request, pmethod_id):
-    pmg = PmethodGroup.objects.get(pk=pmethod_id)
+    pm = Pmethod.objects.get(pk=pmethod_id)
 
-    pmgs = PmethodGroup.objects.order_by('order')
+    pms = Pmethod.objects.filter(group = pm.group).order_by('-order')
 
-    #find uppper pmg
+    #find uppper pm
     fTargetNext = False
     target = None
-    for p in pmgs:
+    for p in pms:
         if fTargetNext:
             target = p
             break
-        if pmg.id == p.id:
+        if pm.id == p.id:
             fTargetNext = True
             
     if target != None:
-        lowerOrder = pmg.order
-        pmg.order = target.order
-        pmg.save()
+        lowerOrder = pm.order
+        pm.order = target.order
+        pm.save()
 
         target.order = lowerOrder
         target.save()
@@ -175,7 +183,7 @@ def delete_pmgroup(request, pmgroup_id):
 def up_pmgroup(request, pmgroup_id):
     pmg = PmethodGroup.objects.get(pk=pmgroup_id)
 
-    pmgs = PmethodGroup.objects.order_by('order')
+    pmgs = PmethodGroup.objects.order_by('-order')
 
     #find uppper pmg
     fTargetNext = False
