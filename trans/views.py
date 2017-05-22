@@ -4,6 +4,10 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.template import loader
+from django.db.models.deletion import ProtectedError
+#from django.db import IntegrityError
+#from django.db.IntegrityError import ProtectedError
+
 
 from .models import Trans, PmethodGroup, Pmethod
 
@@ -72,6 +76,8 @@ def delete(request):
     
 
 
+
+
 # pmethod-----------------------
 def index_pmethod(request):
     #pmethod_list = Pmethod.objects.order_by('-group')
@@ -85,6 +91,7 @@ def index_pmethod(request):
         pmethod_list.extend(pmlist)
 
     context = {'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list}
+    #context['error_message'] = error
     return render(request, 'trans/index_pmethod.html', context)
 
 
@@ -117,7 +124,10 @@ def update_pmethod(request, pmethod_id):
 
 
 def delete_pmethod(request, pmethod_id):
-    Pmethod.objects.get(pk=pmethod_id).delete()
+    try:
+        Pmethod.objects.get(pk=pmethod_id).delete()
+    except ProtectedError:
+        print ('hoge')
 
     return redirect('/t/pmethod')
 
@@ -176,9 +186,13 @@ def update_pmgroup(request, pmgroup_id):
 
 
 def delete_pmgroup(request, pmgroup_id):
-    PmethodGroup.objects.get(pk=pmgroup_id).delete()
+    try:
+        PmethodGroup.objects.get(pk=pmgroup_id).delete()
+    except ProtectedError:
+        return HttpResponse("Failed to delete, because the payment method group has some related methods.")
 
     return redirect('/t/pmethod')
+
 
 def up_pmgroup(request, pmgroup_id):
     pmg = PmethodGroup.objects.get(pk=pmgroup_id)

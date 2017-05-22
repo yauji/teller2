@@ -9,7 +9,9 @@
 
 <form action="{% url 'trans:add' %}" method="post">
   {% csrf_token %}
-  name:<input type="text" name="name" id="name"  />
+  <input type="text" name="name" id="name"  />
+  
+  
   <input type="submit" value="Add" />
 </form>
 
