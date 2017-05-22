@@ -189,7 +189,10 @@ def delete_pmgroup(request, pmgroup_id):
     try:
         PmethodGroup.objects.get(pk=pmgroup_id).delete()
     except ProtectedError:
-        return HttpResponse("Failed to delete, because the payment method group has some related methods.")
+        context = {'error_message': 'Failed to delete, because the payment method group has some related methods.'}
+        return render(request, 'trans/message.html', context)
+
+        #return HttpResponse("Failed to delete, because the payment method group has some related methods.")
 
     return redirect('/t/pmethod')
 
