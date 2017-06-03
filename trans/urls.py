@@ -26,5 +26,22 @@ urlpatterns = [
     url(r'^pmgroup/(?P<pmgroup_id>[0-9]+)/up/$', views.up_pmgroup, name='up_pmgroup'),
 
 
+    #category
+    #url(r'^category$', views.index_category, name='index_category'),
+    url(r'^category/add$', views.add_category, name='add_category'),
+    url(r'^category/(?P<category_id>[0-9]+)/$', views.edit_category, name='edit_category'),
+    url(r'^category/(?P<category_id>[0-9]+)/update/$', views.update_category, name='update_category'),
+    url(r'^category/(?P<category_id>[0-9]+)/delete/$', views.delete_category, name='delete_category'),
+    url(r'^category/(?P<category_id>[0-9]+)/up/$', views.up_category, name='up_category'),
+
+
+    #categorygroup
+    url(r'^categorygroup/add$', views.add_categorygroup, name='add_categorygroup'),
+    url(r'^categorygroup/(?P<categorygroup_id>[0-9]+)/$', views.edit_categorygroup, name='edit_categorygroup'),
+    url(r'^categorygroup/(?P<categorygroup_id>[0-9]+)/update/$', views.update_categorygroup, name='update_categorygroup'),
+    url(r'^categorygroup/(?P<categorygroup_id>[0-9]+)/delete/$', views.delete_categorygroup, name='delete_categorygroup'),
+    url(r'^categorygroup/(?P<categorygroup_id>[0-9]+)/up/$', views.up_categorygroup, name='up_categorygroup'),
+
+
 
 ]

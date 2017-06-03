@@ -82,6 +82,86 @@
 </table>
 
 
+
+
+<p class="h2"> Category group</p>
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+
+<form action="{% url 'trans:add_categorygroup' %}" method="post">
+  {% csrf_token %}
+  name:<input type="text" name="name" id="name"  />
+  <input type="submit" value="Add" />
+</form>
+
+
+  <table border="1" class="table table-striped">
+    <thead>
+    <tr>
+      <th></th>
+      <th>Name</th>
+      <th></th>
+    </tr>
+    </thead>
+    {% for cg in categorygroup_list %}
+    <tbody>
+    <tr>
+      <td>
+	<!--<input type="checkbox" name="cb" value="{{ cg.id }}" />-->{{cg.order}}</td>
+      <td>{{ cg.name }}</td>
+      <td> <a href="{% url 'trans:edit_categorygroup' cg.id %}">Edit</a>
+	| <a href="{% url 'trans:delete_categorygroup' cg.id %}">Delete</a>
+	| <a href="{% url 'trans:up_categorygroup' cg.id %}">Up</a>
+      </td>
+    </tr>
+    </tbody>
+    {% endfor %}
+  </table>
+
+
+
+<p class="h2"> Category</p>
+
+<form action="{% url 'trans:add_category' %}" method="post">
+  {% csrf_token %}
+  <input type="textbox" name="name" id="idname" value="" />
+
+  <select name="cg" id="cg">
+    {% for cg in categorygroup_list %}    
+    <option value="{{cg.id}}">{{cg.name}}</opetion>
+    {% endfor %}
+  </select>
+
+  <input type="submit" value="Add" />
+</form>
+
+
+<table border="1" class="table table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Group</th>
+      <th>Name</th>
+      <th></th>
+    </tr>
+  </thead>
+  {% for c in category_list %}
+  <tbody>
+    <tr>
+      <td>
+	<!--<input type="checkbox" name="cb" value="{{ cg.id }}" />-->{{cg.order}}</td>
+      <td>{{ c.group.name }}</td>
+      <td>{{ c.name }}</td>
+      <td> <a href="{% url 'trans:edit_category' c.id %}">Edit</a>
+	| <a href="{% url 'trans:delete_category' c.id %}">Delete</a>
+	| <a href="{% url 'trans:up_category' c.id %}">Up</a>
+      </td>
+    </tr>
+  </tbody>
+  {% endfor %}
+</table>
+
+
 {% endblock contents %}
 
 

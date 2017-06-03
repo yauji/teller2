@@ -9,7 +9,7 @@ from django.db.models.deletion import ProtectedError
 #from django.db.IntegrityError import ProtectedError
 
 
-from .models import Trans, PmethodGroup, Pmethod
+from .models import Trans, PmethodGroup, Pmethod, CategoryGroup, Category
 
 
 def index(request):
@@ -90,7 +90,19 @@ def index_pmethod(request):
         pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
         pmethod_list.extend(pmlist)
 
-    context = {'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list}
+
+    #category---
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+
+    #sort with group and order---
+    category_list = []
+    for cg in categorygroup_list:
+        clist = Category.objects.filter(group = cg).order_by('order')
+        category_list.extend(clist)
+
+    context = {'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
+               'categorygroup_list' : categorygroup_list , \
+               'category_list' : category_list,}
     #context['error_message'] = error
     return render(request, 'trans/index_pmethod.html', context)
 
@@ -216,6 +228,137 @@ def up_pmgroup(request, pmgroup_id):
         lowerOrder = pmg.order
         pmg.order = target.order
         pmg.save()
+
+        target.order = lowerOrder
+        target.save()
+
+    return redirect('/t/pmethod')
+
+
+
+
+#category----
+def add_category(request):
+    cg = CategoryGroup.objects.get(pk=request.POST['cg'])
+    category = Category(name=request.POST['name'], group=cg)
+    category.save()
+
+    category.order = category.id
+    category.save()
+
+    
+    #TODO
+    return redirect('/t/pmethod')
+
+#move to edit view
+def edit_category(request, category_id):
+    c = Category.objects.get(pk=category_id)
+
+    cgroup_list = CategoryGroup.objects.order_by('-order')[:30]
+
+    context = {'c': c, 'cgroup_list': cgroup_list}
+    return render(request, 'trans/edit_category.html', context)
+
+def update_category(request, category_id):
+    cg = CategoryGroup.objects.get(pk=category_id)
+
+    cg.name = request.POST['name']
+    cg.save()
+
+    return redirect('/t/pmethod')
+
+
+def delete_category(request, category_id):
+    try:
+        Category.objects.get(pk=category_id).delete()
+    except ProtectedError:
+        print ('hoge')
+
+    return redirect('/t/pmethod')
+
+def up_category(request, category_id):
+    pm = Category.objects.get(pk=category_id)
+
+    pms = Category.objects.filter(group = pm.group).order_by('-order')
+
+    #find uppper pm
+    fTargetNext = False
+    target = None
+    for p in pms:
+        if fTargetNext:
+            target = p
+            break
+        if pm.id == p.id:
+            fTargetNext = True
+            
+    if target != None:
+        lowerOrder = pm.order
+        pm.order = target.order
+        pm.save()
+
+        target.order = lowerOrder
+        target.save()
+
+    return redirect('/t/pmethod')
+
+
+
+
+#category group------------------------------
+def add_categorygroup(request):
+    categorygroup = CategoryGroup(name=request.POST['name'])
+    categorygroup.save()
+
+    categorygroup.order = categorygroup.id
+    categorygroup.save()
+
+    #TODO
+    return redirect('/t/pmethod')
+    
+def edit_categorygroup(request, categorygroup_id):
+    cg = CategoryGroup.objects.get(pk=categorygroup_id)
+
+    context = {'cg': cg}
+    return render(request, 'trans/edit_categorygroup.html', context)
+
+def update_categorygroup(request, categorygroup_id):
+    cg = CategoryGroup.objects.get(pk=categorygroup_id)
+
+    cg.name = request.POST['name']
+    cg.save()
+
+    return redirect('/t/pmethod')
+
+
+def delete_categorygroup(request, categorygroup_id):
+    try:
+        CategoryGroup.objects.get(pk=categorygroup_id).delete()
+    except ProtectedError:
+        context = {'error_message': 'Failed to delete, because the category group has some related categories.'}
+        return render(request, 'trans/message.html', context)
+
+    return redirect('/t/pmethod')
+
+
+def up_categorygroup(request, categorygroup_id):
+    cg = CategoryGroup.objects.get(pk=categorygroupy_id)
+
+    cgs = CategoryGroup.objects.order_by('-order')
+
+    #find uppper cg
+    fTargetNext = False
+    target = None
+    for p in cgs:
+        if fTargetNext:
+            target = p
+            break
+        if cg.id == p.id:
+            fTargetNext = True
+            
+    if target != None:
+        lowerOrder = cg.order
+        cg.order = target.order
+        cg.save()
 
         target.order = lowerOrder
         target.save()

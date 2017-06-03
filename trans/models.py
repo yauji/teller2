@@ -8,19 +8,19 @@ class PmethodGroup(models.Model):
 class Pmethod(models.Model):
     name = models.CharField(max_length=200)
     group = models.ForeignKey(PmethodGroup, on_delete=models.CASCADE)
+    #    group = models.ForeignKey(PmethodGroup, on_delete=models.CASCADE)
     order = models.IntegerField(default=0)
     
 
 
 # category---
-class PmethodGroup(models.Model):
+class CategoryGroup(models.Model):
     name = models.CharField(max_length=200)
     order = models.IntegerField(default=0)
     
-class Pmethod(models.Model):
+class Category(models.Model):
     name = models.CharField(max_length=200)
-    group = models.ForeignKey(PmethodGroup, on_delete=models.PROTECT)
-    #    group = models.ForeignKey(PmethodGroup, on_delete=models.CASCADE)
+    group = models.ForeignKey(CategoryGroup, on_delete=models.PROTECT)
     order = models.IntegerField(default=0)
     
 
