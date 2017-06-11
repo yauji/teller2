@@ -36,6 +36,8 @@ class Trans(models.Model):
 
     pmethod = models.ForeignKey(Pmethod, on_delete=models.PROTECT)
 
+    category = models.ForeignKey(Category, on_delete=models.PROTECT)
+
     
 
 

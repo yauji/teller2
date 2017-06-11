@@ -9,7 +9,19 @@
 
 <form action="{% url 'trans:add' %}" method="post">
   {% csrf_token %}
-  <input type="text" name="name" id="name"  />
+  <input type="text" name="date" id="date"/>
+  <input type="text" name="name" id="name"/>
+
+  <input type="text" name="expense" id="expense"/>
+
+  <input type="text" name="memo" id="memo"/>
+
+  <select name="cg" id="cg">
+    {% for cg in categorygroup_list %}    
+    <option value="{{cg.id}}">{{cg.name}}</opetion>
+    {% endfor %}
+  </select>
+  
   
   
   <input type="submit" value="Add" />
