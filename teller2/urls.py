@@ -19,8 +19,12 @@ from django.contrib import admin
 from trans.views import index
 
 urlpatterns = [
+    url('^', include('django.contrib.auth.urls')),
     #url(r'^$', index),
     url(r'^$', index, name='index'),
     url(r'^t/', include('trans.urls')),
     url(r'^admin/', admin.site.urls),
 ]
+
+
+

@@ -7,11 +7,12 @@ from django.template import loader
 from django.db.models.deletion import ProtectedError
 #from django.db import IntegrityError
 #from django.db.IntegrityError import ProtectedError
+from django.contrib.auth.decorators import login_required
 
 
 from .models import Trans, PmethodGroup, Pmethod, CategoryGroup, Category
 
-
+@login_required
 def index(request):
     latest_trans_list = Trans.objects.order_by('-date')[:30]
     #latest_question_list = Question.objects.order_by('-pub_date')[:5]
