@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User	  
 
 # Payment method---
 class PmethodGroup(models.Model):
@@ -37,6 +38,8 @@ class Trans(models.Model):
     pmethod = models.ForeignKey(Pmethod, on_delete=models.PROTECT)
 
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
+
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     
 

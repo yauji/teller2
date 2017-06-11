@@ -25,7 +25,31 @@ def index(request):
     }
     return HttpResponse(template.render(context, request))
     """
-    context = {'latest_trans_list': latest_trans_list}
+    #pmethod
+    pmgroup_list = PmethodGroup.objects.order_by('order')
+
+    #sort with group and order---
+    pmethod_list = []
+    for pmg in pmgroup_list:
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
+        pmethod_list.extend(pmlist)
+
+
+    #category---
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+
+    #sort with group and order---
+    category_list = []
+    for cg in categorygroup_list:
+        clist = Category.objects.filter(group = cg).order_by('order')
+        category_list.extend(clist)
+
+    
+    context = {'latest_trans_list': latest_trans_list,\
+               'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
+               'categorygroup_list' : categorygroup_list , \
+               'category_list' : category_list,\
+    }
     return render(request, 'trans/index.html', context)
 
 
@@ -62,9 +86,23 @@ def vote(request, question_id):
 
 
 def add(request):
-    today = datetime.date.today()
+    #today = datetime.date.today()
+    date = datetime.datetime.strptime(request.POST['date'], '%Y/%m/%d')
 
-    trans = Trans(name=request.POST['name'],date=today)
+    cid = int(request.POST['c'])
+    pmid = int(request.POST['pm'])
+    c = Category.objects.get(pk=cid)
+    pm = Pmethod.objects.get(pk=pmid)
+
+    trans = Trans(date=date, \
+                  name=request.POST['name'], \
+                  expense=int(request.POST['expense']), \
+                  memo=request.POST['memo'], \
+                  category=c,\
+                  pmethod=pm,\
+                  user=request.user, \
+    )
+
     trans.save()
     #q = Question(question_text=request.POST['name'],pub_date=today)
     #q.save()
