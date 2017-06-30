@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.test import Client
 from django.contrib.auth.models import AnonymousUser, User
 
-from trans.models import PmethodGroup
+from trans.models import PmethodGroup, Pmethod
 
 USER='admin'
 PASS='hogehoge'
@@ -50,7 +50,7 @@ class PmethodTestCase(TestCase):
         pms = Pmethod.objects.all()
         self.assertEqual(response.status_code, 302)
         self.assertEqual(len(pms), 1)
-        self.assertEqual(pms[0].name, 1)
+        self.assertEqual(pms[0].name, 'pm1')
 
 
 
