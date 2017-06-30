@@ -14,7 +14,8 @@ class TransTestCase(TestCase):
 
     def test_login(self):
         c = Client()
-        response = c.post('/login/', {'username': USER, 'password': PASS})
+        response = c.post('/', {'username': USER, 'password': PASS})
+        #response = c.post('/login/', {'username': USER, 'password': PASS})
         #print(response.status_code)
         print(response.content)
         self.assertEqual(response.status_code, 200)
