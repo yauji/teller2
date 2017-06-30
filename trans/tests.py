@@ -21,7 +21,7 @@ class PmethodTestCase(TestCase):
         #print(response.content)
         self.assertEqual(response.status_code, 200)
         
-    def test_add_ok01(self):
+    def test_pmg_add_ok01(self):
         c = Client()
         c.login(username=USER, password=PASS)
         response = c.post('/t/pmgroup/add', {'name':'pmg1',\
@@ -34,6 +34,25 @@ class PmethodTestCase(TestCase):
         self.assertEqual(len(pmgs), 1)
         self.assertEqual(pmgs[0].name, 'pmg1')
         
+    def test_pm_add_ok01(self):
+        c = Client()
+        c.login(username=USER, password=PASS)
+        
+        response = c.post('/t/pmgroup/add', {'name':'pmg1',\
+                                             })
+        pmgs = PmethodGroup.objects.all()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(pmgs), 1)
+
+        #pm
+        response = c.post('/t/pmethod/add', {'pmg':pmgs[0].id,\
+                                             'name':'pm1'})
+        pms = Pmethod.objects.all()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(pms), 1)
+        self.assertEqual(pms[0].name, 1)
+
+
 
 
 
