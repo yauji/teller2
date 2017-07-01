@@ -35,12 +35,18 @@ urlpatterns = [
     url(r'^category/(?P<category_id>[0-9]+)/up/$', views.up_category, name='up_category'),
 
 
+
     #categorygroup
     url(r'^categorygroup/add$', views.add_categorygroup, name='add_categorygroup'),
     url(r'^categorygroup/(?P<categorygroup_id>[0-9]+)/$', views.edit_categorygroup, name='edit_categorygroup'),
     url(r'^categorygroup/(?P<categorygroup_id>[0-9]+)/update/$', views.update_categorygroup, name='update_categorygroup'),
     url(r'^categorygroup/(?P<categorygroup_id>[0-9]+)/delete/$', views.delete_categorygroup, name='delete_categorygroup'),
     url(r'^categorygroup/(?P<categorygroup_id>[0-9]+)/up/$', views.up_categorygroup, name='up_categorygroup'),
+
+    #for select option update
+    url(r'^categorygroup/(?P<categorygroup_id>[0-9]+)/list/$', views.list_categorygroup, name='list_categorygroup'),
+
+    
 
 
 

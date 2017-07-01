@@ -1,3 +1,5 @@
+import json
+
 from django.test import TestCase
 from django.test import Client
 from django.contrib.auth.models import AnonymousUser, User
@@ -53,6 +55,35 @@ class PmethodTestCase(TestCase):
         self.assertEqual(pms[0].name, 'pm1')
 
 
+        
+class CategoryTestCase2(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username=USER, email='admin@test.com',\
+                                             password=PASS)
+
+        cg1 = CategoryGroup.objects.create(name='cg1')
+        Category.objects.create(group=cg1, name='c11')
+        Category.objects.create(group=cg1, name='c12')
+
+        cg2 = CategoryGroup.objects.create(name='cg2')
+        Category.objects.create(group=cg2, name='c21')
+        Category.objects.create(group=cg2, name='c22')
+
+
+    def test_cg_list_ok01(self):
+        c = Client()
+        c.login(username=USER, password=PASS)
+        
+        response = c.get('/t/categorygroup/1/list/')
+        #print(response.content)
+        #print(response.content.decode("utf-8"))
+        self.assertEqual(response.status_code, 200)
+
+        dec = json.loads(response.content.decode("utf-8"))
+        #print(dec['category_list'])
+        self.assertEqual(len(dec['category_list']), 2)
+
+
 
 
 
@@ -106,16 +137,11 @@ class TransTestCase2(TestCase):
                                      'expense':100,\
                                      'memo':'memo1',\
         })
-        #print(response.status_code)
-        #print(response.content)
         self.assertEqual(response.status_code, 200)
 
         ts = Trans.objects.all()
         self.assertEqual(len(ts), 1)
         self.assertEqual(ts[0].name, 'item1')
-
-
-        #hoge
 
         
 

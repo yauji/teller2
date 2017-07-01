@@ -1,4 +1,5 @@
 import datetime
+import json
 
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
@@ -343,6 +344,8 @@ def up_category(request, category_id):
 
 
 
+
+
 #category group------------------------------
 def add_categorygroup(request):
     categorygroup = CategoryGroup(name=request.POST['name'])
@@ -404,6 +407,29 @@ def up_categorygroup(request, categorygroup_id):
 
     return redirect('/t/pmethod')
 
+
+# return not template
+def list_categorygroup(request, categorygroup_id):
+
+    #category---
+    cg = CategoryGroup.objects.get(pk=categorygroup_id)
+
+    clist = Category.objects.filter(group = cg).order_by('order')
+
+    clistdic = []
+    for c in clist:
+        dic = {}
+        dic['id'] = c.id
+        dic['name'] = c.name
+        clistdic.append(dic)
+        
+    
+    context = {'category_list' : clistdic}
+
+    jsonstring = json.dumps(context)
+    return HttpResponse(jsonstring)
+
+    #hoge
 
 
 
