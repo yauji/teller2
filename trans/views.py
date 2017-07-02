@@ -95,18 +95,35 @@ def add(request):
     c = Category.objects.get(pk=cid)
     pm = Pmethod.objects.get(pk=pmid)
 
+    expense = int(request.POST['expense'])
+
+    # update balance---
+    prevTrans = Trans.objects.filter(pmethod=pm, user=request.user).order_by('date')[:1]
+    #print(prevTrans)
+    prevBalance = 0
+    if len(prevTrans) != 0:
+        prevBalance = prevTrans[0].balance
+
+    balance = prevBalance - expense
+    #hoge
+
+    #TODO update balance multiple trans
+    
+    
+
     trans = Trans(date=date, \
                   name=request.POST['name'], \
-                  expense=int(request.POST['expense']), \
+                  expense=expense, \
                   memo=request.POST['memo'], \
                   category=c,\
                   pmethod=pm,\
+                  balance=balance,\
                   user=request.user, \
     )
 
     trans.save()
-    #q = Question(question_text=request.POST['name'],pub_date=today)
-    #q.save()
+
+
                         
     return HttpResponse("add,,,,You're looking at question %s." +  request.POST['name'])
     #return HttpResponse("add,,,,You're looking at question %s.", request)

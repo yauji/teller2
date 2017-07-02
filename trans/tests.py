@@ -117,9 +117,11 @@ class TransTestCase2(TestCase):
 
         pmg = PmethodGroup.objects.create(name='pmg1')
         Pmethod.objects.create(group=pmg, name='pm1')
+        Pmethod.objects.create(group=pmg, name='pm12')
 
         cg = CategoryGroup.objects.create(name='cg1')
         Category.objects.create(group=cg, name='c1')
+        Category.objects.create(group=cg, name='c12')
 
 
     def test_add_ok01(self):
@@ -129,7 +131,6 @@ class TransTestCase2(TestCase):
         pms = Pmethod.objects.all()
         #print(pms)
         cs = Category.objects.all()
-
 
         response = c.post('/t/add', {'date': '2017/01/01', 'name': 'item1',\
                                      'c':cs[0].id,\
@@ -142,8 +143,54 @@ class TransTestCase2(TestCase):
         ts = Trans.objects.all()
         self.assertEqual(len(ts), 1)
         self.assertEqual(ts[0].name, 'item1')
+        self.assertEqual(ts[0].balance, -100)
 
+
+        #2nd trans---
+        response = c.post('/t/add', {'date': '2017/01/03', 'name': 'item2',\
+                                     'c':cs[1].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':50,\
+                                     'memo':'memo1',\
+        })
+        self.assertEqual(response.status_code, 200)
+
+        ts = Trans.objects.all()
+        t = ts[1]
+        self.assertEqual(t.balance, -150)
+
+        #3rd trans---
+        response = c.post('/t/add', {'date': '2017/01/02', 'name': 'item3',\
+                                     'c':cs[1].id,\
+                                     'pm':pms[1].id,\
+                                     'expense':20,\
+                                     'memo':'memo1',\
+        })
+        self.assertEqual(response.status_code, 200)
+
+        ts = Trans.objects.all()
+        t = ts[2]
+        self.assertEqual(t.balance, -20)
+
+        #4th trans---
+        response = c.post('/t/add', {'date': '2017/01/02', 'name': 'item2',\
+                                     'c':cs[1].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':40,\
+                                     'memo':'memo1',\
+        })
+        self.assertEqual(response.status_code, 200)
+
+        ts = Trans.objects.all()
+        t = ts[0]
+        self.assertEqual(t.balance, -100)
+        t = ts[3]
+        self.assertEqual(t.balance, -140)
+        t = ts[1]
+        self.assertEqual(t.balance, -190)
         
+
+
 
         
         
