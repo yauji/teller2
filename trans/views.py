@@ -16,7 +16,7 @@ from .models import Trans, PmethodGroup, Pmethod, CategoryGroup, Category
 
 @login_required(login_url='/login/')
 def index(request):
-    latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date').order_by('-id')[:30]
+    latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date', '-id')[:30]
     #latest_question_list = Question.objects.order_by('-pub_date')[:5]
     #output = ', '.join([q.question_text for q in latest_question_list])
     #return HttpResponse(output)

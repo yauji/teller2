@@ -7,45 +7,27 @@
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
-    <form class="form-inline">
-    <label class="sr-only" for="inlineFormInput">Name</label>
-    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="inlineFormInput" placeholder="Jane Doe">
-
-    <label class="sr-only" for="inlineFormInputGroup">Username</label>
-    <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-    <div class="input-group-addon">@</div>
-    <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Username">
-    </div>
-
-    <div class="form-check mb-2 mr-sm-2 mb-sm-0">
-    <label class="form-check-label">
-    <input class="form-check-input" type="checkbox"> Remember me
-</label>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
-
-
 
 <form action="{% url 'trans:add' %}" method="post" class="form-inline">
     {% csrf_token %}
-    <label class="mr-sm-2" for="inlineFormCustomSelect">Date</label>
-    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="date" name="date">
+    <label class="sr-only" for="inlineFormInput">Date</label>
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="date" name="date"  placeholder="yyyy/mm/dd">
 
-    <label class="mr-sm-2" for="inlineFormCustomSelect">Name</label>
-    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="name" name="name">
+    <label class="sr-only" for="inlineFormInput">Name</label>
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="name" name="name"   placeholder="Enter item name">
 
-  expense:<input type="text" name="expense" id="expense"/>
+    <label class="sr-only" for="inlineFormCustomSelect">Expense</label>
+    <input type="number" class="form-control" id="expense" name="expense" placeholder="Enter expense">
 
-  memo:<input type="text" name="memo" id="memo"/>
+    <label class="sr-only" for="inlineFormCustomSelect">Memo</label>
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="memo" name="memo">
 
-  category:
-  <select name="cg" id="cg">
+    <label class="sr-only" for="inlineFormCustomSelect">Category</label>
+    <select  class="custom-select mb-2 mr-sm-2 mb-sm-0" name="cg" id="cg">
     {% for cg in categorygroup_list %}    
     <option value="{{cg.id}}">{{cg.name}}</opetion>
     {% endfor %}
-  </select>
+    </select>
   
   <select name="c" id="c">
     {% for c in category_list %}    
@@ -53,7 +35,8 @@
     {% endfor %}
   </select>
 
-  pmethod:
+    <label class="sr-only" for="inlineFormCustomSelect">Payment method</label>
+
   <select name="pmg" id="pmg">
     {% for pmg in pmgroup_list %}    
     <option value="{{pmg.id}}">{{pmg.name}}</opetion>
@@ -73,7 +56,7 @@
   </select>
   <input type="text" name="user_pay4" id="user_pay4"/>
   
-    <button type="submit" class="btn btn-primary">Add</button>
+    <button type="submit" class="btn btn-primary btn-sm">Add</button>
 </form>
 
 
