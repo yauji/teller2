@@ -132,6 +132,8 @@ class TransTestCase2(TestCase):
         #print(pms)
         cs = Category.objects.all()
 
+        #1st trans---
+        print("item1--")
         response = c.post('/t/add', {'date': '2017/01/01', 'name': 'item1',\
                                      'c':cs[0].id,\
                                      'pm':pms[0].id,\
@@ -147,6 +149,7 @@ class TransTestCase2(TestCase):
 
 
         #2nd trans---
+        print("item2--")
         response = c.post('/t/add', {'date': '2017/01/03', 'name': 'item2',\
                                      'c':cs[1].id,\
                                      'pm':pms[0].id,\
@@ -173,7 +176,7 @@ class TransTestCase2(TestCase):
         self.assertEqual(t.balance, -20)
 
         #4th trans---
-        response = c.post('/t/add', {'date': '2017/01/02', 'name': 'item2',\
+        response = c.post('/t/add', {'date': '2017/01/02', 'name': 'item4',\
                                      'c':cs[1].id,\
                                      'pm':pms[0].id,\
                                      'expense':40,\

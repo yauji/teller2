@@ -97,39 +97,52 @@ def add(request):
 
     expense = int(request.POST['expense'])
 
-    # update balance---
-    prevTrans = Trans.objects.filter(pmethod=pm, user=request.user).order_by('date')[:1]
-    #print(prevTrans)
-    prevBalance = 0
-    if len(prevTrans) != 0:
-        prevBalance = prevTrans[0].balance
-
-    balance = prevBalance - expense
-    #hoge
-
-    #TODO update balance multiple trans
-    
-    
-
     trans = Trans(date=date, \
                   name=request.POST['name'], \
                   expense=expense, \
                   memo=request.POST['memo'], \
                   category=c,\
                   pmethod=pm,\
-                  balance=balance,\
                   user=request.user, \
     )
-
     trans.save()
 
+    update_balance(trans)
 
-                        
-    return HttpResponse("add,,,,You're looking at question %s." +  request.POST['name'])
+    return redirect('/t/')
+
+    #return HttpResponse("add,,,,You're looking at question %s." +  request.POST['name'])
     #return HttpResponse("add,,,,You're looking at question %s.", request)
     
 def delete(request):
     return HttpResponse("deleted %s." +  str(len(request.POST['cb'])))
+
+
+#---
+def update_balance(trans):
+    # update balance---
+    prevTrans = Trans.objects.filter(pmethod=trans.pmethod, user=trans.user, date__lt=trans.date).order_by('date')[:1]
+
+    prevBalance = 0
+    if len(prevTrans) != 0:
+        prevBalance = prevTrans[0].balance
+
+    # get newer transs--
+    transs = Trans.objects.filter(pmethod=trans.pmethod, user=trans.user, date__gte=trans.date).order_by('date')
+
+    for t in transs:
+        print(t.name)
+        t.balance = prevBalance - t.expense
+        t.save()
+
+        prevBalance = t.balance
+        
+    #hoge
+
+    #TODO update balance multiple trans
+    
+    
+    #hoge
     
 
 
