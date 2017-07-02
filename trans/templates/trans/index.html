@@ -7,10 +7,34 @@
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
-<form action="{% url 'trans:add' %}" method="post">
-  {% csrf_token %}
-  date:<input type="text" class="datepicker" name="date" id="date"/>
-  name:<input type="text" name="name" id="name"/>
+    <form class="form-inline">
+    <label class="sr-only" for="inlineFormInput">Name</label>
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="inlineFormInput" placeholder="Jane Doe">
+
+    <label class="sr-only" for="inlineFormInputGroup">Username</label>
+    <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+    <div class="input-group-addon">@</div>
+    <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Username">
+    </div>
+
+    <div class="form-check mb-2 mr-sm-2 mb-sm-0">
+    <label class="form-check-label">
+    <input class="form-check-input" type="checkbox"> Remember me
+</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+
+
+<form action="{% url 'trans:add' %}" method="post" class="form-inline">
+    {% csrf_token %}
+    <label class="mr-sm-2" for="inlineFormCustomSelect">Date</label>
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="date" name="date">
+
+    <label class="mr-sm-2" for="inlineFormCustomSelect">Name</label>
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="name" name="name">
 
   expense:<input type="text" name="expense" id="expense"/>
 
@@ -49,7 +73,7 @@
   </select>
   <input type="text" name="user_pay4" id="user_pay4"/>
   
-  <input type="submit" value="Add" />
+    <button type="submit" class="btn btn-primary">Add</button>
 </form>
 
 
