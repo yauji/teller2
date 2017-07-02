@@ -131,40 +131,54 @@ def add(request):
 # input: tids
 def delete(request):
     #print (request.POST.getlist('tids'))
-    
 
-    #hoge
+    #find oldest trans--
+    date = None
+    oldesttrans = None
+    for tid in request.POST.getlist('tids'):
+        t = Trans.objects.get(pk=tid)
+
+        if date == None or t.date < date:
+            date = t.date
+            oldesttrans = t
+
+    try:
+        for tid in request.POST.getlist('tids'):
+            Trans.objects.get(pk=tid).delete()
+
+        update_balance_para(oldesttrans.pmethod, oldesttrans.user, oldesttrans.date)
+        
+    except ProtectedError:
+        context = {'error_message': 'Failed to delete.'}
+        return render(request, 'trans/message.html', context)
+
     
     return redirect('/t/')
-    #return HttpResponse("deleted %s." +  str(len(request.POST['cb'])))
 
 
 #---
+#input: added trans
 def update_balance(trans):
+    update_balance_para(trans.pmethod, trans.user, trans.date)
+
+#input: added trans
+def update_balance_para(pmethod, user, date):
     # update balance---
-    prevTrans = Trans.objects.filter(pmethod=trans.pmethod, user=trans.user, date__lt=trans.date).order_by('date')[:1]
+    prevTrans = Trans.objects.filter(pmethod=pmethod, user=user, date__lt=date).order_by('date')[:1]
 
     prevBalance = 0
     if len(prevTrans) != 0:
         prevBalance = prevTrans[0].balance
 
     # get newer transs--
-    transs = Trans.objects.filter(pmethod=trans.pmethod, user=trans.user, date__gte=trans.date).order_by('date')
+    transs = Trans.objects.filter(pmethod=pmethod, user=user, date__gte=date).order_by('date')
 
     for t in transs:
-        print(t.name)
+        #print(t.name)
         t.balance = prevBalance - t.expense
         t.save()
-
         prevBalance = t.balance
         
-    #hoge
-
-    #TODO update balance multiple trans
-    
-    
-    #hoge
-    
 
 
 

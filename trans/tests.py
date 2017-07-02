@@ -144,7 +144,7 @@ class TransTestCase2(TestCase):
                                      'share_type':1,\
                                      'user_pay4':'',\
         })
-        print(response.content)
+        #print(response.content)
         self.assertEqual(response.status_code, 302)
 
         ts = Trans.objects.all()
@@ -222,7 +222,7 @@ class TransTestCase2(TestCase):
                                      'share_type':3,\
                                      'user_pay4':'test1',\
         })
-        print(response.content)
+        #print(response.content)
         self.assertEqual(response.status_code, 302)
 
         ts = Trans.objects.all()
@@ -242,7 +242,7 @@ class TransTestCase2(TestCase):
         cs = Category.objects.all()
 
         #1st trans---
-        print("item1--")
+        #print("item1--")
         response = c.post('/t/add', {'date': '2017/01/01', 'name': 'item1',\
                                      'c':cs[0].id,\
                                      'pm':pms[0].id,\
@@ -254,7 +254,7 @@ class TransTestCase2(TestCase):
         self.assertEqual(response.status_code, 302)
 
         #2nd trans---
-        print("item2--")
+        #print("item2--")
         response = c.post('/t/add', {'date': '2017/01/03', 'name': 'item2',\
                                      'c':cs[1].id,\
                                      'pm':pms[0].id,\
@@ -276,8 +276,8 @@ class TransTestCase2(TestCase):
         })
         self.assertEqual(response.status_code, 302)
 
-        print("delete item1,3--")
-        response = c.post('/t/delete', {'tids': '["1","3"]',\
+        #print("delete item1,3--")
+        response = c.post('/t/delete', {'tids': [1,3],\
         })
         self.assertEqual(response.status_code, 302)
 
