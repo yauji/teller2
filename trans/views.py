@@ -275,6 +275,28 @@ def up_pmgroup(request, pmgroup_id):
     return redirect('/t/pmethod')
 
 
+# return json
+def list_pmgroup(request, pmgroup_id):
+
+    #pm---
+    pmg = PmethodGroup.objects.get(pk=pmgroup_id)
+
+    clist = Pmethod.objects.filter(group = pmg).order_by('order')
+
+    clistdic = []
+    for c in clist:
+        dic = {}
+        dic['id'] = c.id
+        dic['name'] = c.name
+        clistdic.append(dic)
+    
+    context = {'pmethod_list' : clistdic}
+
+    jsonstring = json.dumps(context)
+    return HttpResponse(jsonstring)
+
+
+
 
 
 #category----
@@ -408,7 +430,7 @@ def up_categorygroup(request, categorygroup_id):
     return redirect('/t/pmethod')
 
 
-# return not template
+# return json
 def list_categorygroup(request, categorygroup_id):
 
     #category---
@@ -422,14 +444,12 @@ def list_categorygroup(request, categorygroup_id):
         dic['id'] = c.id
         dic['name'] = c.name
         clistdic.append(dic)
-        
     
     context = {'category_list' : clistdic}
 
     jsonstring = json.dumps(context)
     return HttpResponse(jsonstring)
 
-    #hoge
 
 
 

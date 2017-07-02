@@ -25,6 +25,10 @@ urlpatterns = [
     url(r'^pmgroup/(?P<pmgroup_id>[0-9]+)/delete/$', views.delete_pmgroup, name='delete_pmgroup'),
     url(r'^pmgroup/(?P<pmgroup_id>[0-9]+)/up/$', views.up_pmgroup, name='up_pmgroup'),
 
+    #for select option update
+    url(r'^pmgroup/(?P<pmgroup_id>[0-9]+)/list/$', views.list_pmgroup, name='list_pmgroup'),
+
+
 
     #category
     #url(r'^category$', views.index_category, name='index_category'),
