@@ -126,9 +126,17 @@ def add(request):
 
     return redirect('/t/')
 
-    
+
+# delete selected multiple transs
+# input: tids
 def delete(request):
-    return HttpResponse("deleted %s." +  str(len(request.POST['cb'])))
+    #print (request.POST.getlist('tids'))
+    
+
+    #hoge
+    
+    return redirect('/t/')
+    #return HttpResponse("deleted %s." +  str(len(request.POST['cb'])))
 
 
 #---

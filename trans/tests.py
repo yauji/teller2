@@ -234,4 +234,58 @@ class TransTestCase2(TestCase):
 
 
         
+    def test_delete_ok01(self):
+        c = Client()
+        c.login(username=USER, password=PASS)
+
+        pms = Pmethod.objects.all()
+        cs = Category.objects.all()
+
+        #1st trans---
+        print("item1--")
+        response = c.post('/t/add', {'date': '2017/01/01', 'name': 'item1',\
+                                     'c':cs[0].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':100,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+
+        #2nd trans---
+        print("item2--")
+        response = c.post('/t/add', {'date': '2017/01/03', 'name': 'item2',\
+                                     'c':cs[1].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':50,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+
+        #3rd trans---
+        response = c.post('/t/add', {'date': '2017/01/02', 'name': 'item3',\
+                                     'c':cs[1].id,\
+                                     'pm':pms[1].id,\
+                                     'expense':20,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+
+        print("delete item1,3--")
+        response = c.post('/t/delete', {'tids': '["1","3"]',\
+        })
+        self.assertEqual(response.status_code, 302)
+
+        ts = Trans.objects.all()
+        self.assertEqual(len(ts), 1)
+        self.assertEqual(ts[0].name, 'item2')
+        self.assertEqual(ts[0].balance, -50)
+
+
+
         
