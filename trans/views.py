@@ -16,7 +16,7 @@ from .models import Trans, PmethodGroup, Pmethod, CategoryGroup, Category
 
 @login_required(login_url='/login/')
 def index(request):
-    latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date')[:30]
+    latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date').order_by('-id')[:30]
     #latest_question_list = Question.objects.order_by('-pub_date')[:5]
     #output = ', '.join([q.question_text for q in latest_question_list])
     #return HttpResponse(output)
@@ -101,7 +101,14 @@ def add(request):
     struser_pay4 = request.POST['user_pay4']
     user_pay4 = None
     if struser_pay4 != '':
-        user_pay4 = User.objects.filter(username=struser_pay4)[:1][0]
+        user_pay4s = User.objects.filter(username=struser_pay4)[:1]
+        # no user
+        if len(user_pay4s) == 0:
+            context = {'error_message': 'No user for pay for: ' + struser_pay4}
+            return render(request, 'trans/message.html', context)
+        else:
+            user_pay4 = user_pay4s[0]
+            
 
     trans = Trans(date=date, \
                   name=request.POST['name'], \
