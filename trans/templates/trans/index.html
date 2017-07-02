@@ -9,7 +9,7 @@
 
 <form action="{% url 'trans:add' %}" method="post">
   {% csrf_token %}
-  date:<input type="text" name="date" id="date"/>
+  date:<input type="text" class="datepicker" name="date" id="date"/>
   name:<input type="text" name="name" id="name"/>
 
   expense:<input type="text" name="expense" id="expense"/>
@@ -100,6 +100,10 @@
 $(function() {
     //init format---
     $('#user_pay4').css('display', 'none');
+
+    $('.datepicker').datepicker({
+	format: "yyyy/mm/dd"
+    });
 
     //events---
     $('#cg').change(function(e) {
