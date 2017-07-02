@@ -9,6 +9,7 @@ from django.db.models.deletion import ProtectedError
 #from django.db import IntegrityError
 #from django.db.IntegrityError import ProtectedError
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User	  
 
 
 from .models import Trans, PmethodGroup, Pmethod, CategoryGroup, Category
@@ -100,7 +101,7 @@ def add(request):
     struser_pay4 = request.POST['user_pay4']
     user_pay4 = None
     if struser_pay4 != '':
-        user_pay4 = User.objects.filter(name=struser_pay4)[:1]
+        user_pay4 = User.objects.filter(username=struser_pay4)[:1][0]
 
     trans = Trans(date=date, \
                   name=request.POST['name'], \

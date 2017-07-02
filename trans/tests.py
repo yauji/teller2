@@ -114,6 +114,8 @@ class TransTestCase2(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username=USER, email='admin@test.com',\
                                              password=PASS)
+        self.user = User.objects.create_user(username='test1', email='test@test.com',\
+                                             password='password')
 
         pmg = PmethodGroup.objects.create(name='pmg1')
         Pmethod.objects.create(group=pmg, name='pm1')
@@ -201,6 +203,33 @@ class TransTestCase2(TestCase):
         t = ts[1]
         self.assertEqual(t.balance, -190)
         
+
+
+    def test_add_pay4other_ok01(self):
+        c = Client()
+        c.login(username=USER, password=PASS)
+
+        pms = Pmethod.objects.all()
+        cs = Category.objects.all()
+
+        #1st trans---
+        print("item1--")
+        response = c.post('/t/add', {'date': '2017/01/01', 'name': 'item1',\
+                                     'c':cs[0].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':100,\
+                                     'memo':'memo1',\
+                                     'share_type':3,\
+                                     'user_pay4':'test1',\
+        })
+        print(response.content)
+        self.assertEqual(response.status_code, 302)
+
+        ts = Trans.objects.all()
+        self.assertEqual(len(ts), 1)
+        self.assertEqual(ts[0].name, 'item1')
+        self.assertEqual(ts[0].balance, -100)
+        self.assertEqual(ts[0].user_pay4.username, 'test1')
 
 
 

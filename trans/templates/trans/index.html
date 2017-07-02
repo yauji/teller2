@@ -90,12 +90,6 @@
       <input type="submit" value="Delete" />
 </form>
 
-<form action="{% url 'trans:add' %}" method="post">
-  {% csrf_token %}
-  <input type="textbox" name="name" id="idname" value="hoge" />
-  <input type="submit" value="Add" />
-</form>
-
 {% endblock contents %}
 
 
