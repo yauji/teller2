@@ -25,21 +25,32 @@ class Category(models.Model):
     order = models.IntegerField(default=0)
     
 
-
+SHARE_TYPES = (
+    (1, 'OWN'),
+    (2, 'SHARE'),
+    (3, 'PAY4OTHER'),
+)
     
 class Trans(models.Model):
     date = models.DateTimeField('date')
     name = models.CharField(max_length=200)
     expense = models.IntegerField(default=0)
     balance = models.IntegerField(default=0)
-
     memo = models.CharField(max_length=1000)
 
     pmethod = models.ForeignKey(Pmethod, on_delete=models.PROTECT)
-
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
 
     user = models.ForeignKey(User, on_delete=models.PROTECT)
+
+    share_type = models.IntegerField(choices=SHARE_TYPES)
+    # pay for who?
+    user_pay4 = models.ForeignKey(User, on_delete=models.PROTECT, related_name='+', null=True)
+
+    # Is it already clearance
+    fClearance = models.BooleanField(default=False)
+
+
 
     
 

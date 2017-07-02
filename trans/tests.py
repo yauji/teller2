@@ -139,8 +139,11 @@ class TransTestCase2(TestCase):
                                      'pm':pms[0].id,\
                                      'expense':100,\
                                      'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
         })
-        self.assertEqual(response.status_code, 200)
+        print(response.content)
+        self.assertEqual(response.status_code, 302)
 
         ts = Trans.objects.all()
         self.assertEqual(len(ts), 1)
@@ -155,8 +158,10 @@ class TransTestCase2(TestCase):
                                      'pm':pms[0].id,\
                                      'expense':50,\
                                      'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
         })
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
 
         ts = Trans.objects.all()
         t = ts[1]
@@ -168,8 +173,10 @@ class TransTestCase2(TestCase):
                                      'pm':pms[1].id,\
                                      'expense':20,\
                                      'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
         })
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
 
         ts = Trans.objects.all()
         t = ts[2]
@@ -181,8 +188,10 @@ class TransTestCase2(TestCase):
                                      'pm':pms[0].id,\
                                      'expense':40,\
                                      'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
         })
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
 
         ts = Trans.objects.all()
         t = ts[0]

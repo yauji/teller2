@@ -27,9 +27,9 @@
     {% for c in category_list %}    
     <option value="{{c.id}}">{{c.name}}</opetion>
     {% endfor %}
-</select>
+  </select>
 
-pmethod:
+  pmethod:
   <select name="pmg" id="pmg">
     {% for pmg in pmgroup_list %}    
     <option value="{{pmg.id}}">{{pmg.name}}</opetion>
@@ -42,10 +42,12 @@ pmethod:
     {% endfor %}
   </select>
 
-
-
-  
-  
+  <select name="share_type" id="share_type">
+    <option value="1">own</opetion>
+    <option value="2">share</opetion>
+    <option value="3">pay4other</opetion>
+  </select>
+  <input type="text" name="user_pay4" id="user_pay4"/>
   
   <input type="submit" value="Add" />
 </form>
@@ -100,6 +102,10 @@ pmethod:
 
 {% block script %}
 $(function() {
+    //init format---
+    $('#user_pay4').css('display', 'none');
+
+    //events---
     $('#cg').change(function(e) {
 	url = 'categorygroup/' + e.target.value+ '/list/';
 	$.ajax(url,
@@ -135,6 +141,17 @@ $(function() {
 		}
 	    });
     });
+
+    $('#share_type').change(function(e) {
+	//3 is pay4other
+	if( e.target.value == 3 ){
+	    //alert('pay for');
+	    $('#user_pay4').css('display', 'inline');
+	}else{
+	    $('#user_pay4').css('display', 'none');
+	}
+    });
+
 
 });
 {% endblock script %}

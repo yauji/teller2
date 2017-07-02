@@ -15,7 +15,7 @@ from .models import Trans, PmethodGroup, Pmethod, CategoryGroup, Category
 
 @login_required(login_url='/login/')
 def index(request):
-    latest_trans_list = Trans.objects.order_by('-date')[:30]
+    latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date')[:30]
     #latest_question_list = Question.objects.order_by('-pub_date')[:5]
     #output = ', '.join([q.question_text for q in latest_question_list])
     #return HttpResponse(output)
@@ -97,6 +97,11 @@ def add(request):
 
     expense = int(request.POST['expense'])
 
+    struser_pay4 = request.POST['user_pay4']
+    user_pay4 = None
+    if struser_pay4 != '':
+        user_pay4 = User.objects.filter(name=struser_pay4)[:1]
+
     trans = Trans(date=date, \
                   name=request.POST['name'], \
                   expense=expense, \
@@ -104,6 +109,8 @@ def add(request):
                   category=c,\
                   pmethod=pm,\
                   user=request.user, \
+                  share_type=request.POST['share_type'],\
+                  user_pay4=user_pay4,\
     )
     trans.save()
 
@@ -111,8 +118,6 @@ def add(request):
 
     return redirect('/t/')
 
-    #return HttpResponse("add,,,,You're looking at question %s." +  request.POST['name'])
-    #return HttpResponse("add,,,,You're looking at question %s.", request)
     
 def delete(request):
     return HttpResponse("deleted %s." +  str(len(request.POST['cb'])))
