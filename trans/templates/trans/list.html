@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block nav_list %}active{% endblock %}
+
+
+{% block contents %} 
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+
+<form action="{% url 'trans:list' %}" method="post" class="form-inline">
+    {% csrf_token %}
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="datefrom" name="datefrom"  placeholder="From yyyy/mm/dd" value="{{datefrom}}">
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="dateto" name="dateto"  placeholder="to yyyy/mm/dd">
+
+
+    Categories;
+    {% for c in category_list %}
+    <input type="checkbox" name="categorys" value="{{ c.id }}" >{{c.name}}</input>
+    {% endfor %}
+
+    Pmethod;
+    {% for pm in pmethod_list %}    
+    <input type="checkbox" name="pmethods" value="{{ pm.id }}" >{{pm.name}}</input>
+    {% endfor %}
+  
+    <button type="submit" class="btn btn-primary btn-sm">Search</button>
+</form>
+
+<form action="{% url 'trans:delete' %}" method="post">
+  <!--	-->
+  {% csrf_token %}
+    
+  <table border="1" class="table table-striped">
+    <tr>
+      <th></th>
+      <th></th>
+	<th>Date</th>
+	<th>Item</th>
+	<th>Expense</th>
+	<th>Balance</th>
+	<th></th>
+	<th></th>
+	<th></th>
+	<th></th>
+      </tr>
+      {% for trans in latest_trans_list %}
+      <tr>
+	<td> <input type="checkbox" name="tids" value="{{ trans.id }}" /></td>
+	<td>{{ trans.id }}</td>
+	<td>{{ trans.date }}</td>
+	<td>{{ trans.name }}</td>
+	<td>{{ trans.expense }}</td>
+	<td>{{ trans.balance }}</td>
+	<td>{{ trans.pmethod.name }}</td>
+	<td>{{ trans.category.name }}</td>
+	<td>{{ trans.user }}</td>
+	<td>{{ trans.share_type }}</td>
+	<td>{{ trans.user_pay4 }}</td>
+	<td><a href="">{{ trans.trans_text }}</a></td>
+
+      </tr>
+      {% endfor %}
+    </table>
+      <input type="submit" value="Delete" />
+</form>
+
+{% endblock contents %}
+
+
+
+{% block script %}
+$(function() {
+    //init format---
+    $('#user_pay4').css('display', 'none');
+
+    $('.datepicker').datepicker({
+	format: "yyyy/mm/dd"
+    });
+
+    //events---
+
+});
+{% endblock script %}
+  
+
+
+
+
+
+
+
+
+
+    
+    

@@ -17,16 +17,6 @@ from .models import Trans, PmethodGroup, Pmethod, CategoryGroup, Category
 @login_required(login_url='/login/')
 def index(request):
     latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date', '-id')[:30]
-    #latest_question_list = Question.objects.order_by('-pub_date')[:5]
-    #output = ', '.join([q.question_text for q in latest_question_list])
-    #return HttpResponse(output)
-    """
-    template = loader.get_template('polls/index.html')
-    context = {
-        'latest_question_list': latest_question_list,
-    }
-    return HttpResponse(template.render(context, request))
-    """
     #pmethod
     pmgroup_list = PmethodGroup.objects.order_by('order')
 
@@ -54,7 +44,7 @@ def index(request):
     }
     return render(request, 'trans/index.html', context)
 
-
+"""
 def detail(request, question_id):
     return HttpResponse("You're looking at question %s." % question_id)
 
@@ -82,13 +72,12 @@ def vote(request, question_id):
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
         return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
-
+"""
 
 
 
 
 def add(request):
-    #today = datetime.date.today()
     date = datetime.datetime.strptime(request.POST['date'], '%Y/%m/%d')
 
     cid = int(request.POST['c'])
@@ -154,6 +143,50 @@ def delete(request):
 
     
     return redirect('/t/')
+
+
+@login_required(login_url='/login/')
+def list(request):
+    if request.POST['datefrom'] == '':
+        str_datefrom = '2000/01/01'
+        #datefrom = datetime.datetime.strptime('2000/01/01', '%Y/%m/%d')
+    else:
+        str_datefrom = request.POST['datefrom']
+        #datefrom = datetime.datetime.strptime(request.POST['datefrom'], '%Y/%m/%d')
+
+    datefrom = datetime.datetime.strptime(str_datefrom, '%Y/%m/%d')
+        
+        
+    latest_trans_list = Trans.objects.filter(user=request.user)\
+                        .filter(date__gte=datefrom).order_by('-date', '-id')[:100]
+    #pmethod
+    pmgroup_list = PmethodGroup.objects.order_by('order')
+
+    #sort with group and order---
+    pmethod_list = []
+    for pmg in pmgroup_list:
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
+        pmethod_list.extend(pmlist)
+
+
+    #category---
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+
+    #sort with group and order---
+    category_list = []
+    for cg in categorygroup_list:
+        clist = Category.objects.filter(group = cg).order_by('order')
+        category_list.extend(clist)
+
+    
+    context = {'latest_trans_list': latest_trans_list,\
+               'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
+               'categorygroup_list' : categorygroup_list , \
+               'category_list' : category_list,\
+               'datefrom' : str_datefrom,\
+    }
+    return render(request, 'trans/list.html', context)
+
 
 
 #---
@@ -244,7 +277,7 @@ def delete_pmethod(request, pmethod_id):
     try:
         Pmethod.objects.get(pk=pmethod_id).delete()
     except ProtectedError:
-        print ('hoge')
+        print ('todo')
 
     return redirect('/t/pmethod')
 
@@ -399,7 +432,7 @@ def delete_category(request, category_id):
     try:
         Category.objects.get(pk=category_id).delete()
     except ProtectedError:
-        print ('hoge')
+        print ('todo')
 
     return redirect('/t/pmethod')
 

@@ -11,7 +11,7 @@
 <form action="{% url 'trans:add' %}" method="post" class="form-inline">
     {% csrf_token %}
     <label class="sr-only" for="inlineFormInput">Date</label>
-    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="date" name="date"  placeholder="yyyy/mm/dd">
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="date" name="date" placeholder="yyyy/mm/dd">
 
     <label class="sr-only" for="inlineFormInput">Name</label>
     <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="name" name="name"   placeholder="Enter item name">
