@@ -312,6 +312,13 @@ class TransTestCase2(TestCase):
         #print(response.content.decode("utf-8"))
         self.assertEqual(response.status_code, 200)
 
+
+        # list method---
+        res = view.list()
+        print(res)
+        
+        
+
         
 
 
