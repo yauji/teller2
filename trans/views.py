@@ -147,7 +147,7 @@ def delete(request):
 
 @login_required(login_url='/login/')
 def list(request):
-    if request.POST['datefrom'] == '':
+    if 'datefrom' not in request.POST:
         str_datefrom = '2000/01/01'
         #datefrom = datetime.datetime.strptime('2000/01/01', '%Y/%m/%d')
     else:

@@ -286,6 +286,34 @@ class TransTestCase2(TestCase):
         self.assertEqual(ts[0].name, 'item2')
         self.assertEqual(ts[0].balance, -50)
 
+    def test_list_ok01(self):
+        c = Client()
+        c.login(username=USER, password=PASS)
+
+        pms = Pmethod.objects.all()
+        #print(pms)
+        cs = Category.objects.all()
+
+        #1st trans---
+        print("item1--")
+        response = c.post('/t/add', {'date': '2017/01/01', 'name': 'item1',\
+                                     'c':cs[0].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':100,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        #print(response.content)
+        self.assertEqual(response.status_code, 302)
+
+        response = c.get('/t/list')
+        #print(response.content)
+        #print(response.content.decode("utf-8"))
+        self.assertEqual(response.status_code, 200)
+
+        
+
 
 
         
