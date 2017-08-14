@@ -16,7 +16,7 @@
 
     Categories;
     {% for c in category_list %}
-    <input type="checkbox" name="categorys" value="{{ c.id }}" >{{c.name}}</input>
+    <input type="checkbox" name="categorys" value="{{ c.id }}" {% if c.selected %}checked="checked"{% endif %}>{{c.name}}</input>
     {% endfor %}
 
     Pmethod;
@@ -25,6 +25,8 @@
     {% endfor %}
   
     <button type="submit" class="btn btn-primary btn-sm">Search</button>
+
+    <input type="hidden" name="filtered" value="False"></input>    
 </form>
 
 <form action="{% url 'trans:delete' %}" method="post">

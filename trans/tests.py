@@ -3,8 +3,13 @@ import json
 from django.test import TestCase
 from django.test import Client
 from django.contrib.auth.models import AnonymousUser, User
+from django.http.request import HttpRequest
 
 from trans.models import PmethodGroup, Pmethod, CategoryGroup, Category, Trans
+
+from . import views
+#from trans.views import CategoryUi
+
 
 USER='admin'
 PASS='hogehoge'
@@ -295,7 +300,7 @@ class TransTestCase2(TestCase):
         cs = Category.objects.all()
 
         #1st trans---
-        print("item1--")
+        #print("item1--")
         response = c.post('/t/add', {'date': '2017/01/01', 'name': 'item1',\
                                      'c':cs[0].id,\
                                      'pm':pms[0].id,\
@@ -314,8 +319,13 @@ class TransTestCase2(TestCase):
 
 
         # list method---
-        res = view.list()
-        print(res)
+        req = response.wsgi_request
+
+        #req.user = USER
+        #req.is_authenticated = "True"
+        res = views.list(req)
+        print(res.content)
+
         
         
 

@@ -147,6 +147,8 @@ def delete(request):
 
 @login_required(login_url='/login/')
 def list(request):
+    #print(request.user)
+    
     if 'datefrom' not in request.POST:
         str_datefrom = '2000/01/01'
         #datefrom = datetime.datetime.strptime('2000/01/01', '%Y/%m/%d')
@@ -155,10 +157,17 @@ def list(request):
         #datefrom = datetime.datetime.strptime(request.POST['datefrom'], '%Y/%m/%d')
 
     datefrom = datetime.datetime.strptime(str_datefrom, '%Y/%m/%d')
-        
+
+
+    #category--
+    print(request.POST.getlist('categorys'))
+    #hoge
         
     latest_trans_list = Trans.objects.filter(user=request.user)\
                         .filter(date__gte=datefrom).order_by('-date', '-id')[:100]
+
+
+    
     #pmethod
     pmgroup_list = PmethodGroup.objects.order_by('order')
 
@@ -174,18 +183,49 @@ def list(request):
 
     #sort with group and order---
     category_list = []
+    #checkbox value
+    #categorys = []
     for cg in categorygroup_list:
         clist = Category.objects.filter(group = cg).order_by('order')
-        category_list.extend(clist)
+        #category_list.extend(clist)
 
-    
+        for c in clist:
+            cui = CategoryUi()
+            cui.id = c.id
+            cui.name = c.name
+            if 'filtered' in request.POST:
+                if str(c.id) in request.POST.getlist('categorys'):
+                    cui.selected = True
+                else:
+                    #TODO how to unchecked checkbox..
+                    cui.selected = False
+            else:
+                cui.selected = True
+            category_list.append(cui)
+
+        """
+        for c in clist:
+            categorys.append(str(c.id))
+        """
+    """
+    if not 'filterd' in request.POST:
+        str_datefrom = ''
+    """
+
     context = {'latest_trans_list': latest_trans_list,\
                'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
                'categorygroup_list' : categorygroup_list , \
                'category_list' : category_list,\
                'datefrom' : str_datefrom,\
+               #'categorys' : categorys,\
     }
     return render(request, 'trans/list.html', context)
+
+
+class CategoryUi(Category):
+    selected = False
+
+    
 
 
 
