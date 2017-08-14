@@ -160,11 +160,40 @@ def list(request):
 
 
     #category--
-    print(request.POST.getlist('categorys'))
-    #hoge
-        
+    #print(request.POST.getlist('categorys'))
+
     latest_trans_list = Trans.objects.filter(user=request.user)\
-                        .filter(date__gte=datefrom).order_by('-date', '-id')[:100]
+                        .filter(date__gte=datefrom)
+                        #.order_by('-date', '-id')[:100]
+                        #.order_by('-date', '-id')[:100]
+
+
+    categoryall = Category.objects.all()
+    for cate in categoryall:
+        if not str(cate.id) in request.POST.getlist('categorys'):
+            latest_trans_list = latest_trans_list.exclude(category=cate)
+    """
+    for cid in :
+        c = Category.objects.get(pk=cid)
+        latest_trans_list = latest_trans_list.filter(category=c)
+    """
+    latest_trans_list = latest_trans_list.order_by('-date', '-id')[:100]
+
+    #print (list(latest_trans_list))
+    #hoge
+
+                                  
+    """
+    remove_target = []
+    for t in latest_trans_list:
+        if not str(t.category.id) in request.POST.getlist('categorys'):
+            remove_target.append(t)
+
+    for rt in remove_target:
+        latest_trans_list.remove(rt)
+    """
+
+        #hoge
 
 
     
