@@ -324,7 +324,7 @@ class TransTestCase2(TestCase):
         # list method---
         req = response.wsgi_request
 
-        #req.user = USER
+        req.user = USER
         #req.is_authenticated = "True"
         res = views.list(req)
         #print(res.content)
@@ -340,6 +340,8 @@ class TransTestCase2(TestCase):
             cui.name = c.name
             cui.selected = True
             cui_list.append(cui)
+
+
         
         expected_html = render_to_string('trans/list.html',\
                                  {'request.user': 'admin',\
