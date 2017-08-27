@@ -323,14 +323,13 @@ class TransTestCase2(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-        # list method---
+        # list method (actual)---
         req = response.wsgi_request
-        #
-
-        #req.user = USER
-        #req.is_authenticated = "True"
         res = views.list(req)
         #print(res.content)
+
+
+        # get expected html--
 
         latest_trans_list = Trans.objects.all()
         pmgs = PmethodGroup.objects.all()
@@ -344,8 +343,10 @@ class TransTestCase2(TestCase):
             cui.selected = True
             cui_list.append(cui)
 
+        """
         req2 = HttpRequest()
         req2.user = USER
+        """
         #req2 = response.wsgi_request
 
         #res = views.list(req2)
@@ -376,7 +377,7 @@ class TransTestCase2(TestCase):
                                   'datefrom' : '2000/01/01',\
                                  })
 
-        print(expected_html)
+        #print(expected_html)
         #print(res.content.decode())
 
         self.assertEqualExceptCSRF(res.content.decode(), expected_html)
