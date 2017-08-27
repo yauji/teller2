@@ -330,7 +330,6 @@ class TransTestCase2(TestCase):
 
 
         # get expected html--
-
         latest_trans_list = Trans.objects.all()
         pmgs = PmethodGroup.objects.all()
         cgs = CategoryGroup.objects.all()
@@ -343,30 +342,6 @@ class TransTestCase2(TestCase):
             cui.selected = True
             cui_list.append(cui)
 
-        """
-        req2 = HttpRequest()
-        req2.user = USER
-        """
-        #req2 = response.wsgi_request
-
-        #res = views.list(req2)
-
-        #res = response
-        #hoge
-        
-        #form = ModelForm()
-        #context = RequestContext(request, {'form': form})
-        """        
-        context = RequestContext(req2, {'latest_trans_list': latest_trans_list,\
-                                  'pmethod_list': pms,\
-                                  'pmgroup_list': pmgs, \
-                                  'categorygroup_list' : cgs , \
-                                  'category_list' : cui_list,\
-                                  'datefrom' : '2000/01/01',\
-                                 })
-        expected_html = render_to_string('trans/list.html', request=req2)
-
-        """
         expected_html = render_to_string('trans/list.html',\
                                  {'request.user': 'admin',\
                                   'latest_trans_list': latest_trans_list,\
