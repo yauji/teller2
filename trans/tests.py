@@ -4,8 +4,10 @@ from django.test import TestCase
 from django.test import Client
 from django.contrib.auth.models import AnonymousUser, User
 from django.http.request import HttpRequest
+from django.template.loader import render_to_string
 
 from trans.models import PmethodGroup, Pmethod, CategoryGroup, Category, Trans
+from trans.views import CategoryUi
 
 from . import views
 #from trans.views import CategoryUi
@@ -291,6 +293,7 @@ class TransTestCase2(TestCase):
         self.assertEqual(ts[0].name, 'item2')
         self.assertEqual(ts[0].balance, -50)
 
+        
     def test_list_ok01(self):
         c = Client()
         c.login(username=USER, password=PASS)
@@ -324,10 +327,35 @@ class TransTestCase2(TestCase):
         #req.user = USER
         #req.is_authenticated = "True"
         res = views.list(req)
-        print(res.content)
+        #print(res.content)
 
+        latest_trans_list = Trans.objects.all()
+        pmgs = PmethodGroup.objects.all()
+        cgs = CategoryGroup.objects.all()
+
+        cui_list = []
+        for c in cs:
+            cui = CategoryUi()
+            cui.id = c.id
+            cui.name = c.name
+            cui.selected = True
+            cui_list.append(cui)
         
-        
+        expected_html = render_to_string('trans/list.html',\
+                                 {'request.user': 'admin',\
+                                  'latest_trans_list': latest_trans_list,\
+                                  'pmethod_list': pms,\
+                                  'pmgroup_list': pmgs, \
+                                  'categorygroup_list' : cgs , \
+                                  'category_list' : cui_list,\
+                                  'datefrom' : '2000/01/01',\
+                                 })
+        print(expected_html)
+        #print(res.content.decode())
+
+        #self.assertEqual(res.content, expected_html)        
+        self.assertEqual(res.content.decode(), expected_html)               
+
 
         
 
