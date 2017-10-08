@@ -75,6 +75,15 @@ def vote(request, question_id):
 """
 
 
+# show advanced UI
+@login_required(login_url='/login/')
+def advanced(request):
+
+    context = {
+    }
+    return render(request, 'trans/advanced.html', context)
+
+
 
 
 def add(request):
@@ -228,6 +237,19 @@ def list(request):
                #'categorys' : categorys,\
     }
     return render(request, 'trans/list.html', context)
+
+
+"""
+@login_required(login_url='/login/')
+def move(request):
+
+    context = {
+    }
+    return render(request, 'trans/move.html', context)
+"""
+
+
+
 
 
 class CategoryUi(Category):

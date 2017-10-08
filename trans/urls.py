@@ -4,13 +4,14 @@ from . import views
 
 app_name = 'trans'
 urlpatterns = [
+    # header
+    url(r'^list$', views.list, name='list'),
+    url(r'^advanced$', views.advanced, name='advanced'),
+
     #trans
     url(r'^$', views.index, name='index'),
     url(r'^add$', views.add, name='add'),
     url(r'^delete$', views.delete, name='delete'),
-
-    url(r'^list$', views.list, name='list'),
-
 
     #pmethod
     url(r'^pmethod$', views.index_pmethod, name='index_pmethod'),
