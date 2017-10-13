@@ -1,3 +1,6 @@
+CG_SYSTEM_ID=101;
+C_MOVE_ID=101;
+
 $(function() {
     //init format---
     $('#user_pay4').css('display', 'none');
@@ -6,10 +9,7 @@ $(function() {
 	format: "yyyy/mm/dd"
     });
 
-    $('#lmoveto').css('display', 'none');
-    $('#pmg2').css('display', 'none');
-    $('#pm2').css('display', 'none');
-    
+    displayMoveTo('none');
 
     //events---
     $('#cg').change(function(e) {
@@ -29,7 +29,7 @@ $(function() {
 		}
 	    });
 
-       if (e.target.value == 101){
+       if (e.target.value == CG_SYSTEM_ID){
            displayMoveTo('inline');
        }else{
            displayMoveTo('none');
@@ -38,7 +38,7 @@ $(function() {
     });
 
     $('#c').change(function(e) {
-       if (e.target.value == 101){
+       if (e.target.value == C_MOVE_ID){
            displayMoveTo('inline');
        }else{
            displayMoveTo('none');
@@ -48,20 +48,11 @@ $(function() {
 
 
     $('#pmg').change(function(e) {
-	url = 'pmgroup/' + e.target.value+ '/list/';
-	$.ajax(url,
-	       {
-		   type: 'get',
-	       }
-	      )
-	    .done(function(data) {
-		var jsondata = $.parseJSON(data);
-		//alert(data);
-		$('#pm option').remove();
-		for(var i in jsondata.pmethod_list){
-		    $('#pm').append("<option value='" + jsondata.pmethod_list[i].id + "'>" + jsondata.pmethod_list[i].name + "</option>");
-		}
-	    });
+	changeEventPmg(e, '#pm');
+    });
+
+    $('#pmg2').change(function(e) {
+	changeEventPmg(e, '#pm2');
     });
 
     $('#share_type').change(function(e) {
@@ -75,8 +66,28 @@ $(function() {
     });
     });
 
-    function displayMoveTo(value){
+function displayMoveTo(value){
     $('#lmoveto').css('display', value);
     $('#pmg2').css('display', value);
     $('#pm2').css('display', value);
-    }
+}
+
+function changeEventPmg(e, targetname){
+    //alert(e.target.value);
+    url = 'pmgroup/' + e.target.value+ '/list/';
+    $.ajax(url,
+	   {
+	       type: 'get',
+	   }
+	  )
+	.done(function(data) {
+	    var jsondata = $.parseJSON(data);
+	    //alert(data);
+	    selector = targetname + ' option';
+	    $(selector).remove();
+	    //$('#pm option').remove();
+	    for(var i in jsondata.pmethod_list){
+		$(targetname).append("<option value='" + jsondata.pmethod_list[i].id + "'>" + jsondata.pmethod_list[i].name + "</option>");
+	    }
+	});
+}    
