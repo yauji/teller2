@@ -18,6 +18,9 @@ from . import views
 USER='admin'
 PASS='hogehoge'
 
+C_MOVE_ID = 101
+
+
 class PmethodTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username=USER, email='admin@test.com',\
@@ -133,6 +136,7 @@ class TransTestCase2(TestCase):
         cg = CategoryGroup.objects.create(name='cg1')
         Category.objects.create(group=cg, name='c1')
         Category.objects.create(group=cg, name='c12')
+        Category.objects.create(group=cg, name='move', id=C_MOVE_ID)
 
 
     def test_add_ok01(self):
@@ -211,6 +215,54 @@ class TransTestCase2(TestCase):
         self.assertEqual(t.balance, -140)
         t = ts[1]
         self.assertEqual(t.balance, -190)
+        
+
+    def test_add_move_ok01(self):
+        c = Client()
+        c.login(username=USER, password=PASS)
+
+        pms = Pmethod.objects.all()
+        #print(pms)
+        cs = Category.objects.all()
+
+        #1st trans---
+        print("item1--")
+        response = c.post('/t/add', {'date': '2017/01/01', 'name': 'item1',\
+                                     'c':cs[0].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':100,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        #print(response.content)
+        self.assertEqual(response.status_code, 302)
+
+        ts = Trans.objects.all()
+        self.assertEqual(len(ts), 1)
+        self.assertEqual(ts[0].name, 'item1')
+        self.assertEqual(ts[0].balance, -100)
+
+
+        #2nd trans (move)---
+        print("item2--")
+        response = c.post('/t/add', {'date': '2017/01/03', 'name': 'item2',\
+                                     'c':C_MOVE_ID,\
+                                     'pm':pms[0].id,\
+                                     'pm2':pms[1].id,\
+                                     'expense':50,\
+                                     'memo':'move',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+
+        ts = Trans.objects.all()
+        print ts
+        t = ts[1]
+        self.assertEqual(t.balance, -151)
+        #self.assertEqual(t.balance, -150)
+
         
 
 
