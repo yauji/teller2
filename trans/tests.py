@@ -258,10 +258,10 @@ class TransTestCase2(TestCase):
         self.assertEqual(response.status_code, 302)
 
         ts = Trans.objects.all()
-        print ts
         t = ts[1]
-        self.assertEqual(t.balance, -151)
-        #self.assertEqual(t.balance, -150)
+        self.assertEqual(t.balance, -150)
+        t = ts[2]
+        self.assertEqual(t.balance, 50)
 
         
 
