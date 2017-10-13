@@ -215,6 +215,12 @@ def list(request):
         for cate in categoryall:
             if not str(cate.id) in request.POST.getlist('categorys'):
                 latest_trans_list = latest_trans_list.exclude(category=cate)
+                
+        pmethodall = Pmethod.objects.all()
+        for pm in pmethodall:
+            if not str(pm.id) in request.POST.getlist('pmethods'):
+                latest_trans_list = latest_trans_list.exclude(pmethod=pm)
+
         latest_trans_list = latest_trans_list.order_by('-date', '-id')[:100]
 
     
