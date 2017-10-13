@@ -104,6 +104,15 @@ class TransTestCase(TestCase):
         self.user = User.objects.create_user(username=USER, email='admin@test.com',\
                                              password=PASS)
 
+        pmg = PmethodGroup.objects.create(name='pmg1')
+        Pmethod.objects.create(group=pmg, name='pm1')
+
+        cg = CategoryGroup.objects.create(name='cg1')
+        Category.objects.create(group=cg, name='c1')
+        Category.objects.create(group=cg, name='c12')
+        Category.objects.create(group=cg, name='move', id=C_MOVE_ID)
+        
+
     def test_login(self):
         c = Client()
         response = c.post('/')
