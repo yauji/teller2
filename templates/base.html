@@ -52,9 +52,6 @@
 	    <li class="{% block nav_list %}{% endblock %}"><a href="{% url 'trans:list' %}">List</a></li>
     	    <li class="{% block nav_advanced %}{% endblock %}"><a href="{% url 'trans:advanced' %}">Advanced</a></li>
 	    <li class="{% block nav_pmethod %}{% endblock %}"><a href="{% url 'trans:index_pmethod' %}">Settings</a></li>
-	    <li><a href="#">Home</a></li>
-	    <li><a href="#about">About</a></li>
-	    <li><a href="#contact">Contact</a></li>
 	  </ul>
 	  {{request.user}}
 	  <a href="/logout/">Logout</a>
