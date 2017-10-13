@@ -223,10 +223,27 @@ def list(request):
 
     #sort with group and order---
     pmethod_list = []
+    """
     for pmg in pmgroup_list:
         pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
         pmethod_list.extend(pmlist)
+    """
+    for pmg in pmgroup_list:
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
 
+        for pm in pmlist:
+            pmui = PmethodUi()
+            pmui.id = pm.id
+            pmui.name = pm.name
+            if 'filtered' in request.POST:
+                if str(pm.id) in request.POST.getlist('pmethods'):
+                    pmui.selected = True
+                else:
+                    pmui.selected = False
+            else:
+                pmui.selected = True
+            pmethod_list.append(pmui)
+    
 
     #category---
     categorygroup_list = CategoryGroup.objects.order_by('order')
@@ -286,6 +303,9 @@ def move(request):
 
 
 class CategoryUi(Category):
+    selected = False
+
+class PmethodUi(Pmethod):
     selected = False
 
     

@@ -10,6 +10,7 @@ from django.template.loader import render_to_string
 
 from trans.models import PmethodGroup, Pmethod, CategoryGroup, Category, Trans
 from trans.views import CategoryUi
+from trans.views import PmethodUi
 
 from . import views
 #from trans.views import CategoryUi
@@ -395,6 +396,14 @@ class TransTestCase2(TestCase):
         pmgs = PmethodGroup.objects.all()
         cgs = CategoryGroup.objects.all()
 
+        pmui_list = []
+        for pm in pms:
+            pmui = PmethodUi()
+            pmui.id = pm.id
+            pmui.name = pm.name
+            pmui.selected = True
+            pmui_list.append(pmui)
+
         cui_list = []
         for c in cs:
             cui = CategoryUi()
@@ -406,7 +415,7 @@ class TransTestCase2(TestCase):
         expected_html = render_to_string('trans/list.html',\
                                  {'request.user': 'admin',\
                                   'latest_trans_list': latest_trans_list,\
-                                  'pmethod_list': pms,\
+                                  'pmethod_list': pmui_list,\
                                   'pmgroup_list': pmgs, \
                                   'categorygroup_list' : cgs , \
                                   'category_list' : cui_list,\

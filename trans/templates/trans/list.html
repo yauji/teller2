@@ -15,14 +15,14 @@
     <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="dateto" name="dateto"  placeholder="to yyyy/mm/dd">
 
 
-    Categories;
+    Categories:
     {% for c in category_list %}
     <input type="checkbox" name="categorys" value="{{ c.id }}" {% if c.selected %}checked="checked"{% endif %}>{{c.name}}</input>
     {% endfor %}
 
-    Pmethod;
+    Payment methods:
     {% for pm in pmethod_list %}    
-    <input type="checkbox" name="pmethods" value="{{ pm.id }}" >{{pm.name}}</input>
+    <input type="checkbox" name="pmethods" value="{{ pm.id }}"  {% if pm.selected %}checked="checked"{% endif %}>{{pm.name}}</input>
     {% endfor %}
   
     <button type="submit" class="btn btn-primary btn-sm">Search</button>
@@ -37,15 +37,17 @@
   <table border="1" class="table table-striped">
     <tr>
       <th></th>
-      <th></th>
+      <th>(id)</th>
 	<th>Date</th>
 	<th>Item</th>
 	<th>Expense</th>
 	<th>Balance</th>
-	<th></th>
-	<th></th>
-	<th></th>
-	<th></th>
+	<th>Payment method</th>
+	<th>Category</th>
+	<th>User</th>
+	<th>(share type)</th>
+	<th>(user pay4)</th>
+	<th>(trans-text)</th>
       </tr>
       {% for trans in latest_trans_list %}
       <tr>
