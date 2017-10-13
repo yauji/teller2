@@ -14,6 +14,8 @@ from django.contrib.auth.models import User
 
 from .models import Trans, PmethodGroup, Pmethod, CategoryGroup, Category
 
+C_MOVE_ID = 101
+
 @login_required(login_url='/login/')
 def index(request):
     latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date', '-id')[:30]
@@ -132,6 +134,26 @@ def add(request):
     trans.save()
 
     update_balance(trans)
+
+
+    #for move---
+    if cid == C_MOVE_ID:
+            pmid2 = int(request.POST['pm2'])
+            pm2 = Pmethod.objects.get(pk=pmid2)
+
+            trans = Trans(date=date, \
+                          name=request.POST['name'], \
+                          expense=expense * -1, \
+                          memo=request.POST['memo'], \
+                          category=c,\
+                          pmethod=pm2,\
+                          user=request.user, \
+                          share_type=request.POST['share_type'],\
+                          user_pay4=user_pay4,\
+            )
+            trans.save()
+            update_balance(trans)
+
 
     return redirect('/t/')
 
