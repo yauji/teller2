@@ -14,17 +14,26 @@
     <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="datefrom" name="datefrom"  placeholder="From yyyy/mm/dd" value="{{datefrom}}">
     <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="dateto" name="dateto"  placeholder="to yyyy/mm/dd">
 
-
+    <div id="category">
     Categories:
     {% for c in category_list %}
     <input type="checkbox" name="categorys" value="{{ c.id }}" {% if c.selected %}checked="checked"{% endif %}>{{c.name}}</input>
     {% endfor %}
-
+    
+    <button id="ccheck" type="button" class="btn btn-outline-info btn-sm">Check</button>
+    <button id="cuncheck" type="button" class="btn btn-outline-info btn-sm">Unheck</button>
+    </div>
+    
+    <div id="pmethod">
     Payment methods:
     {% for pm in pmethod_list %}    
     <input type="checkbox" name="pmethods" value="{{ pm.id }}"  {% if pm.selected %}checked="checked"{% endif %}>{{pm.name}}</input>
     {% endfor %}
-  
+
+    <button id="pmcheck" type="button" class="btn btn-outline-info btn-sm">Check</button>
+    <button id="pmuncheck" type="button" class="btn btn-outline-info btn-sm">Unheck</button>
+    </div>
+
     <button type="submit" class="btn btn-primary btn-sm">Search</button>
 
     <input type="hidden" name="filtered" value="False"></input>    
@@ -76,14 +85,30 @@
 
 {% block script %}
 $(function() {
-    //init format---
-    $('#user_pay4').css('display', 'none');
+//init format---
+//$('#user_pay4').css('display', 'none');
 
-    $('.datepicker').datepicker({
-	format: "yyyy/mm/dd"
-    });
+$('.datepicker').datepicker({
+format: "yyyy/mm/dd"
+});
 
-    //events---
+//events---
+$('#ccheck').click(function(e) {
+$("#category > input:checkbox").prop("checked", true);
+});
+
+$('#cuncheck').click(function(e) {
+$("#category > input:checkbox").prop("checked", false);
+});
+
+$('#pmcheck').click(function(e) {
+$("#pmethod > input:checkbox").prop("checked", true);
+});
+
+$('#pmuncheck').click(function(e) {
+$("#pmethod > input:checkbox").prop("checked", false);
+});
+
 
 });
 {% endblock script %}
