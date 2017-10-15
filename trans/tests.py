@@ -20,6 +20,7 @@ USER='admin'
 PASS='hogehoge'
 
 C_MOVE_ID = 101
+C_WITHDRAW_ID = 103
 
 
 class PmethodTestCase(TestCase):
@@ -143,10 +144,16 @@ class TransTestCase2(TestCase):
         Pmethod.objects.create(group=pmg, name='pm1')
         Pmethod.objects.create(group=pmg, name='pm12')
 
+        pmg = PmethodGroup.objects.create(name='pmg2')
+        Pmethod.objects.create(group=pmg, name='pm21')
+
         cg = CategoryGroup.objects.create(name='cg1')
         Category.objects.create(group=cg, name='c1')
         Category.objects.create(group=cg, name='c12')
+
+        cg = CategoryGroup.objects.create(name='cg2')
         Category.objects.create(group=cg, name='move', id=C_MOVE_ID)
+        Category.objects.create(group=cg, name='withdraw', id=C_WITHDRAW_ID)
 
 
     def test_add_ok01(self):
@@ -402,14 +409,19 @@ class TransTestCase2(TestCase):
 
         #TODO
         #print("withdraw item1,3--")
-        response = c.post('/t/withdraw', {'tids': [1,3],\
+        response = c.post('/t/multi_trans_select', {
+            'withdraw': True,\
+            'tids': [1,3],\
+            'date': '2017/02/01', \
+            'pm':pms[2].id,\
+            'memo':'wd',\
         })
         self.assertEqual(response.status_code, 302)
 
         ts = Trans.objects.all()
-        self.assertEqual(len(ts), 1)
-        self.assertEqual(ts[0].name, 'item2')
-        self.assertEqual(ts[0].balance, -50)
+        self.assertEqual(len(ts), 4)
+        self.assertEqual(ts[3].expense, 120)
+        #self.assertEqual(ts[0].balance, -50)
 
         
     def test_list_ok01(self):
