@@ -219,6 +219,8 @@ def withdraw(request):
         for trans in transs:
             trans.fClearance = True
             trans.save()
+            update_balance(trans)
+
             sum += trans.expense
 
         #added withdrew trans
@@ -233,11 +235,8 @@ def withdraw(request):
                   user_pay4=None,\
         )
         trans.save()
+        update_balance(trans)
 
-
-            #update_balance_para(oldesttrans.pmethod, oldesttrans.user, oldesttrans.date)
-
-        
         
     except ProtectedError:
         context = {'error_message': 'Failed to withdraw.'}
@@ -399,7 +398,10 @@ def update_balance_para(pmethod, user, date):
 
     for t in transs:
         #print(t.name)
-        t.balance = prevBalance - t.expense
+        if not t.fClearance :
+            t.balance = prevBalance - t.expense
+        else:
+            t.balance = prevBalance
         t.save()
         prevBalance = t.balance
         
