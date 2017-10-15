@@ -34,6 +34,13 @@ $(function() {
     });
     
 
+    $("input[name=tids]").change(function(e) {
+	//TODO get sum of selected trnass
+	alert('hoge');
+    });
+
+    
+
 });
 
 function changeEventPmg(e, targetname){
