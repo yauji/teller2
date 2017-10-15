@@ -14,7 +14,10 @@ from django.contrib.auth.models import User
 
 from .models import Trans, PmethodGroup, Pmethod, CategoryGroup, Category
 
+SHARE_TYPES_OWN = 1
+
 C_MOVE_ID = 101
+C_WITHDRAW_ID = 103
 
 @login_required(login_url='/login/')
 def index(request):
@@ -157,6 +160,14 @@ def add(request):
 
     return redirect('/t/')
 
+# dispatch delete, withdraw function
+def multi_trans_select(request):
+    if 'delete' in request.POST:
+        return delete(request)
+    elif 'withdraw' in request.POST:
+        return withdraw(request)
+
+
 
 # delete selected multiple transs
 # input: tids
@@ -181,6 +192,55 @@ def delete(request):
         
     except ProtectedError:
         context = {'error_message': 'Failed to delete.'}
+        return render(request, 'trans/message.html', context)
+
+    
+    return redirect('/t/')
+
+# input: tids
+def withdraw(request):
+    date = datetime.datetime.strptime(request.POST['date'], '%Y/%m/%d')
+    pmid = int(request.POST['pm'])
+    c = Category.objects.get(pk=C_WITHDRAW_ID)
+    pm = Pmethod.objects.get(pk=pmid)
+
+    try:
+        #check not to be already clearanced
+        transs = []
+        for tid in request.POST.getlist('tids'):
+            trans = Trans.objects.get(pk=tid)
+            if trans.fClearance :
+                context = {'error_message': str(trans.id) + ' is already cleared.'}
+                return render(request, 'trans/message.html', context)
+                
+            transs.append(trans)
+
+        sum = 0
+        for trans in transs:
+            trans.fClearance = True
+            trans.save()
+            sum += trans.expense
+
+        #added withdrew trans
+        trans = Trans(date=date, \
+                  name='withdraw', \
+                  expense=sum, \
+                  memo=request.POST['memo'], \
+                  category=c,\
+                  pmethod=pm,\
+                  user=request.user, \
+                  share_type=SHARE_TYPES_OWN,\
+                  user_pay4=None,\
+        )
+        trans.save()
+
+
+            #update_balance_para(oldesttrans.pmethod, oldesttrans.user, oldesttrans.date)
+
+        
+        
+    except ProtectedError:
+        context = {'error_message': 'Failed to withdraw.'}
         return render(request, 'trans/message.html', context)
 
     
@@ -221,7 +281,9 @@ def list(request):
             if not str(pm.id) in request.POST.getlist('pmethods'):
                 latest_trans_list = latest_trans_list.exclude(pmethod=pm)
 
-        latest_trans_list = latest_trans_list.order_by('-date', '-id')[:100]
+    latest_trans_list = latest_trans_list.order_by('-date', '-id')[:100]
+
+                
 
     
     #pmethod

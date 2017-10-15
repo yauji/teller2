@@ -12,6 +12,7 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^add$', views.add, name='add'),
     url(r'^delete$', views.delete, name='delete'),
+    url(r'^multi_trans_select$', views.multi_trans_select, name='multi_trans_select'),
 
     #pmethod
     url(r'^pmethod$', views.index_pmethod, name='index_pmethod'),
