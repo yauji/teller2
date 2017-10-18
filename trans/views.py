@@ -360,22 +360,16 @@ def list(request):
 def sum_expense(request):
     #hoge
 
-    print(request.GET)
-    print(request.GET.getlist('ids[]'))
+    #print(request.GET)
+    #print(request.GET.getlist('ids[]'))
 
-    #pm---
-    pmg = PmethodGroup.objects.get(pk=pmgroup_id)
+    sum = 0
+    for tid in request.GET.getlist('ids[]'):
+        trans = Trans.objects.get(pk=tid)
+        #print (trans.expense)
+        sum += trans.expense
 
-    clist = Pmethod.objects.filter(group = pmg).order_by('order')
-
-    clistdic = []
-    for c in clist:
-        dic = {}
-        dic['id'] = c.id
-        dic['name'] = c.name
-        clistdic.append(dic)
-    
-    context = {'pmethod_list' : clistdic}
+    context = {'sum' : sum}
 
     jsonstring = json.dumps(context)
     return HttpResponse(jsonstring)

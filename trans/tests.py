@@ -504,15 +504,50 @@ class TransTestCase2(TestCase):
         #hoge
         c = Client()
         c.login(username=USER, password=PASS)
-        
+
+        pms = Pmethod.objects.all()
+        #print(pms)
+        cs = Category.objects.all()
+
+        #1st trans---
+        #print("item1--")
+        response = c.post('/t/add', {'date': '2017/01/01', 'name': 'item1',\
+                                     'c':cs[0].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':100,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        #print(response.content)
+        self.assertEqual(response.status_code, 302)
+
+        #2nd trans---
+        print("item2--")
+        response = c.post('/t/add', {'date': '2017/01/03', 'name': 'item2',\
+                                     'c':cs[1].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':50,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+
+        ts = Trans.objects.all()
+        t = ts[1]
+        self.assertEqual(t.balance, -150)
+
+
+        # test sum---
         response = c.get('/t/sum_expense', {'ids[]': ['1', '2']})
         #print(response.content)
         #print(response.content.decode("utf-8"))
         self.assertEqual(response.status_code, 200)
 
         dec = json.loads(response.content.decode("utf-8"))
-        #print(dec['category_list'])
-        self.assertEqual(len(dec['category_list']), 2)
+        #print(dec['sum'])
+        self.assertEqual(dec['sum'], 150)
 
         
 

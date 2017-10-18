@@ -58,15 +58,8 @@ $(function() {
 	    .done(function(data) {
 		var jsondata = $.parseJSON(data);
 		//alert(data);
-		selector = targetname + ' option';
-		$(selector).remove();
-	    //$('#pm option').remove();
-	    for(var i in jsondata.pmethod_list){
-		$(targetname).append("<option value='" + jsondata.pmethod_list[i].id + "'>" + jsondata.pmethod_list[i].name + "</option>");
-	    }
-	});
-	
-	$("#sum").text(100);
+		$("#sum").text(jsondata['sum']);
+	    });
     });
 
     
