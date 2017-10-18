@@ -35,8 +35,38 @@ $(function() {
     
 
     $("input[name=tids]").change(function(e) {
-	//TODO get sum of selected trnass
-	alert('hoge');
+	//TODO get sum of selected trnassg
+	//alert('hoge');
+
+	var ids = [];
+	$("input[name=tids]").each( function () {
+	    if($(this).prop("checked")){
+		//alert( $(this).val() );
+		ids.push($(this).val());
+	    }
+	});
+
+	//alert(ids);
+
+	url = 'sum_expense';
+	$.ajax(url,
+	       {
+		   type: 'get',
+		   data: { ids :ids}
+	       }
+	      )
+	    .done(function(data) {
+		var jsondata = $.parseJSON(data);
+		//alert(data);
+		selector = targetname + ' option';
+		$(selector).remove();
+	    //$('#pm option').remove();
+	    for(var i in jsondata.pmethod_list){
+		$(targetname).append("<option value='" + jsondata.pmethod_list[i].id + "'>" + jsondata.pmethod_list[i].name + "</option>");
+	    }
+	});
+	
+	$("#sum").text(100);
     });
 
     

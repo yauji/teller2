@@ -497,7 +497,24 @@ class TransTestCase2(TestCase):
 
         self.assertEqualExceptCSRF(res.content.decode(), expected_html)
         #self.assertEqual(res.content, expected_html)        
-        #self.assertEqual(res.content.decode(), expected_html)               
+        #self.assertEqual(res.content.decode(), expected_html)
+
+
+    def test_sum_expense_ok01(self):
+        #hoge
+        c = Client()
+        c.login(username=USER, password=PASS)
+        
+        response = c.get('/t/sum_expense', {'ids[]': ['1', '2']})
+        print(response.content)
+        print(response.content.decode("utf-8"))
+        self.assertEqual(response.status_code, 200)
+
+        dec = json.loads(response.content.decode("utf-8"))
+        #print(dec['category_list'])
+        self.assertEqual(len(dec['category_list']), 2)
+
+        
 
 
     @staticmethod

@@ -14,6 +14,9 @@ urlpatterns = [
     url(r'^delete$', views.delete, name='delete'),
     url(r'^multi_trans_select$', views.multi_trans_select, name='multi_trans_select'),
 
+    # for ajax
+    url(r'^sum_expense$', views.sum_expense, name='sum_expense'),
+
     #pmethod
     url(r'^pmethod$', views.index_pmethod, name='index_pmethod'),
     url(r'^pmethod/add$', views.add_pmethod, name='add_pmethod'),

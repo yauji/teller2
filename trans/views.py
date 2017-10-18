@@ -356,6 +356,33 @@ def list(request):
     return render(request, 'trans/list.html', context)
 
 
+# return json
+def sum_expense(request):
+    #hoge
+
+    print(request.GET)
+    print(request.GET.getlist('ids[]'))
+
+    #pm---
+    pmg = PmethodGroup.objects.get(pk=pmgroup_id)
+
+    clist = Pmethod.objects.filter(group = pmg).order_by('order')
+
+    clistdic = []
+    for c in clist:
+        dic = {}
+        dic['id'] = c.id
+        dic['name'] = c.name
+        clistdic.append(dic)
+    
+    context = {'pmethod_list' : clistdic}
+
+    jsonstring = json.dumps(context)
+    return HttpResponse(jsonstring)
+
+
+
+
 """
 @login_required(login_url='/login/')
 def move(request):
