@@ -506,8 +506,8 @@ class TransTestCase2(TestCase):
         c.login(username=USER, password=PASS)
         
         response = c.get('/t/sum_expense', {'ids[]': ['1', '2']})
-        print(response.content)
-        print(response.content.decode("utf-8"))
+        #print(response.content)
+        #print(response.content.decode("utf-8"))
         self.assertEqual(response.status_code, 200)
 
         dec = json.loads(response.content.decode("utf-8"))
