@@ -346,7 +346,7 @@ def list(request):
         str_datefrom = ''
     """
 
-    paginator = Paginator(latest_trans_list, 2)
+    paginator = Paginator(latest_trans_list, 100)
 
     page = request.GET.get('page')
     print(page)
