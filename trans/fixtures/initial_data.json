@@ -1,0 +1,11 @@
+[
+        {
+	    "model": "trans.CategoryGroup",
+	    "pk": 101,
+	    "fields": {
+		"name": "system",
+		"order": 101
+	    }
+	}
+]
+	    
