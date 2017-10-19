@@ -109,6 +109,22 @@ sum;
   <input type="submit" name="delete" value="Delete" />
 </form>
 
+<div class="pagination">
+  <span class="step-links">
+    {% if latest_trans_list.has_previous %}
+    <a href="?page={{ latest_trans_list.previous_page_number }}">previous</a>
+    {% endif %}
+
+    <span class="current">
+      Page {{ latest_trans_list.number }} of {{ latest_trans_list.paginator.num_pages }}.
+    </span>
+
+    {% if latest_trans_list.has_next %}
+    <a href="?page={{ latest_trans_list.next_page_number }}">next</a>
+    {% endif %}
+  </span>
+</div>
+
 {% endblock contents %}
 
 

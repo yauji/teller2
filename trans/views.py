@@ -9,8 +9,8 @@ from django.db.models.deletion import ProtectedError
 #from django.db import IntegrityError
 #from django.db.IntegrityError import ProtectedError
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User	  
-
+from django.contrib.auth.models import User
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Trans, PmethodGroup, Pmethod, CategoryGroup, Category
 
@@ -346,12 +346,27 @@ def list(request):
         str_datefrom = ''
     """
 
-    context = {'latest_trans_list': latest_trans_list,\
+    paginator = Paginator(latest_trans_list, 2)
+
+    page = request.GET.get('page')
+    print(page)
+    try:
+        transs = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        transs = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        transs = paginator.page(paginator.num_pages)
+
+    #hoge
+    print(transs.number)
+        
+    context = {'latest_trans_list': transs,\
                'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
                'categorygroup_list' : categorygroup_list , \
                'category_list' : category_list,\
                'datefrom' : str_datefrom,\
-               #'categorys' : categorys,\
     }
     return render(request, 'trans/list.html', context)
 
