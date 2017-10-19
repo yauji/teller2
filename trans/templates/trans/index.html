@@ -98,7 +98,7 @@
       <tr>
 	<td> <input type="checkbox" name="tids" value="{{ trans.id }}" /></td>
 	<td>{{ trans.id }}</td>
-	<td>{{ trans.date }}</td>
+	<td>{{ trans.date|date:"Y/n/d"  }}</td>
 	<td>{{ trans.name }}</td>
 	<td>{{ trans.expense }}</td>
 	<td>{{ trans.balance }}</td>
