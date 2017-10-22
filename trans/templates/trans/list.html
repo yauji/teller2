@@ -86,35 +86,34 @@ sum;
   <table border="1" class="table table-striped">
     <tr>
       <th></th>
-      <th>(id)</th>
-	<th>Date</th>
+      <th>Date</th>
 	<th>Item</th>
 	<th>Expense</th>
 	<th>Balance</th>
 	<th>Payment method</th>
 	<th>Category</th>
-	<th>User</th>
+	<th>Memo</th>
+      <th>(id)</th>
+	<th>(User)</th>
 	<th>(share type)</th>
 	<th>(user pay4)</th>
 	<th>(clearanced)</th>
-	<th>(trans-text)</th>
       </tr>
       {% for trans in latest_trans_list %}
       <tr>
 	<td> <input type="checkbox" name="tids" value="{{ trans.id }}" /></td>
-	<td>{{ trans.id }}</td>
 	<td>{{ trans.date|date:"Y/n/d" }}</td>
 	<td>{{ trans.name }}</td>
 	<td>{{ trans.expense }}</td>
 	<td>{{ trans.balance }}</td>
 	<td>{{ trans.pmethod.name }}</td>
 	<td>{{ trans.category.name }}</td>
+	<td>{{ trans.memo }}</td>
+	<td>{{ trans.id }}</td>
 	<td>{{ trans.user }}</td>
 	<td>{{ trans.share_type }}</td>
 	<td>{{ trans.user_pay4 }}</td>
 	<td>{{ trans.fClearance }}</td>
-	<td><a href="">{{ trans.trans_text }}</a></td>
-
       </tr>
       {% endfor %}
   </table>
