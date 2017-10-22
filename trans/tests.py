@@ -226,6 +226,14 @@ class TransTestCase2(TestCase):
         })
         self.assertEqual(response.status_code, 302)
 
+        t = Trans.objects.filter(name='item1')[0]
+        self.assertEqual(t.balance, -100)
+        t = Trans.objects.filter(name='item4')[0]
+        self.assertEqual(t.balance, -140)
+        t = Trans.objects.filter(name='item2')[0]
+        self.assertEqual(t.balance, -190)
+
+        """
         ts = Trans.objects.all()
         t = ts[0]
         self.assertEqual(t.balance, -100)
@@ -233,6 +241,7 @@ class TransTestCase2(TestCase):
         self.assertEqual(t.balance, -140)
         t = ts[1]
         self.assertEqual(t.balance, -190)
+        """
         
 
     def test_add_move_ok01(self):
@@ -356,7 +365,14 @@ class TransTestCase2(TestCase):
         self.assertEqual(response.status_code, 302)
 
         #print("delete item1,3--")
-        response = c.post('/t/delete', {'tids': [1,3],\
+        ts = Trans.objects.all()
+
+        """
+        print("----------")
+        for t in ts:
+            print(t.id)
+        """
+        response = c.post('/t/delete', {'tids': [ts[0].id, ts[2].id],\
         })
         self.assertEqual(response.status_code, 302)
 
@@ -409,19 +425,31 @@ class TransTestCase2(TestCase):
         self.assertEqual(response.status_code, 302)
 
         #print("withdraw item1,3--")
+        #ts = Trans.objects.all()
+        t1 = Trans.objects.filter(name='item1')[0]
+        t3 = Trans.objects.filter(name='item3')[0]
+                
         response = c.post('/t/multi_trans_select', {
             'withdraw': True,\
-            'tids': [1,3],\
+            'tids': [t1.id, t3.id],\
             'date': '2017/02/01', \
             'pm':pms[2].id,\
             'memo':'wd',\
         })
         self.assertEqual(response.status_code, 302)
 
+
         ts = Trans.objects.all()
         self.assertEqual(len(ts), 4)
+        t = Trans.objects.filter(memo='wd')[0]
+        #print(t.memo)
+        self.assertEqual(t.expense, 120)
+        self.assertEqual(t.balance, -120)
+        
+        """
         self.assertEqual(ts[3].expense, 120)
         self.assertEqual(ts[3].balance, -120)
+        """
         
         self.assertEqual(ts[0].balance, 0)
         #fail. I don't know why...
@@ -541,7 +569,8 @@ class TransTestCase2(TestCase):
 
 
         # test sum---
-        response = c.get('/t/sum_expense', {'ids[]': ['1', '2']})
+        response = c.get('/t/sum_expense', {'ids[]': [ts[0].id, ts[1].id]})
+        #response = c.get('/t/sum_expense', {'ids[]': ['1', '2']})
         #print(response.content)
         #print(response.content.decode("utf-8"))
         self.assertEqual(response.status_code, 200)
