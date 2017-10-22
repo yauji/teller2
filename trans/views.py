@@ -23,7 +23,7 @@ C_WITHDRAW_ID = 103
 def index(request):
     latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date', '-id')[:30]
     #pmethod
-    pmgroup_list = PmethodGroup.objects.order_by('order')
+    pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
 
     #sort with group and order---
     pmethod_list = []
@@ -288,7 +288,7 @@ def list(request):
 
     
     #pmethod
-    pmgroup_list = PmethodGroup.objects.order_by('order')
+    pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
 
     #sort with group and order---
     pmethod_list = []
@@ -451,7 +451,8 @@ def update_balance_para(pmethod, user, date):
 def index_pmethod(request):
     #pmethod_list = Pmethod.objects.order_by('-group')
     #pmethod_list = Pmethod.objects.order_by('-order')[:30]
-    pmgroup_list = PmethodGroup.objects.order_by('order')
+    #pmgroup_list = PmethodGroup.objects.order_by('order')
+    pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
 
     #sort with group and order---
     pmethod_list = []
@@ -490,7 +491,7 @@ def add_pmethod(request):
 def edit_pmethod(request, pmethod_id):
     pm = Pmethod.objects.get(pk=pmethod_id)
 
-    pmgroup_list = PmethodGroup.objects.order_by('-order')[:30]
+    pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('-order')[:30]
 
     context = {'pm': pm, 'pmgroup_list': pmgroup_list}
     return render(request, 'trans/edit_pmethod.html', context)
@@ -583,7 +584,7 @@ def delete_pmgroup(request, pmgroup_id):
 def up_pmgroup(request, pmgroup_id):
     pmg = PmethodGroup.objects.get(pk=pmgroup_id)
 
-    pmgs = PmethodGroup.objects.order_by('-order')
+    pmgs = PmethodGroup.objects.filter(user=request.user).order_by('-order')
 
     #find uppper pmg
     fTargetNext = False
