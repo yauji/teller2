@@ -542,7 +542,9 @@ def up_pmethod(request, pmethod_id):
 
 #pmgroup------------------------------
 def add_pmgroup(request):
-    pgmethod = PmethodGroup(name=request.POST['name'])
+    pgmethod = PmethodGroup(name=request.POST['name'],
+                            user=request.user,
+    )
     pgmethod.save()
 
     pgmethod.order = pgmethod.id

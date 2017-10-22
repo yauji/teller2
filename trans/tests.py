@@ -95,6 +95,7 @@ class CategoryTestCase2(TestCase):
 
         dec = json.loads(response.content.decode("utf-8"))
         #print(dec['category_list'])
+        print("In case that there are a fail related to pagination, it's ok.")
         self.assertEqual(len(dec['category_list']), 2)
 
 
@@ -106,7 +107,7 @@ class TransTestCase(TestCase):
         self.user = User.objects.create_user(username=USER, email='admin@test.com',\
                                              password=PASS)
 
-        pmg = PmethodGroup.objects.create(name='pmg1')
+        pmg = PmethodGroup.objects.create(name='pmg1', user=self.user)
         Pmethod.objects.create(group=pmg, name='pm1')
 
         cg = CategoryGroup.objects.create(name='cg1')
@@ -140,11 +141,11 @@ class TransTestCase2(TestCase):
         self.user = User.objects.create_user(username='test1', email='test@test.com',\
                                              password='password')
 
-        pmg = PmethodGroup.objects.create(name='pmg1')
+        pmg = PmethodGroup.objects.create(name='pmg1', user=self.user)
         Pmethod.objects.create(group=pmg, name='pm1')
         Pmethod.objects.create(group=pmg, name='pm12')
 
-        pmg = PmethodGroup.objects.create(name='pmg2')
+        pmg = PmethodGroup.objects.create(name='pmg2', user=self.user)
         Pmethod.objects.create(group=pmg, name='pm21')
 
         cg = CategoryGroup.objects.create(name='cg1')
