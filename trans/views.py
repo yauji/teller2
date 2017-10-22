@@ -211,7 +211,7 @@ def withdraw(request):
         transs = []
         for tid in request.POST.getlist('tids'):
             trans = Trans.objects.get(pk=tid)
-            if trans.fClearance :
+            if trans.fclearance :
                 context = {'error_message': str(trans.id) + ' is already cleared.'}
                 return render(request, 'trans/message.html', context)
                 
@@ -219,7 +219,7 @@ def withdraw(request):
 
         sum = 0
         for trans in transs:
-            trans.fClearance = True
+            trans.fclearance = True
             trans.save()
             update_balance(trans)
 
@@ -436,7 +436,7 @@ def update_balance_para(pmethod, user, date):
 
     for t in transs:
         #print(t.name)
-        if not t.fClearance :
+        if not t.fclearance :
             t.balance = prevBalance - t.expense
         else:
             t.balance = prevBalance
