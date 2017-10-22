@@ -27,9 +27,10 @@ def index(request):
 
     #sort with group and order---
     pmethod_list = []
-    pmg = pmgroup_list[0]
-    pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
-    pmethod_list.extend(pmlist)
+    if len(pmgroup_list) > 0:
+        pmg = pmgroup_list[0]
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
+        pmethod_list.extend(pmlist)
     """
     for pmg in pmgroup_list:
         pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
@@ -43,9 +44,10 @@ def index(request):
 
     #sort with group and order---
     category_list = []
-    cg = categorygroup_list[0]
-    clist = Category.objects.filter(group = cg).order_by('order')
-    category_list.extend(clist)
+    if len(categorygroup_list) > 0:
+        cg = categorygroup_list[0]
+        clist = Category.objects.filter(group = cg).order_by('order')
+        category_list.extend(clist)
     """
     for cg in categorygroup_list:
         clist = Category.objects.filter(group = cg).order_by('order')
