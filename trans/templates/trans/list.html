@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block nav_list %}active{% endblock %}
 
@@ -104,8 +105,8 @@ sum;
 	<td> <input type="checkbox" name="tids" value="{{ trans.id }}" /></td>
 	<td>{{ trans.date|date:"Y/n/d" }}</td>
 	<td>{{ trans.name }}</td>
-	<td>{{ trans.expense }}</td>
-	<td>{{ trans.balance }}</td>
+	<td>{{ trans.expense| intcomma }}</td>
+	<td>{{ trans.balance| intcomma  }}</td>
 	<td>{{ trans.pmethod.name }}</td>
 	<td>{{ trans.category.name }}</td>
 	<td>{{ trans.memo }}</td>
