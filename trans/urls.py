@@ -6,6 +6,7 @@ app_name = 'trans'
 urlpatterns = [
     # header
     url(r'^list$', views.list, name='list'),
+    url(r'^monthlyreport$', views.monthlyreport, name='monthlyreport'),
     url(r'^advanced$', views.advanced, name='advanced'),
 
     #trans

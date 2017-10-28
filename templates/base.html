@@ -50,6 +50,7 @@
 	  <ul class="nav navbar-nav">
 	    <li class="{% block nav_trans %}{% endblock %}"><a href="{% url 'trans:index' %}">Home</a></li>
 	    <li class="{% block nav_list %}{% endblock %}"><a href="{% url 'trans:list' %}">List</a></li>
+    	    <li class="{% block nav_monthlyreport %}{% endblock %}"><a href="{% url 'trans:monthlyreport' %}">Monthly report</a></li>
     	    <li class="{% block nav_advanced %}{% endblock %}"><a href="{% url 'trans:advanced' %}">Advanced</a></li>
 	    <li class="{% block nav_pmethod %}{% endblock %}"><a href="{% url 'trans:index_pmethod' %}">Settings</a></li>
 	  </ul>

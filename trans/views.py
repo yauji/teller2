@@ -1,10 +1,12 @@
 import datetime
+from datetime import timedelta
 import json
 
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.template import loader
+from django.db.models import Sum
 from django.db.models.deletion import ProtectedError
 #from django.db import IntegrityError
 #from django.db.IntegrityError import ProtectedError
@@ -91,6 +93,73 @@ def vote(request, question_id):
         # user hits the Back button.
         return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
 """
+
+
+# show monthlyrerpot
+@login_required(login_url='/login/')
+def monthlyreport(request):
+
+    #date---
+    if 'datefrom' not in request.POST:
+        dnow = datetime.datetime.now()
+        datefrom = dnow + timedelta(weeks=-52)
+    else:
+        str_datefrom = request.POST['datefrom']
+        datefrom = datetime.datetime.strptime(str_datefrom, '%Y/%m/%d')
+    str_datefrom = datefrom.strftime('%Y/%m/%d')
+
+    if 'dateto' not in request.POST:
+        dnow = datetime.datetime.now()
+        dateto = dnow
+    else:
+        str_dateto = request.POST['dateto']
+        dateto = datetime.datetime.strptime(str_dateto, '%Y/%m/%d')
+    str_dateto = dateto.strftime('%Y/%m/%d')
+
+
+    #todo
+    alluser = True
+
+    #category--
+    category_list = get_category_list()
+
+
+    #monthly report---
+    monthlyreport_list = []
+    for year in range(datefrom.year, dateto.year + 1):
+        monthfrom = datefrom.month
+        monthto = dateto.month
+        if datefrom.year != dateto.year:
+            if year != datefrom.year:
+                monthfrom = 1
+            if year != dateto.year:
+                monthto = 12
+        for month in range(monthfrom, monthto + 1):
+            mr4months = []
+            for c in get_category_list():
+                #todo consider user
+                sum = Trans.objects.filter(category=c, date__gte=datefrom, date__lte=dateto).aggregate(Sum('expense'))
+                mr = MonthlyreportEachCateUi()
+                if sum["expense__sum"] is not None:
+                    mr.sum = sum["expense__sum"]
+                else:
+                    mr.sum = 0
+                mr4months.append(mr)
+                #print (sum)
+                
+            monthlyreport_list.append(mr4months)
+
+    #hoge
+
+    context = {
+        "datefrom":str_datefrom,
+        "dateto":str_dateto,
+        "category_list":category_list,
+        "monthlyreport_list":monthlyreport_list,
+        "alluser":alluser,
+
+    }
+    return render(request, 'trans/monthlyreport.html', context)
 
 
 # show advanced UI
@@ -404,6 +473,21 @@ def move(request):
     return render(request, 'trans/move.html', context)
 """
 
+#---methods for internal------------------------
+
+def get_category_list():
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+
+    #sort with group and order---
+    category_list = []
+    for cg in categorygroup_list:
+        clist = Category.objects.filter(group = cg).order_by('order')
+        category_list.extend(clist)
+    
+    return category_list
+    
+        
+
 
 
 
@@ -414,6 +498,10 @@ class CategoryUi(Category):
 class PmethodUi(Pmethod):
     selected = False
 
+class MonthlyreportEachCateUi():
+    sum = 0
+
+    
     
 
 
