@@ -145,7 +145,6 @@ def monthlyreport(request):
             
 
             eachCates = []
-            #hoge            
             for c in get_category_list():
                 if str(c.id) in request.POST.getlist('categorys'):
                     #todo consider user
@@ -158,7 +157,7 @@ def monthlyreport(request):
                         eachCate["sum"]  = sum["expense__sum"]
                     else:
                         eachCate["sum"]  = 0
-                        eachCates.append(eachCate)
+                    eachCates.append(eachCate)
 
             mr.yearmonth = str(year) + "/" + str(month)
             mr.dateTo = str(year) + "/" + str(month) + "/" + get_lastday(year, month)
@@ -352,7 +351,10 @@ def list(request):
         str_dateto = dateto.strftime('%Y/%m/%d')
     else:
         str_dateto = request.POST['dateto']
-        dateto = datetime.datetime.strptime(str_dateto, '%Y/%m/%d')
+        if str_dateto == '':
+            dateto = datetime.datetime.now()
+        else:
+            dateto = datetime.datetime.strptime(str_dateto, '%Y/%m/%d')
 
 
     #category--
