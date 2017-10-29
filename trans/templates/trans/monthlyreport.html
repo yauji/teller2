@@ -45,7 +45,7 @@
     <td>
       <form action="{% url 'trans:list' %}" method="post" class="form-inline">
 	{% csrf_token %}
-	{{ec.sum}}
+	{{ec.sum| intcomma }}
 
 	<!--
 	{{ mr.yearmonth |add:'/01' }}
@@ -73,7 +73,6 @@
 
 {% block exscript %}
 <script type="text/javascript" src="../static/js/trans_monthlyreport.js"></script>
-
 
 
 {% endblock exscript %}
