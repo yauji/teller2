@@ -8,6 +8,11 @@
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
+<div class="card">
+  <div class="card-body">
+    <!--
+    <h4 class="card-title">Register</h4>
+-->
 
 <form action="{% url 'trans:add' %}" method="post" class="form-inline">
     {% csrf_token %}
@@ -21,7 +26,7 @@
     <input type="number" class="form-control" id="expense" name="expense" placeholder="Enter expense">
 
     <label class="sr-only" for="inlineFormCustomSelect">Memo</label>
-    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="memo" name="memo">
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="memo" name="memo" placeholder="Enter memo">
 
     <label class="sr-only" for="inlineFormCustomSelect">Category</label>
     <select  class="custom-select mb-2 mr-sm-2 mb-sm-0" name="cg" id="cg">
@@ -73,6 +78,10 @@
   
     <button type="submit" class="btn btn-primary btn-sm">Add</button>
 </form>
+</div>
+</div>
+
+
 
 
 
