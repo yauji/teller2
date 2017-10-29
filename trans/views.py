@@ -336,6 +336,7 @@ def withdraw(request):
 @login_required(login_url='/login/')
 def list(request):
     #print(request.user)
+    #print(request.POST)
     
     if 'datefrom' not in request.POST:
         str_datefrom = '2000/01/01'
@@ -347,24 +348,42 @@ def list(request):
     datefrom = datetime.datetime.strptime(str_datefrom, '%Y/%m/%d')
 
 
+    if 'dateto' not in request.POST:
+        dateto = datetime.datetime.now()
+        str_dateto = dateto.strftime('%Y/%m/%d')
+    else:
+        str_dateto = request.POST['dateto']
+        dateto = datetime.datetime.strptime(str_dateto, '%Y/%m/%d')
+
+
     #category--
     #print(request.POST.getlist('categorys'))
 
     latest_trans_list = Trans.objects.filter(user=request.user)\
-                        .filter(date__gte=datefrom)
+                        .filter(date__gte=datefrom)\
+                        .filter(date__lte=dateto)
                         #.order_by('-date', '-id')[:100]
                         #.order_by('-date', '-id')[:100]
 
+    # for transition from monthly report (no pmehtods)
+    pmethods = []
+    if 'pmethods' in request.POST:
+        pmethods = request.POST.getlist('pmethods')
+    else:
+        pmethodall = Pmethod.objects.all()
+        for pm in pmethodall:
+            pmethods.append(str(pm.id))
 
     if 'filtered' in request.POST:
         categoryall = Category.objects.all()
         for cate in categoryall:
             if not str(cate.id) in request.POST.getlist('categorys'):
                 latest_trans_list = latest_trans_list.exclude(category=cate)
-                
+
         pmethodall = Pmethod.objects.all()
         for pm in pmethodall:
-            if not str(pm.id) in request.POST.getlist('pmethods'):
+            if not str(pm.id) in pmethods:
+            #if not str(pm.id) in request.POST.getlist('pmethods'):
                 latest_trans_list = latest_trans_list.exclude(pmethod=pm)
 
     latest_trans_list = latest_trans_list.order_by('-date', '-id')[:300]
@@ -391,7 +410,8 @@ def list(request):
             pmui.id = pm.id
             pmui.name = pm.name
             if 'filtered' in request.POST:
-                if str(pm.id) in request.POST.getlist('pmethods'):
+                if str(pm.id) in pmethods:
+                #if str(pm.id) in request.POST.getlist('pmethods'):
                     pmui.selected = True
                 else:
                     pmui.selected = False
@@ -455,6 +475,7 @@ def list(request):
                'categorygroup_list' : categorygroup_list , \
                'category_list' : category_list,\
                'datefrom' : str_datefrom,\
+               'dateto' : str_dateto,\
     }
     return render(request, 'trans/list.html', context)
 

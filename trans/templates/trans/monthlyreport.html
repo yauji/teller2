@@ -42,7 +42,25 @@
   <tr>
     <td>{{mr.yearmonth}}</td>
     {% for ec in mr.eachCates %}
-    <td>{{ec.sum}}</td>
+    <td>
+      <form action="{% url 'trans:list' %}" method="post" class="form-inline">
+	{% csrf_token %}
+	{{ec.sum}}
+	<!--
+	{{ mr.yearmonth |add:'/01' }}
+	hoge
+	  -->
+	{{ ec.category_id }}
+	<input type="hidden" name="datefrom" value="{{ mr.yearmonth |add:'/01' }}"></input>
+	<input type="hidden" name="dateto" value="{{ mr.yearmonth |add:'/31' }}"></input>
+	<input type="hidden" name="categorys" value="{{ ec.category_id }}"></input>
+
+	<input type="hidden" name="filtered" value="True"></input>
+	
+
+	<button type="submit" class="btn btn-primary btn-sm"> </button>
+      </form>
+    </td>
     {% endfor %}
   </tr>
   {% endfor %}

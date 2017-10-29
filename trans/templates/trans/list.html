@@ -15,7 +15,7 @@
   {% csrf_token %}
   
     <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="datefrom" name="datefrom"  placeholder="From yyyy/mm/dd" value="{{datefrom}}">
-    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="dateto" name="dateto"  placeholder="to yyyy/mm/dd">
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="dateto" name="dateto"  placeholder="to yyyy/mm/dd" value="{{dateto}}">
 
     <div id="category">
     Categories:
@@ -39,7 +39,7 @@
 
     <button type="submit" class="btn btn-primary btn-sm">Search</button>
 
-    <input type="hidden" name="filtered" value="False"></input>    
+    <input type="hidden" name="filtered" value="False"></input>
 </form>
 
   </div>
