@@ -58,9 +58,8 @@
     <td>
       <form action="{% url 'trans:list' %}" method="post" class="form-inline">
 	{% csrf_token %}
-	{{ec.sum| intcomma }}
-
 	<!--
+	{{ec.sum| intcomma }}
 	{{ mr.yearmonth |add:'/01' }}
 	{{ ec.category_id }}
 	  -->
@@ -73,7 +72,8 @@
 	
 
 	<button type="submit" class="btn  btn-default btn-xs">
-	<span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span></button>
+	  {{ec.sum| intcomma }}
+	<span class="glyphicon glyphicon-share-alt" aria-hidden="true">	</span></button>
       </form>
     </td>
     {% endfor %}
