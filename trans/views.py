@@ -103,19 +103,19 @@ def monthlyreport(request):
     #date---
     if 'datefrom' not in request.POST:
         dnow = datetime.datetime.now()
-        datefrom = dnow + timedelta(weeks=-52)
+        datefrom = dnow + timedelta(weeks=-13)
     else:
         str_datefrom = request.POST['datefrom']
-        datefrom = datetime.datetime.strptime(str_datefrom, '%Y/%m/%d')
-    str_datefrom = datefrom.strftime('%Y/%m/%d')
+        datefrom = datetime.datetime.strptime(str_datefrom, '%Y/%m')
+    str_datefrom = datefrom.strftime('%Y/%m')
 
     if 'dateto' not in request.POST:
         dnow = datetime.datetime.now()
         dateto = dnow
     else:
         str_dateto = request.POST['dateto']
-        dateto = datetime.datetime.strptime(str_dateto, '%Y/%m/%d')
-    str_dateto = dateto.strftime('%Y/%m/%d')
+        dateto = datetime.datetime.strptime(str_dateto, '%Y/%m')
+    str_dateto = dateto.strftime('%Y/%m')
 
 
     #todo
@@ -165,8 +165,6 @@ def monthlyreport(request):
             mr.eachCates = eachCates
                 
             monthlyreport_list.append(mr)
-
-    #hoge
 
     context = {
         "datefrom":str_datefrom,
@@ -468,8 +466,7 @@ def list(request):
         # If page is out of range (e.g. 9999), deliver last page of results.
         transs = paginator.page(paginator.num_pages)
 
-    #hoge
-    print(transs.number)
+    #print(transs.number)
         
     context = {'latest_trans_list': transs,\
                'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
@@ -483,8 +480,6 @@ def list(request):
 
 # return json
 def sum_expense(request):
-    #hoge
-
     #print(request.GET)
     #print(request.GET.getlist('ids[]'))
 
