@@ -17,6 +17,18 @@
   <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="datefrom" name="datefrom"  placeholder="From yyyy/mm/dd" value="{{datefrom}}">
   <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="dateto" name="dateto"  placeholder="to yyyy/mm/dd" value="{{dateto}}">
 
+  <!--
+      <div id="category">
+  Categories:
+  {% for c in category_list %}
+  <input type="checkbox" name="categorys" value="{{ c.id }}" {% if c.selected %}checked="checked"{% endif %}>{{c.name}}</input>
+  {% endfor %}
+  
+  <button id="ccheck" type="button" class="btn btn-outline-info btn-xs">Check</button>
+  <button id="cuncheck" type="button" class="btn btn-outline-info btn-xs">Unheck</button>
+  </div>
+    -->
+
   <div id="user">
     <input type="checkbox" name="alluser" {% if alluser %}checked="checked"{% endif %}>sum expense of all user(not implemented)</input>
   </div>
