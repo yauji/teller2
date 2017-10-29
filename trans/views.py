@@ -122,7 +122,8 @@ def monthlyreport(request):
     alluser = True
 
     #category--
-    category_list = get_category_list()
+    category_list = get_category_list_ui(request)
+    #category_list = get_category_list()
 
 
     #monthly report---
@@ -144,21 +145,20 @@ def monthlyreport(request):
             
 
             eachCates = []
-            
+            #hoge            
             for c in get_category_list():
-                #todo consider user
-                sum = Trans.objects.filter(category=c, date__gte=scfrom, date__lt=scto).aggregate(Sum('expense'))
+                if str(c.id) in request.POST.getlist('categorys'):
+                    #todo consider user
+                    sum = Trans.objects.filter(category=c, date__gte=scfrom, date__lt=scto).aggregate(Sum('expense'))
 
-                eachCate = {}
-                eachCate["category_id"] = c.id
+                    eachCate = {}
+                    eachCate["category_id"] = c.id
                 
-                if sum["expense__sum"] is not None:
-                    eachCate["sum"]  = sum["expense__sum"]
-                else:
-                    eachCate["sum"]  = 0
-                eachCates.append(eachCate)
-                #mr4months.append(mr)
-                #print (sum)
+                    if sum["expense__sum"] is not None:
+                        eachCate["sum"]  = sum["expense__sum"]
+                    else:
+                        eachCate["sum"]  = 0
+                        eachCates.append(eachCate)
 
             mr.yearmonth = str(year) + "/" + str(month)
             mr.dateTo = str(year) + "/" + str(month) + "/" + get_lastday(year, month)
@@ -421,38 +421,10 @@ def list(request):
 
     #category---
     categorygroup_list = CategoryGroup.objects.order_by('order')
+    category_list = get_category_list_ui(request)
 
-    #sort with group and order---
-    category_list = []
-    #checkbox value
-    #categorys = []
-    for cg in categorygroup_list:
-        clist = Category.objects.filter(group = cg).order_by('order')
-        #category_list.extend(clist)
-
-        for c in clist:
-            cui = CategoryUi()
-            cui.id = c.id
-            cui.name = c.name
-            if 'filtered' in request.POST:
-                if str(c.id) in request.POST.getlist('categorys'):
-                    cui.selected = True
-                else:
-                    #TODO how to unchecked checkbox..
-                    cui.selected = False
-            else:
-                cui.selected = True
-            category_list.append(cui)
-
-        """
-        for c in clist:
-            categorys.append(str(c.id))
-        """
-    """
-    if not 'filterd' in request.POST:
-        str_datefrom = ''
-    """
-
+    
+    #--
     paginator = Paginator(latest_trans_list, 50)
 
     page = request.GET.get('page')
@@ -518,6 +490,34 @@ def get_category_list():
         category_list.extend(clist)
     
     return category_list
+
+def get_category_list_ui(request):
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+
+    #sort with group and order---
+    category_list = []
+    #checkbox value
+    #categorys = []
+    for cg in categorygroup_list:
+        clist = Category.objects.filter(group = cg).order_by('order')
+        #category_list.extend(clist)
+
+        for c in clist:
+            cui = CategoryUi()
+            cui.id = c.id
+            cui.name = c.name
+            if 'filtered' in request.POST:
+                if str(c.id) in request.POST.getlist('categorys'):
+                    cui.selected = True
+                else:
+                    #TODO how to unchecked checkbox..
+                    cui.selected = False
+            else:
+                cui.selected = True
+            category_list.append(cui)
+
+    return category_list
+    
 
 
 def get_lastday(year, month):
