@@ -161,6 +161,7 @@ def monthlyreport(request):
                 #print (sum)
 
             mr.yearmonth = str(year) + "/" + str(month)
+            mr.dateTo = str(year) + "/" + str(month) + "/" + get_lastday(year, month)
             mr.eachCates = eachCates
                 
             monthlyreport_list.append(mr)
@@ -522,9 +523,14 @@ def get_category_list():
         category_list.extend(clist)
     
     return category_list
-    
-        
 
+
+def get_lastday(year, month):
+    ym = datetime.datetime(year, month, 1, 0, 0, 0)
+    ym += relativedelta(months=1)
+    ym += relativedelta(days=-1)
+
+    return str(ym.day)
 
 
 
@@ -541,7 +547,9 @@ class MonthlyreportEachMonthUi():
     eachCates = []
 
     # for display
-    yearmonth = "xxx"
+    yearmonth = "yyyy/mm"
+    # for transition to list view
+    dateTo = "yyyy/mm/dd"
 
     
     

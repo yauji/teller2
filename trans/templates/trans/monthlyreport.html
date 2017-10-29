@@ -48,11 +48,11 @@
 	{{ec.sum}}
 	<!--
 	{{ mr.yearmonth |add:'/01' }}
-	hoge
-	  -->
 	{{ ec.category_id }}
+	  -->
+	
 	<input type="hidden" name="datefrom" value="{{ mr.yearmonth |add:'/01' }}"></input>
-	<input type="hidden" name="dateto" value="{{ mr.yearmonth |add:'/31' }}"></input>
+	<input type="hidden" name="dateto" value="{{ mr.dateTo }}"></input>
 	<input type="hidden" name="categorys" value="{{ ec.category_id }}"></input>
 
 	<input type="hidden" name="filtered" value="True"></input>
