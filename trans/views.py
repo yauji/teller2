@@ -1,5 +1,6 @@
 import datetime
 from datetime import timedelta
+from dateutil.relativedelta import relativedelta
 import json
 
 from django.shortcuts import get_object_or_404, render, redirect
@@ -135,19 +136,34 @@ def monthlyreport(request):
             if year != dateto.year:
                 monthto = 12
         for month in range(monthfrom, monthto + 1):
-            mr4months = []
+            #mr4months = []
+            mr = MonthlyreportEachMonthUi()
+
+            scfrom = datetime.datetime(year, month, 1,0,0,0)
+            scto = scfrom + relativedelta(months=1)
+            
+
+            eachCates = []
+            
             for c in get_category_list():
                 #todo consider user
-                sum = Trans.objects.filter(category=c, date__gte=datefrom, date__lte=dateto).aggregate(Sum('expense'))
-                mr = MonthlyreportEachCateUi()
-                if sum["expense__sum"] is not None:
-                    mr.sum = sum["expense__sum"]
-                else:
-                    mr.sum = 0
-                mr4months.append(mr)
-                #print (sum)
+                sum = Trans.objects.filter(category=c, date__gte=scfrom, date__lt=scto).aggregate(Sum('expense'))
+
+                eachCate = {}
+                eachCate["category_id"] = c.id
                 
-            monthlyreport_list.append(mr4months)
+                if sum["expense__sum"] is not None:
+                    eachCate["sum"]  = sum["expense__sum"]
+                else:
+                    eachCate["sum"]  = 0
+                eachCates.append(eachCate)
+                #mr4months.append(mr)
+                #print (sum)
+
+            mr.yearmonth = str(year) + "/" + str(month)
+            mr.eachCates = eachCates
+                
+            monthlyreport_list.append(mr)
 
     #hoge
 
@@ -498,8 +514,13 @@ class CategoryUi(Category):
 class PmethodUi(Pmethod):
     selected = False
 
-class MonthlyreportEachCateUi():
-    sum = 0
+class MonthlyreportEachMonthUi():
+    # list of dictionary
+    #sum, cateid for each categories
+    eachCates = []
+
+    # for display
+    yearmonth = "xxx"
 
     
     

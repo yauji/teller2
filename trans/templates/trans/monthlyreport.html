@@ -40,9 +40,9 @@
 
   {% for mr in monthlyreport_list %}
   <tr>
-    <td>xx</td>
-    {% for mrc in mr %}
-    <td>{{mrc.sum}}</td>
+    <td>{{mr.yearmonth}}</td>
+    {% for ec in mr.eachCates %}
+    <td>{{ec.sum}}</td>
     {% endfor %}
   </tr>
   {% endfor %}
