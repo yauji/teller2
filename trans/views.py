@@ -393,32 +393,10 @@ def list(request):
                 
 
     
-    #pmethod
+    #pmethod--
     pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
-
     #sort with group and order---
-    pmethod_list = []
-    """
-    for pmg in pmgroup_list:
-        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
-        pmethod_list.extend(pmlist)
-    """
-    for pmg in pmgroup_list:
-        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
-
-        for pm in pmlist:
-            pmui = PmethodUi()
-            pmui.id = pm.id
-            pmui.name = pm.name
-            if 'filtered' in request.POST:
-                if str(pm.id) in pmethods:
-                #if str(pm.id) in request.POST.getlist('pmethods'):
-                    pmui.selected = True
-                else:
-                    pmui.selected = False
-            else:
-                pmui.selected = True
-            pmethod_list.append(pmui)
+    pmethod_list = get_pmethod_list_ui(request)
     
 
     #category---
@@ -481,6 +459,36 @@ def move(request):
 """
 
 #---methods for internal------------------------
+def get_pmethod_list_ui(request):
+    pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
+    pmethod_list = []
+    """
+    for pmg in pmgroup_list:
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
+        pmethod_list.extend(pmlist)
+    """
+    for pmg in pmgroup_list:
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
+
+        first = True
+        for pm in pmlist:
+            pmui = PmethodUi()
+            pmui.id = pm.id
+            pmui.name = pm.name
+            pmui.group = pm.group
+            pmui.first_in_group = first
+            first = False
+            if 'filtered' in request.POST:
+                if str(pm.id) in pmethods:
+                #if str(pm.id) in request.POST.getlist('pmethods'):
+                    pmui.selected = True
+                else:
+                    pmui.selected = False
+            else:
+                pmui.selected = True
+            pmethod_list.append(pmui)
+    
+    return pmethod_list
 
 def get_category_list():
     categorygroup_list = CategoryGroup.objects.order_by('order')
@@ -504,10 +512,15 @@ def get_category_list_ui(request):
         clist = Category.objects.filter(group = cg).order_by('order')
         #category_list.extend(clist)
 
+        #for list filter. first item in each group
+        first = True
         for c in clist:
             cui = CategoryUi()
             cui.id = c.id
             cui.name = c.name
+            cui.group = c.group
+            cui.first_in_group = first
+            first = False
             if 'filtered' in request.POST:
                 if str(c.id) in request.POST.getlist('categorys'):
                     cui.selected = True
@@ -534,9 +547,11 @@ def get_lastday(year, month):
 
 class CategoryUi(Category):
     selected = False
+    first_in_group = False
 
 class PmethodUi(Pmethod):
     selected = False
+    first_in_group = False
 
 class MonthlyreportEachMonthUi():
     # list of dictionary
