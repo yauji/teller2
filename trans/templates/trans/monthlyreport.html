@@ -49,6 +49,9 @@
     <th>{{c.name}}</th>
     {% endif %}
     {% endfor %}
+    <th>expense</th>
+    <th>income</th>
+    <th>total</th>
   </tr>
 
   {% for mr in monthlyreport_list %}
@@ -77,6 +80,9 @@
       </form>
     </td>
     {% endfor %}
+    <td>{{mr.totalexpense| intcomma}}</td>
+    <td>{{mr.totalincome| intcomma}}</td>
+    <td>{{mr.total| intcomma}}</td>
   </tr>
   {% endfor %}
 </table>

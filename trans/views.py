@@ -142,8 +142,25 @@ def monthlyreport(request):
 
             scfrom = datetime.datetime(year, month, 1,0,0,0)
             scto = scfrom + relativedelta(months=1)
+
+            # sum total for each month---
+            expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0).aggregate(Sum('expense'))
+            if expense["expense__sum"] is not None:
+                mr.totalexpense = expense["expense__sum"]
+            else:
+                mr.totalexpense = 0
+                
+            income = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__lt=0).aggregate(Sum('expense'))
+            if income["expense__sum"] is not None:
+                mr.totalincome = income["expense__sum"] * -1
+            else:
+                mr.totalincome = 0
+
+            mr.total = mr.totalincome - mr.totalexpense
+
             
 
+            #
             eachCates = []
             for c in get_category_list():
                 if str(c.id) in request.POST.getlist('categorys'):
@@ -528,7 +545,8 @@ def get_category_list_ui(request):
                     #TODO how to unchecked checkbox..
                     cui.selected = False
             else:
-                cui.selected = True
+                cui.selected = False
+                #cui.selected = True
             category_list.append(cui)
 
     return category_list
@@ -562,6 +580,10 @@ class MonthlyreportEachMonthUi():
     yearmonth = "yyyy/mm"
     # for transition to list view
     dateTo = "yyyy/mm/dd"
+
+    totalexpense = 0
+    totalincome = 0
+    total = 0
 
     
     
