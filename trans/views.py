@@ -143,8 +143,10 @@ def monthlyreport(request):
             scfrom = datetime.datetime(year, month, 1,0,0,0)
             scto = scfrom + relativedelta(months=1)
 
+            
             # sum total for each month---
             expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0).aggregate(Sum('expense'))
+            #hoge
             if expense["expense__sum"] is not None:
                 mr.totalexpense = expense["expense__sum"]
             else:
@@ -413,7 +415,7 @@ def list(request):
     #pmethod--
     pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
     #sort with group and order---
-    pmethod_list = get_pmethod_list_ui(request)
+    pmethod_list = get_pmethod_list_ui(request, pmethods)
     
 
     #category---
@@ -476,7 +478,7 @@ def move(request):
 """
 
 #---methods for internal------------------------
-def get_pmethod_list_ui(request):
+def get_pmethod_list_ui(request, pmethods):
     pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
     pmethod_list = []
     """
