@@ -145,14 +145,14 @@ def monthlyreport(request):
 
             
             # sum total for each month---
-            expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0).aggregate(Sum('expense'))
+            expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0, fclearance=False).aggregate(Sum('expense'))
             #hoge
             if expense["expense__sum"] is not None:
                 mr.totalexpense = expense["expense__sum"]
             else:
                 mr.totalexpense = 0
                 
-            income = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__lt=0).aggregate(Sum('expense'))
+            income = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__lt=0, fclearance=False).aggregate(Sum('expense'))
             if income["expense__sum"] is not None:
                 mr.totalincome = income["expense__sum"] * -1
             else:
