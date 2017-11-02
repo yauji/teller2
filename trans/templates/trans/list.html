@@ -106,7 +106,8 @@ sum;
 	<th>(User)</th>
 	<th>(share type)</th>
 	<th>(user pay4)</th>
-	<th>(clearanced)</th>
+	<th>(include balance)</th>
+	<th>(include monthly sum)</th>
       </tr>
       {% for trans in latest_trans_list %}
       <tr>
@@ -122,7 +123,8 @@ sum;
 	<td>{{ trans.user }}</td>
 	<td>{{ trans.share_type }}</td>
 	<td>{{ trans.user_pay4 }}</td>
-	<td>{{ trans.fclearance }}</td>
+	<td>{{ trans.includebalance }}</td>
+	<td>{{ trans.includemonthlysum }}</td>	
       </tr>
       {% endfor %}
   </table>
