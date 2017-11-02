@@ -145,14 +145,14 @@ def monthlyreport(request):
 
             
             # sum total for each month---
-            expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0, fclearance=False).aggregate(Sum('expense'))
+            expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0, includemonthlysum=True).aggregate(Sum('expense'))
             #hoge
             if expense["expense__sum"] is not None:
                 mr.totalexpense = expense["expense__sum"]
             else:
                 mr.totalexpense = 0
                 
-            income = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__lt=0, fclearance=False).aggregate(Sum('expense'))
+            income = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__lt=0, includemonthlysum=Trans).aggregate(Sum('expense'))
             if income["expense__sum"] is not None:
                 mr.totalincome = income["expense__sum"] * -1
             else:
@@ -313,7 +313,7 @@ def withdraw(request):
         transs = []
         for tid in request.POST.getlist('tids'):
             trans = Trans.objects.get(pk=tid)
-            if trans.fclearance :
+            if not trans.includebalance :
                 context = {'error_message': str(trans.id) + ' is already cleared.'}
                 return render(request, 'trans/message.html', context)
                 
@@ -321,7 +321,7 @@ def withdraw(request):
 
         sum = 0
         for trans in transs:
-            trans.fclearance = True
+            trans.includebalance = False
             trans.save()
             update_balance(trans)
 
@@ -337,6 +337,7 @@ def withdraw(request):
                   user=request.user, \
                   share_type=SHARE_TYPES_OWN,\
                   user_pay4=None,\
+                      includemonthlysum=False,\
         )
         trans.save()
         update_balance(trans)
@@ -611,7 +612,7 @@ def update_balance_para(pmethod, user, date):
 
     for t in transs:
         #print(t.name)
-        if not t.fclearance :
+        if t.includebalance :
             t.balance = prevBalance - t.expense
         else:
             t.balance = prevBalance

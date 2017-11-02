@@ -50,8 +50,11 @@ class Trans(models.Model):
     user_pay4 = models.ForeignKey(User, on_delete=models.PROTECT, related_name='+', null=True)
 
     # Is it already clearance
-    fclearance = models.BooleanField(default=False)
+    #fclearance = models.BooleanField(default=False)
     #fClearance = models.BooleanField(default=False)
+
+    includebalance = models.BooleanField(default=True)
+    includemonthlysum = models.BooleanField(default=True)
 
 
 
