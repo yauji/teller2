@@ -123,8 +123,6 @@ def monthlyreport(request):
 
     #category--
     category_list = get_category_list_ui(request)
-    #category_list = get_category_list()
-
 
     #monthly report---
     monthlyreport_list = []
@@ -146,7 +144,7 @@ def monthlyreport(request):
             
             # sum total for each month---
             expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0, includemonthlysum=True).aggregate(Sum('expense'))
-            #hoge
+
             if expense["expense__sum"] is not None:
                 mr.totalexpense = expense["expense__sum"]
             else:

@@ -157,6 +157,34 @@ class TransTestCase2(TestCase):
         Category.objects.create(group=cg, name='withdraw', id=C_WITHDRAW_ID)
 
 
+    def add_trans1(self, c, pms, cs):
+        #1st trans---
+        response = c.post('/t/add', {'date': '2017/01/01', 'name': 'item1',\
+                                     'c':cs[0].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':100,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        #print(response.content)
+        self.assertEqual(response.status_code, 302)
+
+        #2nd trans---
+        print("item2--")
+        response = c.post('/t/add', {'date': '2017/01/03', 'name': 'item2',\
+                                     'c':cs[1].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':50,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+        
+        
+
+    #add---------
     def test_add_ok01(self):
         c = Client()
         c.login(username=USER, password=PASS)
@@ -503,13 +531,21 @@ class TransTestCase2(TestCase):
             pmui.selected = True
             pmui_list.append(pmui)
 
+            
         cui_list = []
-        for c in cs:
-            cui = CategoryUi()
-            cui.id = c.id
-            cui.name = c.name
-            cui.selected = True
-            cui_list.append(cui)
+        for cg in cgs:
+            clist = Category.objects.filter(group = cg).order_by('order')
+
+            first = True
+            for c in clist:
+                cui = CategoryUi()
+                cui.id = c.id
+                cui.name = c.name
+                cui.group = c.group
+                cui.first_in_group = first
+                first = False
+                cui.selected = True
+                cui_list.append(cui)
 
         expected_html = render_to_string('trans/list.html',\
                                  {'request.user': 'admin',\
@@ -519,6 +555,7 @@ class TransTestCase2(TestCase):
                                   'categorygroup_list' : cgs , \
                                   'category_list' : cui_list,\
                                   'datefrom' : '2000/01/01',\
+                                  'dateto' : '2017/11/03',\
                                  })
 
         #print(expected_html)
@@ -530,7 +567,6 @@ class TransTestCase2(TestCase):
 
 
     def test_sum_expense_ok01(self):
-        #hoge
         c = Client()
         c.login(username=USER, password=PASS)
 
@@ -579,6 +615,32 @@ class TransTestCase2(TestCase):
         #print(dec['sum'])
         self.assertEqual(dec['sum'], 150)
 
+
+    # monthly report-----------------
+    def test_mr_ok01(self):
+        c = Client()
+        c.login(username=USER, password=PASS)
+
+        pms = Pmethod.objects.all()
+        #print(pms)
+        cs = Category.objects.all()
+
+        self.add_trans1(c, pms, cs)
+
+        response = c.get('/t/monthlyreport')
+        self.assertEqual(response.status_code, 200)
+
+
+        # list method (actual)---
+        req = response.wsgi_request
+        res = views.monthlyreport(req)
+        #print(res)
+
+        # how to check output...
+
+
+
+        
         
 
 
@@ -597,6 +659,9 @@ class TransTestCase2(TestCase):
             self.remove_csrf(html_code1),
             self.remove_csrf(html_code2)
         )
+
+
+
 
         
 
