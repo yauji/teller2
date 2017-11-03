@@ -377,7 +377,6 @@ def list(request):
 
     #category--
     #print(request.POST.getlist('categorys'))
-
     latest_trans_list = Trans.objects.filter(user=request.user)\
                         .filter(date__gte=datefrom)\
                         .filter(date__lte=dateto)
@@ -546,8 +545,7 @@ def get_category_list_ui(request):
                     #TODO how to unchecked checkbox..
                     cui.selected = False
             else:
-                cui.selected = False
-                #cui.selected = True
+                cui.selected = True
             category_list.append(cui)
 
     return category_list
