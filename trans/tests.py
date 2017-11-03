@@ -141,7 +141,7 @@ class TransTestCase2(TestCase):
         self.user = User.objects.create_user(username='test1', email='test@test.com',\
                                              password='password')
 
-        pmg = PmethodGroup.objects.create(name='pmg1', user=self.user)
+        pmg = PmethodGroup.objects.create(name='pmg1', user=self.user, order=1)
         Pmethod.objects.create(group=pmg, name='pm1')
         Pmethod.objects.create(group=pmg, name='pm12')
 
