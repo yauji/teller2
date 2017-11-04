@@ -425,7 +425,7 @@ def list(request):
     paginator = Paginator(latest_trans_list, 50)
 
     page = request.GET.get('page')
-    print(page)
+    #print(page)
     try:
         transs = paginator.page(page)
     except PageNotAnInteger:

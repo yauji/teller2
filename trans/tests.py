@@ -1,3 +1,4 @@
+import datetime
 import json
 import re
 
@@ -7,6 +8,7 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.http.request import HttpRequest
 from django.template import RequestContext
 from django.template.loader import render_to_string
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from trans.models import PmethodGroup, Pmethod, CategoryGroup, Category, Trans
 from trans.views import CategoryUi
@@ -142,19 +144,19 @@ class TransTestCase2(TestCase):
                                              password='password')
 
         pmg = PmethodGroup.objects.create(name='pmg1', user=self.user, order=1)
-        Pmethod.objects.create(group=pmg, name='pm1')
-        Pmethod.objects.create(group=pmg, name='pm12')
+        Pmethod.objects.create(group=pmg, name='pm1', order=1)
+        Pmethod.objects.create(group=pmg, name='pm12', order=2)
 
-        pmg = PmethodGroup.objects.create(name='pmg2', user=self.user)
-        Pmethod.objects.create(group=pmg, name='pm21')
+        pmg = PmethodGroup.objects.create(name='pmg2', user=self.user, order=2)
+        Pmethod.objects.create(group=pmg, name='pm21', order=1)
 
-        cg = CategoryGroup.objects.create(name='cg1')
-        Category.objects.create(group=cg, name='c1')
-        Category.objects.create(group=cg, name='c12')
+        cg = CategoryGroup.objects.create(name='cg1', order=1)
+        Category.objects.create(group=cg, name='c1', order=1)
+        Category.objects.create(group=cg, name='c12', order=2)
 
-        cg = CategoryGroup.objects.create(name='cg2')
-        Category.objects.create(group=cg, name='move', id=C_MOVE_ID)
-        Category.objects.create(group=cg, name='withdraw', id=C_WITHDRAW_ID)
+        cg = CategoryGroup.objects.create(name='cg2', order=2)
+        Category.objects.create(group=cg, name='move', id=C_MOVE_ID, order=1)
+        Category.objects.create(group=cg, name='withdraw', id=C_WITHDRAW_ID, order=2)
 
 
     def add_trans1(self, c, pms, cs):
@@ -487,7 +489,8 @@ class TransTestCase2(TestCase):
         
     def test_list_ok01(self):
         c = Client()
-        c.login(username=USER, password=PASS)
+        c.login(username='test1', password='password')
+        #c.login(username=USER, password=PASS)
 
         pms = Pmethod.objects.all()
         #print(pms)
@@ -514,24 +517,39 @@ class TransTestCase2(TestCase):
 
         # list method (actual)---
         req = response.wsgi_request
+        self.user.username=''
+        req.user = self.user
         res = views.list(req)
         #print(res.content)
 
 
         # get expected html--
         latest_trans_list = Trans.objects.all()
-        pmgs = PmethodGroup.objects.all()
+        paginator = Paginator(latest_trans_list, 50)
+        transs = paginator.page(1)
+            
+        pmgs = PmethodGroup.objects.filter(user=self.user).order_by('order')
+        #pmgs = PmethodGroup.objects.filter(user=self.user)all()
         cgs = CategoryGroup.objects.all()
 
+        #pm
         pmui_list = []
-        for pm in pms:
-            pmui = PmethodUi()
-            pmui.id = pm.id
-            pmui.name = pm.name
-            pmui.selected = True
-            pmui_list.append(pmui)
+        for pmg in pmgs:
+            pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
 
-            
+            first = True
+            for pm in pmlist:
+                pmui = PmethodUi()
+                pmui.id = pm.id
+                pmui.name = pm.name
+                pmui.group = pm.group
+                pmui.first_in_group = first
+                first = False
+                pmui.selected = True
+                pmui_list.append(pmui)
+
+
+        #category
         cui_list = []
         for cg in cgs:
             clist = Category.objects.filter(group = cg).order_by('order')
@@ -547,15 +565,20 @@ class TransTestCase2(TestCase):
                 cui.selected = True
                 cui_list.append(cui)
 
+        #date
+        dateto = datetime.datetime.now()
+        str_dateto = dateto.strftime('%Y/%m/%d')
+
+                
         expected_html = render_to_string('trans/list.html',\
                                  {'request.user': 'admin',\
-                                  'latest_trans_list': latest_trans_list,\
+                                  'latest_trans_list': transs,\
                                   'pmethod_list': pmui_list,\
                                   'pmgroup_list': pmgs, \
                                   'categorygroup_list' : cgs , \
                                   'category_list' : cui_list,\
                                   'datefrom' : '2000/01/01',\
-                                  'dateto' : '2017/11/03',\
+                                  'dateto' : str_dateto,\
                                  })
 
         #print(expected_html)
