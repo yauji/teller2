@@ -62,7 +62,7 @@
     <td>{{mr.yearmonth}}</td>
     {% for ec in mr.eachCates %}
     <td>
-      <form action="{% url 'trans:list' %}" method="post" class="form-inline">
+      <form action="{% url 'trans:list' %}" method="post" class="form-inline"  target="_blank">
 	{% csrf_token %}
 	<!--
 	{{ec.sum| intcomma }}
