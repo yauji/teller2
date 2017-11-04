@@ -14,6 +14,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from trans.models import PmethodGroup, Pmethod, CategoryGroup, Category, Trans
 from trans.views import CategoryUi
 from trans.views import PmethodUi
+from trans.views import MonthlyreportEachMonthUi
+
 
 from . import views
 #from trans.views import CategoryUi
@@ -653,7 +655,7 @@ class TransTestCase2(TestCase):
 
         response = c.post('/t/monthlyreport',\
                           {\
-                           'datefrom': '2017/05', 'dateto': '2017/06',\
+                           'datefrom': '2017/01', 'dateto': '2017/03',\
         })
         self.assertEqual(response.status_code, 200)
 
@@ -664,6 +666,8 @@ class TransTestCase2(TestCase):
         req.user = self.user
         res = views.monthlyreport(req)
         #print(res)
+
+
 
 
         #expected--------
@@ -686,27 +690,58 @@ class TransTestCase2(TestCase):
                 cui_list.append(cui)
 
         #date---
+        """
         dateto = datetime.datetime.now()
         str_dateto = dateto.strftime('%Y/%m')
         datefrom = dateto  + timedelta(weeks=-13)
         str_datefrom = datefrom.strftime('%Y/%m')
+        """
 
 
         #monthly report list----
         monthlyreport_list = []
+
+        #2017/01
+        mr = MonthlyreportEachMonthUi()
+        mr.totalexpense = 150
+        mr.totalincome = 0
+        mr.total = mr.totalincome - mr.totalexpense
+
+        mr.yearmonth = '2017/1'
+        monthlyreport_list.append(mr)
+        
+        #2017/02
+        mr = MonthlyreportEachMonthUi()
+        mr.totalexpense = 0
+        mr.totalincome = 0
+        mr.total = mr.totalincome - mr.totalexpense
+
+        mr.yearmonth = '2017/2'
+        monthlyreport_list.append(mr)
+        
+        #2017/03
+        mr = MonthlyreportEachMonthUi()
+        mr.totalexpense = 0
+        mr.totalincome = 0
+        mr.total = mr.totalincome - mr.totalexpense
+
+        mr.yearmonth = '2017/3'
+        monthlyreport_list.append(mr)
+        
+        
         
 
         expected_html = render_to_string('trans/monthlyreport.html',\
                                  {'request.user': 'admin',\
                                   'category_list' : cui_list,\
-                                  'datefrom' : str_datefrom,\
-                                  'dateto' : str_dateto,\
+                                  'datefrom' : '2017/01',\
+                                  'dateto' : '2017/03',\
                                   'alluser' : True,\
                                   'monthlyreport_list' : monthlyreport_list,\
                                  })
 
-        print(res.content.decode())
-        #print(expected_html)
+        #print(res.content.decode())
+        print(expected_html)
         #hoge
         
         self.assertEqualExceptCSRF(res.content.decode(), expected_html)
