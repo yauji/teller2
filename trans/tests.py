@@ -176,11 +176,46 @@ class TransTestCase2(TestCase):
         self.assertEqual(response.status_code, 302)
 
         #2nd trans---
-        print("item2--")
+        #print("item2--")
         response = c.post('/t/add', {'date': '2017/01/03', 'name': 'item2',\
                                      'c':cs[1].id,\
                                      'pm':pms[0].id,\
                                      'expense':50,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+        
+        
+    def add_trans2(self, c, pms, cs):
+        #1st trans---
+        response = c.post('/t/add', {'date': '2017/01/01', 'name': 'item1',\
+                                     'c':cs[0].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':100,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+
+        #2nd trans---
+        response = c.post('/t/add', {'date': '2017/01/31', 'name': 'item2',\
+                                     'c':cs[1].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':50,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+        
+        #3rd trans---
+        response = c.post('/t/add', {'date': '2017/01/31', 'name': 'item2',\
+                                     'c':cs[0].id,\
+                                     'pm':pms[1].id,\
+                                     'expense':3,\
                                      'memo':'memo1',\
                                      'share_type':1,\
                                      'user_pay4':'',\
@@ -651,7 +686,7 @@ class TransTestCase2(TestCase):
         #print(pms)
         cs = Category.objects.all()
 
-        self.add_trans1(c, pms, cs)
+        self.add_trans2(c, pms, cs)
 
         response = c.post('/t/monthlyreport',\
                           {\
@@ -727,7 +762,6 @@ class TransTestCase2(TestCase):
 
         mr.yearmonth = '2017/3'
         monthlyreport_list.append(mr)
-        
         
         
 
