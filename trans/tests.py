@@ -212,10 +212,21 @@ class TransTestCase2(TestCase):
         self.assertEqual(response.status_code, 302)
         
         #3rd trans---
-        response = c.post('/t/add', {'date': '2017/01/31', 'name': 'item2',\
+        response = c.post('/t/add', {'date': '2017/02/01', 'name': 'item3',\
                                      'c':cs[0].id,\
                                      'pm':pms[1].id,\
                                      'expense':3,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+        
+        #4th trans---
+        response = c.post('/t/add', {'date': '2017/02/28', 'name': 'item4',\
+                                     'c':cs[0].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':-10,\
                                      'memo':'memo1',\
                                      'share_type':1,\
                                      'user_pay4':'',\
@@ -747,8 +758,8 @@ class TransTestCase2(TestCase):
         
         #2017/02
         mr = MonthlyreportEachMonthUi()
-        mr.totalexpense = 0
-        mr.totalincome = 0
+        mr.totalexpense = 3
+        mr.totalincome = 10
         mr.total = mr.totalincome - mr.totalexpense
 
         mr.yearmonth = '2017/2'
@@ -775,8 +786,7 @@ class TransTestCase2(TestCase):
                                  })
 
         #print(res.content.decode())
-        print(expected_html)
-        #hoge
+        #print(expected_html)
         
         self.assertEqualExceptCSRF(res.content.decode(), expected_html)
 
