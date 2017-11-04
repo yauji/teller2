@@ -99,6 +99,7 @@ def vote(request, question_id):
 # show monthlyrerpot
 @login_required(login_url='/login/')
 def monthlyreport(request):
+    print (request)
 
     #date---
     if 'datefrom' not in request.POST:

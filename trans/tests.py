@@ -1,4 +1,5 @@
 import datetime
+from datetime import timedelta
 import json
 import re
 
@@ -571,7 +572,7 @@ class TransTestCase2(TestCase):
 
                 
         expected_html = render_to_string('trans/list.html',\
-                                 {'request.user': 'admin',\
+                                 {'request.user': 'test1',\
                                   'latest_trans_list': transs,\
                                   'pmethod_list': pmui_list,\
                                   'pmgroup_list': pmgs, \
@@ -642,7 +643,7 @@ class TransTestCase2(TestCase):
     # monthly report-----------------
     def test_mr_ok01(self):
         c = Client()
-        c.login(username=USER, password=PASS)
+        c.login(username='test1', password='password')
 
         pms = Pmethod.objects.all()
         #print(pms)
@@ -650,16 +651,66 @@ class TransTestCase2(TestCase):
 
         self.add_trans1(c, pms, cs)
 
-        response = c.get('/t/monthlyreport')
+        response = c.post('/t/monthlyreport',\
+                          {\
+                           'datefrom': '2017/05', 'dateto': '2017/06',\
+        })
         self.assertEqual(response.status_code, 200)
 
 
         # list method (actual)---
         req = response.wsgi_request
+        self.user.username=''
+        req.user = self.user
         res = views.monthlyreport(req)
         #print(res)
 
-        # how to check output...
+
+        #expected--------
+        #category
+        cgs = CategoryGroup.objects.all()
+
+        cui_list = []
+        for cg in cgs:
+            clist = Category.objects.filter(group = cg).order_by('order')
+
+            first = True
+            for c in clist:
+                cui = CategoryUi()
+                cui.id = c.id
+                cui.name = c.name
+                cui.group = c.group
+                cui.first_in_group = first
+                first = False
+                cui.selected = True
+                cui_list.append(cui)
+
+        #date---
+        dateto = datetime.datetime.now()
+        str_dateto = dateto.strftime('%Y/%m')
+        datefrom = dateto  + timedelta(weeks=-13)
+        str_datefrom = datefrom.strftime('%Y/%m')
+
+
+        #monthly report list----
+        monthlyreport_list = []
+        
+
+        expected_html = render_to_string('trans/monthlyreport.html',\
+                                 {'request.user': 'admin',\
+                                  'category_list' : cui_list,\
+                                  'datefrom' : str_datefrom,\
+                                  'dateto' : str_dateto,\
+                                  'alluser' : True,\
+                                  'monthlyreport_list' : monthlyreport_list,\
+                                 })
+
+        print(res.content.decode())
+        #print(expected_html)
+        #hoge
+        
+        self.assertEqualExceptCSRF(res.content.decode(), expected_html)
+
 
 
 
