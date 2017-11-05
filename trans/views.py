@@ -3,6 +3,7 @@ from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 import json
 
+from django import forms
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
@@ -465,16 +466,67 @@ def sum_expense(request):
     return HttpResponse(jsonstring)
 
 
+#--- suica ----
+class UploadFileForm(forms.Form):
+    title = forms.CharField(max_length=50)
+    file = forms.FileField()
+
+    #hoge
+
+def suica_upload(request):
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        print (request.FILES['file'])
+        f = request.FILES['file']
+        """
+        contents = ''
+        for l in f.readlines():
+            print(l)
+            contents += l
+        context = {'contents': contents,\
+                   }
+        return render(request, 'trans/suica_upload.html', context)
+        """
+        """
+        for chunk in f.chunks():
+            print(chunk)
+        """
+
+        with open('tmp_suica.txt', 'wb+') as destination:
+            for chunk in f.chunks():
+                destination.write(chunk)
+
+        f = open('tmp_suica.txt', 'r')
+        contents = ''
+        for l in f.readlines():
+            contents += l
+        f.close()
+        context = {'contents': contents,\
+                   }
+        return render(request, 'trans/suica_upload.html', context)
+        
+        
+        #handle_uploaded_suica(request.FILES['file'])
+        #return render(request, 'trans/suica_upload.html')
+
+        if form.is_valid():
+            handle_uploaded_suica(request.FILES['file'])
+            return render(request, 'trans/suica_upload.html')
+            #return HttpResponseRedirect('/success/url/')
+        else:
+            form = UploadFileForm()
+            return render(request, 'upload.html', {'form': form})
+    else:
+        return render(request, 'trans/suica_upload.html')
+
+def handle_uploaded_suica(f):
+    with open('suica/tmp.txt', 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+        
 
 
-"""
-@login_required(login_url='/login/')
-def move(request):
 
-    context = {
-    }
-    return render(request, 'trans/move.html', context)
-"""
 
 #---methods for internal------------------------
 def get_pmethod_list_ui(request, pmethods):

@@ -18,6 +18,10 @@ urlpatterns = [
     # for ajax
     url(r'^sum_expense$', views.sum_expense, name='sum_expense'),
 
+    # suica
+    url(r'^suica_upload$', views.suica_upload, name='suica_upload'),
+    
+
     #pmethod
     url(r'^pmethod$', views.index_pmethod, name='index_pmethod'),
     url(r'^pmethod/add$', views.add_pmethod, name='add_pmethod'),
