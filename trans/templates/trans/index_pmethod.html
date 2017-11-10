@@ -113,6 +113,7 @@
 	| <a href="{% url 'trans:delete_categorygroup' cg.id %}">Delete</a>
 	| <a href="{% url 'trans:up_categorygroup' cg.id %}">Up</a>
       </td>
+      <td>{{ cg.id }}</td>
     </tr>
     </tbody>
     {% endfor %}
@@ -156,6 +157,7 @@
 	| <a href="{% url 'trans:delete_category' c.id %}">Delete</a>
 	| <a href="{% url 'trans:up_category' c.id %}">Up</a>
       </td>
+      <td>{{ c.id }}</td>
     </tr>
   </tbody>
   {% endfor %}
