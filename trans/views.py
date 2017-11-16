@@ -35,12 +35,6 @@ def index(request):
         pmg = pmgroup_list[0]
         pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
         pmethod_list.extend(pmlist)
-    """
-    for pmg in pmgroup_list:
-        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
-        pmethod_list.extend(pmlist)
-    """
-
 
 
     #category---
@@ -52,7 +46,8 @@ def index(request):
         cg = categorygroup_list[0]
         clist = Category.objects.filter(group = cg).order_by('order')
         category_list.extend(clist)
-    
+
+
     context = {'latest_trans_list': latest_trans_list,\
                'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
                'categorygroup_list' : categorygroup_list , \
@@ -60,35 +55,6 @@ def index(request):
     }
     return render(request, 'trans/index.html', context)
 
-"""
-def detail(request, question_id):
-    return HttpResponse("You're looking at question %s." % question_id)
-
-def results(request, question_id):
-    #response = "You're looking at the results of question %s."
-    #return HttpResponse(response % question_id)
-    question = get_object_or_404(Question, pk=question_id)
-    return render(request, 'polls/results.html', {'question': question})
-
-def vote(request, question_id):
-    #return HttpResponse("You're voting on question %s." % question_id)
-    question = get_object_or_404(Question, pk=question_id)
-    try:
-        selected_choice = question.choice_set.get(pk=request.POST['choice'])
-    except (KeyError, Choice.DoesNotExist):
-        # Redisplay the question voting form.
-        return render(request, 'polls/detail.html', {
-            'question': question,
-            'error_message': "You didn't select a choice.",
-        })
-    else:
-        selected_choice.votes += 1
-        selected_choice.save()
-        # Always return an HttpResponseRedirect after successfully dealing
-        # with POST data. This prevents data from being posted twice if a
-        # user hits the Back button.
-        return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
-"""
 
 
 # show monthlyrerpot
@@ -470,19 +436,31 @@ class UploadFileForm(forms.Form):
 
 def suica_upload(request):
     categorygroup_list = CategoryGroup.objects.order_by('order')
-    #category_list = get_category_list()
+
+    category_list = []
+    if len(categorygroup_list) > 0:
+        cg = categorygroup_list[0]
+        clist = Category.objects.filter(group = cg).order_by('order')
+        category_list.extend(clist)
+
 
     pmethodgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
 
-    #pmethod_list = get_pmethod_list()
-
+    pmethod_list = []
+    if len(pmethodgroup_list) > 0:
+        pmg = pmethodgroup_list[0]
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
+        pmethod_list.extend(pmlist)
+    
     date = datetime.datetime.now()
     year = date.year
 
 
     if request.method == 'GET':
         context = {'categorygroup_list': categorygroup_list,\
+                   'category_list' : category_list,\
                    'pmethodgroup_list': pmethodgroup_list,\
+                   'pmethod_list': pmethod_list,\
                    'year': year,\
         }
         return render(request, 'trans/suica_upload.html', context)
