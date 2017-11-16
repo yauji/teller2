@@ -23,6 +23,8 @@ SHARE_TYPES_OWN = 1
 C_MOVE_ID = 101
 C_WITHDRAW_ID = 103
 
+SUICA_KURIKOSHI = '繰\u3000'
+
 @login_required(login_url='/login/')
 def index(request):
     latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date', '-id')[:30]
@@ -518,10 +520,9 @@ def suica_upload(request):
             trans.pmethod = pm
             #trans. = splts[]
 
-            trans_list.append(trans)
+            if trans.name != SUICA_KURIKOSHI:
+                trans_list.append(trans)
         
-
-        #hoge
 
         context = {'categorygroup_list': categorygroup_list,\
                    'pmethodgroup_list': pmethodgroup_list,\
@@ -530,22 +531,6 @@ def suica_upload(request):
         return render(request, 'trans/suica_check.html', context)
         
         
-        #handle_uploaded_suica(request.FILES['file'])
-        #return render(request, 'trans/suica_upload.html')
-        """
-        if form.is_valid():
-            handle_uploaded_suica(request.FILES['file'])
-            return render(request, 'trans/suica_upload.html')
-            #return HttpResponseRedirect('/success/url/')
-        else:
-            form = UploadFileForm()
-            return render(request, 'upload.html', {'form': form})
-        """
-    """
-    else:
-        return render(request, 'trans/suica_upload.html')
-    """
-
 
 def suica_check(request):
     print ("----------")
@@ -553,8 +538,45 @@ def suica_check(request):
     for k in request.POST.keys():
         print(k + ' ' + request.POST[k])
     """
-    print (request.POST.getlist('tids'))
     print (request.POST.getlist('cs'))
+    print (request.POST.getlist('names'))
+    print (request.POST.getlist('expenses'))
+    print (request.POST.getlist('pmethods'))
+
+    #TODO comment out
+
+    # checked trans
+    tids = request.POST.getlist('tids')
+    dates = request.POST.getlist('dates')
+    cs = request.POST.getlist('cs')
+    names = request.POST.getlist('names')
+    expenses = request.POST.getlist('expenses')
+    pmethods = request.POST.getlist('pmethods')
+
+    i = 1
+    for expense in expenses:
+        if str(i) in tids:
+            date = datetime.datetime.strptime(dates[i-1], '%Y/%m/%d')
+            c = Category.objects.get(pk=cs[i-1])
+            pm = Pmethod.objects.get(pk=pmethods[i-1])
+
+            trans = Trans(date=date, \
+                          name=names[i-1], \
+                          expense=expenses[i-1], \
+                          memo='suica uploader', \
+                          category=c,\
+                          pmethod=pm,\
+                          user=request.user, \
+                          share_type=SHARE_TYPES_OWN,\
+            )
+            #TODO sharetype
+            trans.save()
+
+            #TODO update once
+            #hoge
+            update_balance(trans)
+
+        i += 1
 
     #hoge
     context = {    }
