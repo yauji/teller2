@@ -476,9 +476,14 @@ def suica_upload(request):
 
     #pmethod_list = get_pmethod_list()
 
+    date = datetime.datetime.now()
+    year = date.year
+
+
     if request.method == 'GET':
         context = {'categorygroup_list': categorygroup_list,\
                    'pmethodgroup_list': pmethodgroup_list,\
+                   'year': year,\
         }
         return render(request, 'trans/suica_upload.html', context)
 
@@ -563,6 +568,90 @@ def suica_upload(request):
         return render(request, 'trans/suica_upload.html')
     """
 
+
+def suica_check(request):
+    print ("----------")
+    """
+    for k in request.POST.keys():
+        print(k + ' ' + request.POST[k])
+    """
+    print (request.POST.getlist('tids'))
+    print (request.POST.getlist('cs'))
+
+    #hoge
+    context = {    }
+    return render(request, 'trans/suica_check.html', context)
+
+
+    """
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+    #category_list = get_category_list()
+
+    pmethodgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
+
+    #pmethod_list = get_pmethod_list()
+
+    if request.method == 'GET':
+        context = {'categorygroup_list': categorygroup_list,\
+                   'pmethodgroup_list': pmethodgroup_list,\
+        }
+        return render(request, 'trans/suica_upload.html', context)
+
+    elif request.method == 'POST':
+        #form = UploadFileForm(request.POST, request.FILES)
+        #print (request.FILES['file'])
+        f = request.FILES['file']
+
+        with open('tmp_suica.txt', 'wb+') as destination:
+            for chunk in f.chunks():
+                destination.write(chunk)
+
+        f = open('tmp_suica.txt', 'r')
+        contents = []
+        for l in f.readlines():
+            contents.append(l)
+        f.close()
+
+        # get default cate, pmethod
+        cid = int(request.POST['c'])
+        pmid = int(request.POST['pm'])
+        c = Category.objects.get(pk=cid)
+        pm = Pmethod.objects.get(pk=pmid)
+
+        trans_list = []
+        tmpid = 1
+        for l in contents:
+            splts = l.split('\t')
+            trans = Trans()
+
+            # this id is tmp
+            trans.id = tmpid
+            tmpid += 1
+            strdate = request.POST['year'] + '/' + splts[0]
+            trans.date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
+            trans.name = splts[1] + splts[4]  + splts[3]  + splts[4]
+            expense = splts[5].replace('¥', '').replace(',', '')
+            trans.expense = expense
+
+            trans.category = c
+            trans.pmethod = pm
+            #trans. = splts[]
+
+            trans_list.append(trans)
+        
+
+        #hoge
+
+        context = {'categorygroup_list': categorygroup_list,\
+                   'pmethodgroup_list': pmethodgroup_list,\
+                   'trans_list': trans_list,\
+                   }
+        return render(request, 'trans/suica_check.html', context)
+        
+        
+        #handle_uploaded_suica(request.FILES['file'])
+        #return render(request, 'trans/suica_upload.html')
+"""
 
 
     

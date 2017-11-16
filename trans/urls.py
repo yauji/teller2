@@ -20,6 +20,7 @@ urlpatterns = [
 
     # suica
     url(r'^suica_upload$', views.suica_upload, name='suica_upload'),
+    url(r'^suica_check$', views.suica_check, name='suica_check'),
     
 
     #pmethod
