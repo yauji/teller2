@@ -428,13 +428,9 @@ def sum_expense(request):
     return HttpResponse(jsonstring)
 
 
-#--- suica ----
-"""
-class UploadFileForm(forms.Form):
-    title = forms.CharField(max_length=50)
-    file = forms.FileField()
 
-"""
+
+#--- suica ----
 
 def suica_upload(request):
     categorygroup_list = CategoryGroup.objects.order_by('order')
@@ -468,8 +464,6 @@ def suica_upload(request):
         return render(request, 'trans/suica_upload.html', context)
 
     elif request.method == 'POST':
-        #form = UploadFileForm(request.POST, request.FILES)
-        #print (request.FILES['file'])
         if not 'file' in request.FILES:
             context = {'categorygroup_list': categorygroup_list,\
                        'category_list' : category_list,\
@@ -481,19 +475,6 @@ def suica_upload(request):
             return render(request, 'trans/suica_upload.html', context)
             
         f = request.FILES['file']
-        """
-        contents = ''
-        for l in f.readlines():
-            print(l)
-            contents += l
-        context = {'contents': contents,\
-                   }
-        return render(request, 'trans/suica_upload.html', context)
-        """
-        """
-        for chunk in f.chunks():
-            print(chunk)
-        """
 
         with open('tmp_suica.txt', 'wb+') as destination:
             for chunk in f.chunks():
@@ -551,16 +532,6 @@ def suica_upload(request):
         
 
 def suica_check(request):
-    """
-    print ("----------")
-    for k in request.POST.keys():
-        print(k + ' ' + request.POST[k])
-    print (request.POST.getlist('cs'))
-    print (request.POST.getlist('names'))
-    print (request.POST.getlist('expenses'))
-    print (request.POST.getlist('pmethods'))
-    """
-
     # checked trans
     tids = request.POST.getlist('tids')
     dates = request.POST.getlist('dates')
@@ -587,7 +558,6 @@ def suica_check(request):
                           user=request.user, \
                           share_type=share_types[i-1],\
             )
-            #TODO sharetype
             trans.save()
 
         i += 1
