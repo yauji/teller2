@@ -470,6 +470,16 @@ def suica_upload(request):
     elif request.method == 'POST':
         #form = UploadFileForm(request.POST, request.FILES)
         #print (request.FILES['file'])
+        if not 'file' in request.FILES:
+            context = {'categorygroup_list': categorygroup_list,\
+                       'category_list' : category_list,\
+                       'pmethodgroup_list': pmethodgroup_list,\
+                       'pmethod_list': pmethod_list,\
+                       'year': year,\
+                       'error_message': 'File is mandatory.',\
+            }
+            return render(request, 'trans/suica_upload.html', context)
+            
         f = request.FILES['file']
         """
         contents = ''
@@ -505,7 +515,8 @@ def suica_upload(request):
         tmpid = 1
         for l in contents:
             splts = l.split('\t')
-            trans = Trans()
+            trans = TransUi()
+            #trans = Trans()
 
             # this id is tmp
             trans.id = tmpid
@@ -513,12 +524,19 @@ def suica_upload(request):
             strdate = request.POST['year'] + '/' + splts[0]
             trans.date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
             trans.name = splts[1] + splts[4]  + splts[3]  + splts[4]
-            expense = splts[5].replace('¥', '').replace(',', '')
-            trans.expense = expense
+            if len(splts) == 7:
+                expense = splts[6].replace('-', '').replace(',', '')
+                #expense = splts[5].replace('¥', '').replace(',', '')
+                trans.expense = expense
 
             trans.category = c
             trans.pmethod = pm
-            #trans. = splts[]
+
+            #check same trans
+            checktranslist = Trans.objects.filter(date=trans.date, expense=trans.expense, category=c, pmethod=pm)
+
+            if len(checktranslist) > 0:
+                trans.selected = False
 
             if trans.name != SUICA_KURIKOSHI:
                 trans_list.append(trans)
@@ -533,17 +551,15 @@ def suica_upload(request):
         
 
 def suica_check(request):
-    print ("----------")
     """
+    print ("----------")
     for k in request.POST.keys():
         print(k + ' ' + request.POST[k])
-    """
     print (request.POST.getlist('cs'))
     print (request.POST.getlist('names'))
     print (request.POST.getlist('expenses'))
     print (request.POST.getlist('pmethods'))
-
-    #TODO comment out
+    """
 
     # checked trans
     tids = request.POST.getlist('tids')
@@ -552,6 +568,8 @@ def suica_check(request):
     names = request.POST.getlist('names')
     expenses = request.POST.getlist('expenses')
     pmethods = request.POST.getlist('pmethods')
+    memos = request.POST.getlist('memos')
+    share_types = request.POST.getlist('share_types')
 
     i = 1
     for expense in expenses:
@@ -563,95 +581,21 @@ def suica_check(request):
             trans = Trans(date=date, \
                           name=names[i-1], \
                           expense=expenses[i-1], \
-                          memo='suica uploader', \
+                          memo=memos[i-1], \
                           category=c,\
                           pmethod=pm,\
                           user=request.user, \
-                          share_type=SHARE_TYPES_OWN,\
+                          share_type=share_types[i-1],\
             )
             #TODO sharetype
             trans.save()
 
-            #TODO update once
-            #hoge
-            update_balance(trans)
-
         i += 1
+    update_balance(trans)
 
-    #hoge
-    context = {    }
-    return render(request, 'trans/suica_check.html', context)
+    return redirect('/t/')
 
 
-    """
-    categorygroup_list = CategoryGroup.objects.order_by('order')
-    #category_list = get_category_list()
-
-    pmethodgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
-
-    #pmethod_list = get_pmethod_list()
-
-    if request.method == 'GET':
-        context = {'categorygroup_list': categorygroup_list,\
-                   'pmethodgroup_list': pmethodgroup_list,\
-        }
-        return render(request, 'trans/suica_upload.html', context)
-
-    elif request.method == 'POST':
-        #form = UploadFileForm(request.POST, request.FILES)
-        #print (request.FILES['file'])
-        f = request.FILES['file']
-
-        with open('tmp_suica.txt', 'wb+') as destination:
-            for chunk in f.chunks():
-                destination.write(chunk)
-
-        f = open('tmp_suica.txt', 'r')
-        contents = []
-        for l in f.readlines():
-            contents.append(l)
-        f.close()
-
-        # get default cate, pmethod
-        cid = int(request.POST['c'])
-        pmid = int(request.POST['pm'])
-        c = Category.objects.get(pk=cid)
-        pm = Pmethod.objects.get(pk=pmid)
-
-        trans_list = []
-        tmpid = 1
-        for l in contents:
-            splts = l.split('\t')
-            trans = Trans()
-
-            # this id is tmp
-            trans.id = tmpid
-            tmpid += 1
-            strdate = request.POST['year'] + '/' + splts[0]
-            trans.date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
-            trans.name = splts[1] + splts[4]  + splts[3]  + splts[4]
-            expense = splts[5].replace('¥', '').replace(',', '')
-            trans.expense = expense
-
-            trans.category = c
-            trans.pmethod = pm
-            #trans. = splts[]
-
-            trans_list.append(trans)
-        
-
-        #hoge
-
-        context = {'categorygroup_list': categorygroup_list,\
-                   'pmethodgroup_list': pmethodgroup_list,\
-                   'trans_list': trans_list,\
-                   }
-        return render(request, 'trans/suica_check.html', context)
-        
-        
-        #handle_uploaded_suica(request.FILES['file'])
-        #return render(request, 'trans/suica_upload.html')
-"""
 
 
     
@@ -752,6 +696,9 @@ def get_lastday(year, month):
 
 
 
+
+class TransUi(Trans):
+    selected = True
 
 class CategoryUi(Category):
     selected = False
