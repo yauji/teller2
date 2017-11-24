@@ -7,5 +7,6 @@ RUN pip install -r requirements.txt
 #ADD . /code/
 ADD teller2.tar.gz /code/
 COPY entrypoint.sh /
+#RUN /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 

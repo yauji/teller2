@@ -12,7 +12,7 @@ build:
 	docker build -t $(NAME):$(VERSION) .
 
 start:
-	docker run -itd \
+	docker run -it \
 		-p 8000:8000 \
 	        --name $(NAME) \
 	        $(NAME):$(VERSION)
