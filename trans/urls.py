@@ -6,6 +6,7 @@ app_name = 'trans'
 urlpatterns = [
     # header
     url(r'^list$', views.list, name='list'),
+    url(r'^monthlyreport$', views.monthlyreport, name='monthlyreport'),
     url(r'^advanced$', views.advanced, name='advanced'),
 
     #trans
@@ -16,6 +17,11 @@ urlpatterns = [
 
     # for ajax
     url(r'^sum_expense$', views.sum_expense, name='sum_expense'),
+
+    # suica
+    url(r'^suica_upload$', views.suica_upload, name='suica_upload'),
+    url(r'^suica_check$', views.suica_check, name='suica_check'),
+    
 
     #pmethod
     url(r'^pmethod$', views.index_pmethod, name='index_pmethod'),

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block nav_trans %}active{% endblock %}
 
@@ -7,6 +8,11 @@
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
+<div class="card">
+  <div class="card-body">
+    <!--
+    <h4 class="card-title">Register</h4>
+-->
 
 <form action="{% url 'trans:add' %}" method="post" class="form-inline">
     {% csrf_token %}
@@ -20,7 +26,7 @@
     <input type="number" class="form-control" id="expense" name="expense" placeholder="Enter expense">
 
     <label class="sr-only" for="inlineFormCustomSelect">Memo</label>
-    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="memo" name="memo">
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="memo" name="memo" placeholder="Enter memo">
 
     <label class="sr-only" for="inlineFormCustomSelect">Category</label>
     <select  class="custom-select mb-2 mr-sm-2 mb-sm-0" name="cg" id="cg">
@@ -29,11 +35,11 @@
     {% endfor %}
     </select>
   
-  <select name="c" id="c">
+    <select name="c" id="c">
     {% for c in category_list %}    
     <option value="{{c.id}}">{{c.name}}</opetion>
     {% endfor %}
-  </select>
+    </select>
 
     <label class="sr-only" for="inlineFormCustomSelect">Payment method</label>
 
@@ -72,6 +78,10 @@
   
     <button type="submit" class="btn btn-primary btn-sm">Add</button>
 </form>
+</div>
+</div>
+
+
 
 
 
@@ -82,33 +92,25 @@
     <table border="1" class="table table-striped">
       <tr>
 	<th></th>
-	<th></th>
-	<th>Date</th>
+      <th>Date</th>
 	<th>Item</th>
 	<th>Expense</th>
 	<th>Balance</th>
-	<th></th>
-	<th></th>
-	<th></th>
-	<th></th>
-	<th></th>
-	<th></th>
+	<th>Payment method</th>
+	<th>Category</th>
+	<th>Memo</th>
       </tr>
       {% for trans in latest_trans_list %}
       <tr>
 	<td> <input type="checkbox" name="tids" value="{{ trans.id }}" /></td>
-	<td>{{ trans.id }}</td>
-	<td>{{ trans.date|date:"Y/n/d"  }}</td>
+	<td>{{ trans.date|date:"Y/n/d" }}</td>
 	<td>{{ trans.name }}</td>
-	<td>{{ trans.expense }}</td>
-	<td>{{ trans.balance }}</td>
+	<td>{{ trans.expense| intcomma }}</td>
+	<td>{{ trans.balance| intcomma  }}</td>
 	<td>{{ trans.pmethod.name }}</td>
 	<td>{{ trans.category.name }}</td>
-	<td>{{ trans.user }}</td>
-	<td>{{ trans.share_type }}</td>
-	<td>{{ trans.user_pay4 }}</td>
+	<td>{{ trans.memo }}</td>
 	<td><a href="">{{ trans.trans_text }}</a></td>
-
       </tr>
       {% endfor %}
     </table>
@@ -119,6 +121,7 @@
 
 
 {% block exscript %}
+    <script type="text/javascript" src="../static/js/trans_common.js"></script>
     <script type="text/javascript" src="../static/js/trans_index.js"></script>
 {% endblock exscript %}
 

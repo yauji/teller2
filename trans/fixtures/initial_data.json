@@ -1,0 +1,38 @@
+[
+        {
+	    "model": "trans.CategoryGroup",
+	    "pk": 101,
+	    "fields": {
+		"name": "system",
+		"order": 101
+	    }
+	},
+        {
+	    "model": "trans.Category",
+	    "pk": 101,
+	    "fields": {
+		"name": "move",
+		"group_id": 101,
+		"order": 101
+	    }
+	},
+        {
+	    "model": "trans.Category",
+	    "pk": 102,
+	    "fields": {
+		"name": "clearance",
+		"group_id": 101,
+		"order": 102
+	    }
+	},
+        {
+	    "model": "trans.Category",
+	    "pk": 103,
+	    "fields": {
+		"name": "withdraw",
+		"group_id": 101,
+		"order": 103
+	    }
+	}
+]
+	    

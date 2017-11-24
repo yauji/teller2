@@ -1,16 +1,20 @@
 import datetime
+from datetime import timedelta
+from dateutil.relativedelta import relativedelta
 import json
 
+from django import forms
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.template import loader
+from django.db.models import Sum
 from django.db.models.deletion import ProtectedError
 #from django.db import IntegrityError
 #from django.db.IntegrityError import ProtectedError
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User	  
-
+from django.contrib.auth.models import User
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Trans, PmethodGroup, Pmethod, CategoryGroup, Category
 
@@ -19,23 +23,20 @@ SHARE_TYPES_OWN = 1
 C_MOVE_ID = 101
 C_WITHDRAW_ID = 103
 
+SUICA_KURIKOSHI = '繰\u3000'
+
 @login_required(login_url='/login/')
 def index(request):
     latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date', '-id')[:30]
     #pmethod
-    pmgroup_list = PmethodGroup.objects.order_by('order')
+    pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
 
     #sort with group and order---
     pmethod_list = []
-    pmg = pmgroup_list[0]
-    pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
-    pmethod_list.extend(pmlist)
-    """
-    for pmg in pmgroup_list:
+    if len(pmgroup_list) > 0:
+        pmg = pmgroup_list[0]
         pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
         pmethod_list.extend(pmlist)
-    """
-
 
 
     #category---
@@ -43,16 +44,12 @@ def index(request):
 
     #sort with group and order---
     category_list = []
-    cg = categorygroup_list[0]
-    clist = Category.objects.filter(group = cg).order_by('order')
-    category_list.extend(clist)
-    """
-    for cg in categorygroup_list:
+    if len(categorygroup_list) > 0:
+        cg = categorygroup_list[0]
         clist = Category.objects.filter(group = cg).order_by('order')
         category_list.extend(clist)
-    """
 
-    
+
     context = {'latest_trans_list': latest_trans_list,\
                'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
                'categorygroup_list' : categorygroup_list , \
@@ -60,35 +57,104 @@ def index(request):
     }
     return render(request, 'trans/index.html', context)
 
-"""
-def detail(request, question_id):
-    return HttpResponse("You're looking at question %s." % question_id)
 
-def results(request, question_id):
-    #response = "You're looking at the results of question %s."
-    #return HttpResponse(response % question_id)
-    question = get_object_or_404(Question, pk=question_id)
-    return render(request, 'polls/results.html', {'question': question})
 
-def vote(request, question_id):
-    #return HttpResponse("You're voting on question %s." % question_id)
-    question = get_object_or_404(Question, pk=question_id)
-    try:
-        selected_choice = question.choice_set.get(pk=request.POST['choice'])
-    except (KeyError, Choice.DoesNotExist):
-        # Redisplay the question voting form.
-        return render(request, 'polls/detail.html', {
-            'question': question,
-            'error_message': "You didn't select a choice.",
-        })
+# show monthlyrerpot
+@login_required(login_url='/login/')
+def monthlyreport(request):
+    print (request)
+
+    #date---
+    if 'datefrom' not in request.POST:
+        dnow = datetime.datetime.now()
+        datefrom = dnow + timedelta(weeks=-13)
     else:
-        selected_choice.votes += 1
-        selected_choice.save()
-        # Always return an HttpResponseRedirect after successfully dealing
-        # with POST data. This prevents data from being posted twice if a
-        # user hits the Back button.
-        return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
-"""
+        str_datefrom = request.POST['datefrom']
+        datefrom = datetime.datetime.strptime(str_datefrom, '%Y/%m')
+    str_datefrom = datefrom.strftime('%Y/%m')
+
+    if 'dateto' not in request.POST:
+        dnow = datetime.datetime.now()
+        dateto = dnow
+    else:
+        str_dateto = request.POST['dateto']
+        dateto = datetime.datetime.strptime(str_dateto, '%Y/%m')
+    str_dateto = dateto.strftime('%Y/%m')
+
+
+    #todo
+    alluser = True
+
+    #category--
+    category_list = get_category_list_ui(request)
+
+    #monthly report---
+    monthlyreport_list = []
+    for year in range(datefrom.year, dateto.year + 1):
+        monthfrom = datefrom.month
+        monthto = dateto.month
+        if datefrom.year != dateto.year:
+            if year != datefrom.year:
+                monthfrom = 1
+            if year != dateto.year:
+                monthto = 12
+        for month in range(monthfrom, monthto + 1):
+            #mr4months = []
+            mr = MonthlyreportEachMonthUi()
+
+            scfrom = datetime.datetime(year, month, 1,0,0,0)
+            scto = scfrom + relativedelta(months=1)
+
+            
+            # sum total for each month---
+            expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0, includemonthlysum=True).aggregate(Sum('expense'))
+
+            if expense["expense__sum"] is not None:
+                mr.totalexpense = expense["expense__sum"]
+            else:
+                mr.totalexpense = 0
+                
+            income = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__lt=0, includemonthlysum=True).aggregate(Sum('expense'))
+            if income["expense__sum"] is not None:
+                mr.totalincome = income["expense__sum"] * -1
+            else:
+                mr.totalincome = 0
+
+            mr.total = mr.totalincome - mr.totalexpense
+
+            
+
+            #
+            eachCates = []
+            for c in get_category_list():
+                if str(c.id) in request.POST.getlist('categorys'):
+                    #todo consider user
+                    sum = Trans.objects.filter(category=c, date__gte=scfrom, date__lt=scto).aggregate(Sum('expense'))
+
+                    eachCate = {}
+                    eachCate["category_id"] = c.id
+                
+                    if sum["expense__sum"] is not None:
+                        eachCate["sum"]  = sum["expense__sum"]
+                    else:
+                        eachCate["sum"]  = 0
+                    eachCates.append(eachCate)
+
+            mr.yearmonth = str(year) + "/" + str(month)
+            mr.dateTo = str(year) + "/" + str(month) + "/" + get_lastday(year, month)
+            mr.eachCates = eachCates
+                
+            monthlyreport_list.append(mr)
+
+    context = {
+        "datefrom":str_datefrom,
+        "dateto":str_dateto,
+        "category_list":category_list,
+        "monthlyreport_list":monthlyreport_list,
+        "alluser":alluser,
+
+    }
+    return render(request, 'trans/monthlyreport.html', context)
 
 
 # show advanced UI
@@ -209,7 +275,7 @@ def withdraw(request):
         transs = []
         for tid in request.POST.getlist('tids'):
             trans = Trans.objects.get(pk=tid)
-            if trans.fClearance :
+            if not trans.includebalance :
                 context = {'error_message': str(trans.id) + ' is already cleared.'}
                 return render(request, 'trans/message.html', context)
                 
@@ -217,7 +283,7 @@ def withdraw(request):
 
         sum = 0
         for trans in transs:
-            trans.fClearance = True
+            trans.includebalance = False
             trans.save()
             update_balance(trans)
 
@@ -233,6 +299,7 @@ def withdraw(request):
                   user=request.user, \
                   share_type=SHARE_TYPES_OWN,\
                   user_pay4=None,\
+                      includemonthlysum=False,\
         )
         trans.save()
         update_balance(trans)
@@ -249,6 +316,7 @@ def withdraw(request):
 @login_required(login_url='/login/')
 def list(request):
     #print(request.user)
+    #print(request.POST)
     
     if 'datefrom' not in request.POST:
         str_datefrom = '2000/01/01'
@@ -260,106 +328,91 @@ def list(request):
     datefrom = datetime.datetime.strptime(str_datefrom, '%Y/%m/%d')
 
 
+    if 'dateto' not in request.POST:
+        dateto = datetime.datetime.now()
+        str_dateto = dateto.strftime('%Y/%m/%d')
+    else:
+        str_dateto = request.POST['dateto']
+        if str_dateto == '':
+            dateto = datetime.datetime.now()
+        else:
+            dateto = datetime.datetime.strptime(str_dateto, '%Y/%m/%d')
+
+
     #category--
     #print(request.POST.getlist('categorys'))
-
     latest_trans_list = Trans.objects.filter(user=request.user)\
-                        .filter(date__gte=datefrom)
+                        .filter(date__gte=datefrom)\
+                        .filter(date__lte=dateto)
                         #.order_by('-date', '-id')[:100]
                         #.order_by('-date', '-id')[:100]
 
+    # for transition from monthly report (no pmehtods)
+    pmethods = []
+    if 'pmethods' in request.POST:
+        pmethods = request.POST.getlist('pmethods')
+    else:
+        pmethodall = Pmethod.objects.all()
+        for pm in pmethodall:
+            pmethods.append(str(pm.id))
 
     if 'filtered' in request.POST:
         categoryall = Category.objects.all()
         for cate in categoryall:
             if not str(cate.id) in request.POST.getlist('categorys'):
                 latest_trans_list = latest_trans_list.exclude(category=cate)
-                
+
         pmethodall = Pmethod.objects.all()
         for pm in pmethodall:
-            if not str(pm.id) in request.POST.getlist('pmethods'):
+            if not str(pm.id) in pmethods:
+            #if not str(pm.id) in request.POST.getlist('pmethods'):
                 latest_trans_list = latest_trans_list.exclude(pmethod=pm)
 
-    latest_trans_list = latest_trans_list.order_by('-date', '-id')[:100]
+    latest_trans_list = latest_trans_list.order_by('-date', '-id')[:300]
+    #latest_trans_list = latest_trans_list.order_by('-date', '-id')[:100]
 
                 
 
     
-    #pmethod
-    pmgroup_list = PmethodGroup.objects.order_by('order')
-
+    #pmethod--
+    pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
     #sort with group and order---
-    pmethod_list = []
-    """
-    for pmg in pmgroup_list:
-        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
-        pmethod_list.extend(pmlist)
-    """
-    for pmg in pmgroup_list:
-        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
-
-        for pm in pmlist:
-            pmui = PmethodUi()
-            pmui.id = pm.id
-            pmui.name = pm.name
-            if 'filtered' in request.POST:
-                if str(pm.id) in request.POST.getlist('pmethods'):
-                    pmui.selected = True
-                else:
-                    pmui.selected = False
-            else:
-                pmui.selected = True
-            pmethod_list.append(pmui)
+    pmethod_list = get_pmethod_list_ui(request, pmethods)
     
 
     #category---
     categorygroup_list = CategoryGroup.objects.order_by('order')
+    category_list = get_category_list_ui(request)
 
-    #sort with group and order---
-    category_list = []
-    #checkbox value
-    #categorys = []
-    for cg in categorygroup_list:
-        clist = Category.objects.filter(group = cg).order_by('order')
-        #category_list.extend(clist)
+    
+    #--
+    paginator = Paginator(latest_trans_list, 50)
 
-        for c in clist:
-            cui = CategoryUi()
-            cui.id = c.id
-            cui.name = c.name
-            if 'filtered' in request.POST:
-                if str(c.id) in request.POST.getlist('categorys'):
-                    cui.selected = True
-                else:
-                    #TODO how to unchecked checkbox..
-                    cui.selected = False
-            else:
-                cui.selected = True
-            category_list.append(cui)
+    page = request.GET.get('page')
+    #print(page)
+    try:
+        transs = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        transs = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        transs = paginator.page(paginator.num_pages)
 
-        """
-        for c in clist:
-            categorys.append(str(c.id))
-        """
-    """
-    if not 'filterd' in request.POST:
-        str_datefrom = ''
-    """
-
-    context = {'latest_trans_list': latest_trans_list,\
+    #print(transs.number)
+        
+    context = {'latest_trans_list': transs,\
                'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
                'categorygroup_list' : categorygroup_list , \
                'category_list' : category_list,\
                'datefrom' : str_datefrom,\
-               #'categorys' : categorys,\
+               'dateto' : str_dateto,\
     }
     return render(request, 'trans/list.html', context)
 
 
 # return json
 def sum_expense(request):
-    #hoge
-
     #print(request.GET)
     #print(request.GET.getlist('ids[]'))
 
@@ -377,25 +430,269 @@ def sum_expense(request):
 
 
 
-"""
-@login_required(login_url='/login/')
-def move(request):
+#--- suica ----
 
-    context = {
-    }
-    return render(request, 'trans/move.html', context)
-"""
+def suica_upload(request):
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+
+    category_list = []
+    if len(categorygroup_list) > 0:
+        cg = categorygroup_list[0]
+        clist = Category.objects.filter(group = cg).order_by('order')
+        category_list.extend(clist)
+
+
+    pmethodgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
+
+    pmethod_list = []
+    if len(pmethodgroup_list) > 0:
+        pmg = pmethodgroup_list[0]
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
+        pmethod_list.extend(pmlist)
+    
+    date = datetime.datetime.now()
+    year = date.year
+
+
+    if request.method == 'GET':
+        context = {'categorygroup_list': categorygroup_list,\
+                   'category_list' : category_list,\
+                   'pmethodgroup_list': pmethodgroup_list,\
+                   'pmethod_list': pmethod_list,\
+                   'year': year,\
+        }
+        return render(request, 'trans/suica_upload.html', context)
+
+    elif request.method == 'POST':
+        if not 'file' in request.FILES:
+            context = {'categorygroup_list': categorygroup_list,\
+                       'category_list' : category_list,\
+                       'pmethodgroup_list': pmethodgroup_list,\
+                       'pmethod_list': pmethod_list,\
+                       'year': year,\
+                       'error_message': 'File is mandatory.',\
+            }
+            return render(request, 'trans/suica_upload.html', context)
+            
+        f = request.FILES['file']
+
+        with open('tmp_suica.txt', 'wb+') as destination:
+            for chunk in f.chunks():
+                destination.write(chunk)
+
+        f = open('tmp_suica.txt', 'r')
+        contents = []
+        for l in f.readlines():
+            contents.append(l)
+        f.close()
+
+        # get default cate, pmethod
+        cid = int(request.POST['c'])
+        pmid = int(request.POST['pm'])
+        c = Category.objects.get(pk=cid)
+        pm = Pmethod.objects.get(pk=pmid)
+
+        trans_list = []
+        tmpid = 1
+        for l in contents:
+            splts = l.split('\t')
+            trans = TransUi()
+            #trans = Trans()
+
+            # this id is tmp
+            trans.id = tmpid
+            tmpid += 1
+            strdate = request.POST['year'] + '/' + splts[0]
+            trans.date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
+            trans.name = splts[1] + splts[4]  + splts[3]  + splts[4]
+            if len(splts) == 7:
+                expense = splts[6].replace('-', '').replace(',', '')
+                #expense = splts[5].replace('¥', '').replace(',', '')
+                trans.expense = expense
+
+            trans.category = c
+            trans.pmethod = pm
+
+            #check same trans
+            checktranslist = Trans.objects.filter(date=trans.date, expense=trans.expense, category=c, pmethod=pm)
+
+            if len(checktranslist) > 0:
+                trans.selected = False
+
+            if trans.name != SUICA_KURIKOSHI:
+                trans_list.append(trans)
+        
+
+        context = {'categorygroup_list': categorygroup_list,\
+                   'pmethodgroup_list': pmethodgroup_list,\
+                   'trans_list': trans_list,\
+                   }
+        return render(request, 'trans/suica_check.html', context)
+        
+        
+
+def suica_check(request):
+    # checked trans
+    tids = request.POST.getlist('tids')
+    dates = request.POST.getlist('dates')
+    cs = request.POST.getlist('cs')
+    names = request.POST.getlist('names')
+    expenses = request.POST.getlist('expenses')
+    pmethods = request.POST.getlist('pmethods')
+    memos = request.POST.getlist('memos')
+    share_types = request.POST.getlist('share_types')
+
+    i = 1
+    for expense in expenses:
+        if str(i) in tids:
+            date = datetime.datetime.strptime(dates[i-1], '%Y/%m/%d')
+            c = Category.objects.get(pk=cs[i-1])
+            pm = Pmethod.objects.get(pk=pmethods[i-1])
+
+            trans = Trans(date=date, \
+                          name=names[i-1], \
+                          expense=expenses[i-1], \
+                          memo=memos[i-1], \
+                          category=c,\
+                          pmethod=pm,\
+                          user=request.user, \
+                          share_type=share_types[i-1],\
+            )
+            trans.save()
+
+        i += 1
+    update_balance(trans)
+
+    return redirect('/t/')
 
 
 
 
+    
+
+def handle_uploaded_suica(f):
+    with open('suica/tmp.txt', 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+        
+
+
+
+
+#---methods for internal------------------------
+        
+def get_pmethod_list_ui(request, pmethods):
+    pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
+    pmethod_list = []
+    """
+    for pmg in pmgroup_list:
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
+        pmethod_list.extend(pmlist)
+    """
+    for pmg in pmgroup_list:
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
+
+        first = True
+        for pm in pmlist:
+            pmui = PmethodUi()
+            pmui.id = pm.id
+            pmui.name = pm.name
+            pmui.group = pm.group
+            pmui.first_in_group = first
+            first = False
+            if 'filtered' in request.POST:
+                if str(pm.id) in pmethods:
+                #if str(pm.id) in request.POST.getlist('pmethods'):
+                    pmui.selected = True
+                else:
+                    pmui.selected = False
+            else:
+                pmui.selected = True
+            pmethod_list.append(pmui)
+    
+    return pmethod_list
+
+def get_category_list():
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+
+    #sort with group and order---
+    category_list = []
+    for cg in categorygroup_list:
+        clist = Category.objects.filter(group = cg).order_by('order')
+        category_list.extend(clist)
+    
+    return category_list
+
+def get_category_list_ui(request):
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+
+    #sort with group and order---
+    category_list = []
+    #checkbox value
+    #categorys = []
+    for cg in categorygroup_list:
+        clist = Category.objects.filter(group = cg).order_by('order')
+        #category_list.extend(clist)
+
+        #for list filter. first item in each group
+        first = True
+        for c in clist:
+            cui = CategoryUi()
+            cui.id = c.id
+            cui.name = c.name
+            cui.group = c.group
+            cui.first_in_group = first
+            first = False
+            if 'filtered' in request.POST:
+                if str(c.id) in request.POST.getlist('categorys'):
+                    cui.selected = True
+                else:
+                    #TODO how to unchecked checkbox..
+                    cui.selected = False
+            else:
+                cui.selected = True
+            category_list.append(cui)
+
+    return category_list
+    
+
+
+def get_lastday(year, month):
+    ym = datetime.datetime(year, month, 1, 0, 0, 0)
+    ym += relativedelta(months=1)
+    ym += relativedelta(days=-1)
+
+    return str(ym.day)
+
+
+
+
+class TransUi(Trans):
+    selected = True
 
 class CategoryUi(Category):
     selected = False
+    first_in_group = False
 
 class PmethodUi(Pmethod):
     selected = False
+    first_in_group = False
 
+class MonthlyreportEachMonthUi():
+    # list of dictionary
+    #sum, cateid for each categories
+    eachCates = []
+
+    # for display
+    yearmonth = "yyyy/mm"
+    # for transition to list view
+    dateTo = "yyyy/mm/dd"
+
+    totalexpense = 0
+    totalincome = 0
+    total = 0
+
+    
     
 
 
@@ -419,7 +716,7 @@ def update_balance_para(pmethod, user, date):
 
     for t in transs:
         #print(t.name)
-        if not t.fClearance :
+        if t.includebalance :
             t.balance = prevBalance - t.expense
         else:
             t.balance = prevBalance
@@ -434,7 +731,8 @@ def update_balance_para(pmethod, user, date):
 def index_pmethod(request):
     #pmethod_list = Pmethod.objects.order_by('-group')
     #pmethod_list = Pmethod.objects.order_by('-order')[:30]
-    pmgroup_list = PmethodGroup.objects.order_by('order')
+    #pmgroup_list = PmethodGroup.objects.order_by('order')
+    pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
 
     #sort with group and order---
     pmethod_list = []
@@ -473,7 +771,7 @@ def add_pmethod(request):
 def edit_pmethod(request, pmethod_id):
     pm = Pmethod.objects.get(pk=pmethod_id)
 
-    pmgroup_list = PmethodGroup.objects.order_by('-order')[:30]
+    pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('-order')[:30]
 
     context = {'pm': pm, 'pmgroup_list': pmgroup_list}
     return render(request, 'trans/edit_pmethod.html', context)
@@ -525,7 +823,9 @@ def up_pmethod(request, pmethod_id):
 
 #pmgroup------------------------------
 def add_pmgroup(request):
-    pgmethod = PmethodGroup(name=request.POST['name'])
+    pgmethod = PmethodGroup(name=request.POST['name'],
+                            user=request.user,
+    )
     pgmethod.save()
 
     pgmethod.order = pgmethod.id
@@ -564,7 +864,7 @@ def delete_pmgroup(request, pmgroup_id):
 def up_pmgroup(request, pmgroup_id):
     pmg = PmethodGroup.objects.get(pk=pmgroup_id)
 
-    pmgs = PmethodGroup.objects.order_by('-order')
+    pmgs = PmethodGroup.objects.filter(user=request.user).order_by('-order')
 
     #find uppper pmg
     fTargetNext = False

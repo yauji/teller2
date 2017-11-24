@@ -5,10 +5,6 @@ $(function() {
     //init format---
     $('#user_pay4').css('display', 'none');
 
-    $('.datepicker').datepicker({
-	format: "yyyy/mm/dd"
-    });
-
     displayMoveTo('none');
 
     //events---
@@ -47,10 +43,6 @@ $(function() {
     
 
 
-    $('#pmg').change(function(e) {
-	changeEventPmg(e, '#pm');
-    });
-
     $('#pmg2').change(function(e) {
 	changeEventPmg(e, '#pm2');
     });
@@ -72,22 +64,3 @@ function displayMoveTo(value){
     $('#pm2').css('display', value);
 }
 
-function changeEventPmg(e, targetname){
-    //alert(e.target.value);
-    url = 'pmgroup/' + e.target.value+ '/list/';
-    $.ajax(url,
-	   {
-	       type: 'get',
-	   }
-	  )
-	.done(function(data) {
-	    var jsondata = $.parseJSON(data);
-	    //alert(data);
-	    selector = targetname + ' option';
-	    $(selector).remove();
-	    //$('#pm option').remove();
-	    for(var i in jsondata.pmethod_list){
-		$(targetname).append("<option value='" + jsondata.pmethod_list[i].id + "'>" + jsondata.pmethod_list[i].name + "</option>");
-	    }
-	});
-}    

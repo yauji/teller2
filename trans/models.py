@@ -5,6 +5,8 @@ from django.contrib.auth.models import User
 class PmethodGroup(models.Model):
     name = models.CharField(max_length=200)
     order = models.IntegerField(default=0)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    
     
 class Pmethod(models.Model):
     name = models.CharField(max_length=200)
@@ -48,7 +50,11 @@ class Trans(models.Model):
     user_pay4 = models.ForeignKey(User, on_delete=models.PROTECT, related_name='+', null=True)
 
     # Is it already clearance
-    fClearance = models.BooleanField(default=False)
+    #fclearance = models.BooleanField(default=False)
+    #fClearance = models.BooleanField(default=False)
+
+    includebalance = models.BooleanField(default=True)
+    includemonthlysum = models.BooleanField(default=True)
 
 
 

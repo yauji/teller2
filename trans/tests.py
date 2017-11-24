@@ -1,3 +1,5 @@
+import datetime
+from datetime import timedelta
 import json
 import re
 
@@ -7,10 +9,13 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.http.request import HttpRequest
 from django.template import RequestContext
 from django.template.loader import render_to_string
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from trans.models import PmethodGroup, Pmethod, CategoryGroup, Category, Trans
 from trans.views import CategoryUi
 from trans.views import PmethodUi
+from trans.views import MonthlyreportEachMonthUi
+
 
 from . import views
 #from trans.views import CategoryUi
@@ -95,6 +100,7 @@ class CategoryTestCase2(TestCase):
 
         dec = json.loads(response.content.decode("utf-8"))
         #print(dec['category_list'])
+        print("In case that there are a fail related to pagination, it's ok.")
         self.assertEqual(len(dec['category_list']), 2)
 
 
@@ -106,7 +112,7 @@ class TransTestCase(TestCase):
         self.user = User.objects.create_user(username=USER, email='admin@test.com',\
                                              password=PASS)
 
-        pmg = PmethodGroup.objects.create(name='pmg1')
+        pmg = PmethodGroup.objects.create(name='pmg1', user=self.user)
         Pmethod.objects.create(group=pmg, name='pm1')
 
         cg = CategoryGroup.objects.create(name='cg1')
@@ -140,22 +146,96 @@ class TransTestCase2(TestCase):
         self.user = User.objects.create_user(username='test1', email='test@test.com',\
                                              password='password')
 
-        pmg = PmethodGroup.objects.create(name='pmg1')
-        Pmethod.objects.create(group=pmg, name='pm1')
-        Pmethod.objects.create(group=pmg, name='pm12')
+        pmg = PmethodGroup.objects.create(name='pmg1', user=self.user, order=1)
+        Pmethod.objects.create(group=pmg, name='pm1', order=1)
+        Pmethod.objects.create(group=pmg, name='pm12', order=2)
 
-        pmg = PmethodGroup.objects.create(name='pmg2')
-        Pmethod.objects.create(group=pmg, name='pm21')
+        pmg = PmethodGroup.objects.create(name='pmg2', user=self.user, order=2)
+        Pmethod.objects.create(group=pmg, name='pm21', order=1)
 
-        cg = CategoryGroup.objects.create(name='cg1')
-        Category.objects.create(group=cg, name='c1')
-        Category.objects.create(group=cg, name='c12')
+        cg = CategoryGroup.objects.create(name='cg1', order=1)
+        Category.objects.create(group=cg, name='c1', order=1)
+        Category.objects.create(group=cg, name='c12', order=2)
 
-        cg = CategoryGroup.objects.create(name='cg2')
-        Category.objects.create(group=cg, name='move', id=C_MOVE_ID)
-        Category.objects.create(group=cg, name='withdraw', id=C_WITHDRAW_ID)
+        cg = CategoryGroup.objects.create(name='cg2', order=2)
+        Category.objects.create(group=cg, name='move', id=C_MOVE_ID, order=1)
+        Category.objects.create(group=cg, name='withdraw', id=C_WITHDRAW_ID, order=2)
 
 
+    def add_trans1(self, c, pms, cs):
+        #1st trans---
+        response = c.post('/t/add', {'date': '2017/01/01', 'name': 'item1',\
+                                     'c':cs[0].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':100,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        #print(response.content)
+        self.assertEqual(response.status_code, 302)
+
+        #2nd trans---
+        #print("item2--")
+        response = c.post('/t/add', {'date': '2017/01/03', 'name': 'item2',\
+                                     'c':cs[1].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':50,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+        
+        
+    def add_trans2(self, c, pms, cs):
+        #1st trans---
+        response = c.post('/t/add', {'date': '2017/01/01', 'name': 'item1',\
+                                     'c':cs[0].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':100,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+
+        #2nd trans---
+        response = c.post('/t/add', {'date': '2017/01/31', 'name': 'item2',\
+                                     'c':cs[1].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':50,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+        
+        #3rd trans---
+        response = c.post('/t/add', {'date': '2017/02/01', 'name': 'item3',\
+                                     'c':cs[0].id,\
+                                     'pm':pms[1].id,\
+                                     'expense':3,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+        
+        #4th trans---
+        response = c.post('/t/add', {'date': '2017/02/28', 'name': 'item4',\
+                                     'c':cs[0].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':-10,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+        
+        
+
+    #add---------
     def test_add_ok01(self):
         c = Client()
         c.login(username=USER, password=PASS)
@@ -225,6 +305,14 @@ class TransTestCase2(TestCase):
         })
         self.assertEqual(response.status_code, 302)
 
+        t = Trans.objects.filter(name='item1')[0]
+        self.assertEqual(t.balance, -100)
+        t = Trans.objects.filter(name='item4')[0]
+        self.assertEqual(t.balance, -140)
+        t = Trans.objects.filter(name='item2')[0]
+        self.assertEqual(t.balance, -190)
+
+        """
         ts = Trans.objects.all()
         t = ts[0]
         self.assertEqual(t.balance, -100)
@@ -232,6 +320,7 @@ class TransTestCase2(TestCase):
         self.assertEqual(t.balance, -140)
         t = ts[1]
         self.assertEqual(t.balance, -190)
+        """
         
 
     def test_add_move_ok01(self):
@@ -355,7 +444,14 @@ class TransTestCase2(TestCase):
         self.assertEqual(response.status_code, 302)
 
         #print("delete item1,3--")
-        response = c.post('/t/delete', {'tids': [1,3],\
+        ts = Trans.objects.all()
+
+        """
+        print("----------")
+        for t in ts:
+            print(t.id)
+        """
+        response = c.post('/t/delete', {'tids': [ts[0].id, ts[2].id],\
         })
         self.assertEqual(response.status_code, 302)
 
@@ -408,19 +504,31 @@ class TransTestCase2(TestCase):
         self.assertEqual(response.status_code, 302)
 
         #print("withdraw item1,3--")
+        #ts = Trans.objects.all()
+        t1 = Trans.objects.filter(name='item1')[0]
+        t3 = Trans.objects.filter(name='item3')[0]
+                
         response = c.post('/t/multi_trans_select', {
             'withdraw': True,\
-            'tids': [1,3],\
+            'tids': [t1.id, t3.id],\
             'date': '2017/02/01', \
             'pm':pms[2].id,\
             'memo':'wd',\
         })
         self.assertEqual(response.status_code, 302)
 
+
         ts = Trans.objects.all()
         self.assertEqual(len(ts), 4)
+        t = Trans.objects.filter(memo='wd')[0]
+        #print(t.memo)
+        self.assertEqual(t.expense, 120)
+        self.assertEqual(t.balance, -120)
+        
+        """
         self.assertEqual(ts[3].expense, 120)
         self.assertEqual(ts[3].balance, -120)
+        """
         
         self.assertEqual(ts[0].balance, 0)
         #fail. I don't know why...
@@ -430,7 +538,8 @@ class TransTestCase2(TestCase):
         
     def test_list_ok01(self):
         c = Client()
-        c.login(username=USER, password=PASS)
+        c.login(username='test1', password='password')
+        #c.login(username=USER, password=PASS)
 
         pms = Pmethod.objects.all()
         #print(pms)
@@ -457,39 +566,68 @@ class TransTestCase2(TestCase):
 
         # list method (actual)---
         req = response.wsgi_request
+        self.user.username=''
+        req.user = self.user
         res = views.list(req)
         #print(res.content)
 
 
         # get expected html--
         latest_trans_list = Trans.objects.all()
-        pmgs = PmethodGroup.objects.all()
+        paginator = Paginator(latest_trans_list, 50)
+        transs = paginator.page(1)
+            
+        pmgs = PmethodGroup.objects.filter(user=self.user).order_by('order')
+        #pmgs = PmethodGroup.objects.filter(user=self.user)all()
         cgs = CategoryGroup.objects.all()
 
+        #pm
         pmui_list = []
-        for pm in pms:
-            pmui = PmethodUi()
-            pmui.id = pm.id
-            pmui.name = pm.name
-            pmui.selected = True
-            pmui_list.append(pmui)
+        for pmg in pmgs:
+            pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
 
+            first = True
+            for pm in pmlist:
+                pmui = PmethodUi()
+                pmui.id = pm.id
+                pmui.name = pm.name
+                pmui.group = pm.group
+                pmui.first_in_group = first
+                first = False
+                pmui.selected = True
+                pmui_list.append(pmui)
+
+
+        #category
         cui_list = []
-        for c in cs:
-            cui = CategoryUi()
-            cui.id = c.id
-            cui.name = c.name
-            cui.selected = True
-            cui_list.append(cui)
+        for cg in cgs:
+            clist = Category.objects.filter(group = cg).order_by('order')
 
+            first = True
+            for c in clist:
+                cui = CategoryUi()
+                cui.id = c.id
+                cui.name = c.name
+                cui.group = c.group
+                cui.first_in_group = first
+                first = False
+                cui.selected = True
+                cui_list.append(cui)
+
+        #date
+        dateto = datetime.datetime.now()
+        str_dateto = dateto.strftime('%Y/%m/%d')
+
+                
         expected_html = render_to_string('trans/list.html',\
-                                 {'request.user': 'admin',\
-                                  'latest_trans_list': latest_trans_list,\
+                                 {'request.user': 'test1',\
+                                  'latest_trans_list': transs,\
                                   'pmethod_list': pmui_list,\
                                   'pmgroup_list': pmgs, \
                                   'categorygroup_list' : cgs , \
                                   'category_list' : cui_list,\
                                   'datefrom' : '2000/01/01',\
+                                  'dateto' : str_dateto,\
                                  })
 
         #print(expected_html)
@@ -501,7 +639,6 @@ class TransTestCase2(TestCase):
 
 
     def test_sum_expense_ok01(self):
-        #hoge
         c = Client()
         c.login(username=USER, password=PASS)
 
@@ -540,7 +677,8 @@ class TransTestCase2(TestCase):
 
 
         # test sum---
-        response = c.get('/t/sum_expense', {'ids[]': ['1', '2']})
+        response = c.get('/t/sum_expense', {'ids[]': [ts[0].id, ts[1].id]})
+        #response = c.get('/t/sum_expense', {'ids[]': ['1', '2']})
         #print(response.content)
         #print(response.content.decode("utf-8"))
         self.assertEqual(response.status_code, 200)
@@ -549,6 +687,113 @@ class TransTestCase2(TestCase):
         #print(dec['sum'])
         self.assertEqual(dec['sum'], 150)
 
+
+    # monthly report-----------------
+    def test_mr_ok01(self):
+        c = Client()
+        c.login(username='test1', password='password')
+
+        pms = Pmethod.objects.all()
+        #print(pms)
+        cs = Category.objects.all()
+
+        self.add_trans2(c, pms, cs)
+
+        response = c.post('/t/monthlyreport',\
+                          {\
+                           'datefrom': '2017/01', 'dateto': '2017/03',\
+        })
+        self.assertEqual(response.status_code, 200)
+
+
+        # list method (actual)---
+        req = response.wsgi_request
+        self.user.username=''
+        req.user = self.user
+        res = views.monthlyreport(req)
+        #print(res)
+
+
+
+
+        #expected--------
+        #category
+        cgs = CategoryGroup.objects.all()
+
+        cui_list = []
+        for cg in cgs:
+            clist = Category.objects.filter(group = cg).order_by('order')
+
+            first = True
+            for c in clist:
+                cui = CategoryUi()
+                cui.id = c.id
+                cui.name = c.name
+                cui.group = c.group
+                cui.first_in_group = first
+                first = False
+                cui.selected = True
+                cui_list.append(cui)
+
+        #date---
+        """
+        dateto = datetime.datetime.now()
+        str_dateto = dateto.strftime('%Y/%m')
+        datefrom = dateto  + timedelta(weeks=-13)
+        str_datefrom = datefrom.strftime('%Y/%m')
+        """
+
+
+        #monthly report list----
+        monthlyreport_list = []
+
+        #2017/01
+        mr = MonthlyreportEachMonthUi()
+        mr.totalexpense = 150
+        mr.totalincome = 0
+        mr.total = mr.totalincome - mr.totalexpense
+
+        mr.yearmonth = '2017/1'
+        monthlyreport_list.append(mr)
+        
+        #2017/02
+        mr = MonthlyreportEachMonthUi()
+        mr.totalexpense = 3
+        mr.totalincome = 10
+        mr.total = mr.totalincome - mr.totalexpense
+
+        mr.yearmonth = '2017/2'
+        monthlyreport_list.append(mr)
+        
+        #2017/03
+        mr = MonthlyreportEachMonthUi()
+        mr.totalexpense = 0
+        mr.totalincome = 0
+        mr.total = mr.totalincome - mr.totalexpense
+
+        mr.yearmonth = '2017/3'
+        monthlyreport_list.append(mr)
+        
+        
+
+        expected_html = render_to_string('trans/monthlyreport.html',\
+                                 {'request.user': 'admin',\
+                                  'category_list' : cui_list,\
+                                  'datefrom' : '2017/01',\
+                                  'dateto' : '2017/03',\
+                                  'alluser' : True,\
+                                  'monthlyreport_list' : monthlyreport_list,\
+                                 })
+
+        #print(res.content.decode())
+        #print(expected_html)
+        
+        self.assertEqualExceptCSRF(res.content.decode(), expected_html)
+
+
+
+
+        
         
 
 
@@ -567,6 +812,9 @@ class TransTestCase2(TestCase):
             self.remove_csrf(html_code1),
             self.remove_csrf(html_code2)
         )
+
+
+
 
         
 
