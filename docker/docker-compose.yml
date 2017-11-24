@@ -4,8 +4,8 @@ services:
   db:
     image: postgres
   web:
-    #build: .
-    image: teller2:0.1
+    build: .
+    #image: teller2:0.1
     #command: python3 manage.py runserver 0.0.0.0:8000
     #command: /bin/bash
     #entrypoint: /entrypoint.sh

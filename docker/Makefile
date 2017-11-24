@@ -9,7 +9,8 @@ build:
 	cp -r ../templates teller2
 	cp -r ../static teller2
 	tar czvf teller2.tar.gz teller2
-	docker build -t $(NAME):$(VERSION) .
+	docker-compose build
+	#docker build -t $(NAME):$(VERSION) .
 
 start:
 	docker run -it \
@@ -30,6 +31,14 @@ clean:
 
 stop:
 	docker rm -f $(NAME)
+
+up: build
+	docker-compose up -d
+
+down:
+	docker-compose down
+
+
 
 shell:
 	docker exec -it $(NAME) /bin/bash
