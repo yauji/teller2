@@ -4,4 +4,8 @@ RUN mkdir /code
 WORKDIR /code
 ADD requirements.txt /code/
 RUN pip install -r requirements.txt
-ADD . /code/
+#ADD . /code/
+ADD teller2.tar.gz /code/
+COPY entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
+
