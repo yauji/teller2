@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+from os import environ
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -23,9 +24,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'gs=hv1ms$mx56=af&q$3b%*n!0y!bekov(s=kz1w@idetby1!o'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
+#DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+#ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -88,11 +91,13 @@ DATABASES = {
          'ENGINE': 'django.db.backends.postgresql_psycopg2',
          'NAME': 'postgres',
          'USER': 'postgres',
-         'PASSWORD' : 'postgres',
-         'HOST' : 'db',
+         'PASSWORD' : environ['DB_PASSWORD'],
+         'HOST' : environ['POSTGRES_PORT_5432_TCP_ADDR'],
          'PORT' : 5432,
      }
  }
+
+#         'HOST' : 'db',
 #         'NAME': 'teller2',
 #         'HOST' : '192.168.10.131',
 

@@ -2,6 +2,8 @@ NAME=teller2
 VERSION=0.1
 
 build:
+	-rm -rf teller2
+	-rm teller2.tar.gz
 	-mkdir teller2
 	cp -r ../teller2 teller2
 	cp -r ../trans teller2

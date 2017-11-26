@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: teller2
+  labels:
+    app: teller2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: teller2
+  template:
+    metadata:
+      labels:
+        app: teller2
+    spec:
+      containers:
+        - image: gcr.io/teller-k8s/teller2:v0.4
+          name: teller2
+          env:
+          - name: DB_HOST
+            value: postgres
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres
+                key: password
+          ports:
+            - containerPort: 80
+              name: teller2
+
