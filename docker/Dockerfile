@@ -6,6 +6,8 @@ RUN mkdir /code
 WORKDIR /code
 ADD requirements.txt /code/
 RUN pip install -r requirements.txt
+RUN pip install uwsgi
+ADD uwsgi.ini /code/
 #ADD . /code/
 ADD teller2.tar.gz /code/
 
