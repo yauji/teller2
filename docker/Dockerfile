@@ -7,11 +7,15 @@ WORKDIR /code
 ADD requirements.txt /code/
 RUN pip install -r requirements.txt
 RUN pip install uwsgi
-ADD uwsgi.ini /code/
 #ADD . /code/
 ADD teller2.tar.gz /code/
 
-RUN python /code/teller2/manage.py collectstatic --noinput
+RUN cp -r /code/teller2/* /code/
+
+ADD uwsgi.ini /code/
+
+RUN python /code/manage.py collectstatic --noinput
+#RUN python /code/teller2/manage.py collectstatic --noinput
 
 COPY entrypoint.sh /
 #RUN /entrypoint.sh
