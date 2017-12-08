@@ -11,17 +11,15 @@ RUN pip install uwsgi
 #ADD . /code/
 ADD teller2.tar.gz /code/
 
-RUN cp -r /code/teller2/* /code/
+#RUN cp -r /code/teller2/* /code/
 
-ADD uwsgi.ini /code/
+ADD uwsgi.ini /code/teller2
 
 ADD teller2_nginx.conf /etc/nginx/conf.d/
 
-RUN python /code/manage.py collectstatic --noinput
-#RUN python /code/teller2/manage.py collectstatic --noinput
+#RUN python /code/manage.py collectstatic --noinput
+RUN python /code/teller2/manage.py collectstatic --noinput
 
 COPY entrypoint.sh /
 #RUN /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
-
-
