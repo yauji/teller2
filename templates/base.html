@@ -54,8 +54,7 @@
     	    <li class="{% block nav_advanced %}{% endblock %}"><a href="{% url 'trans:advanced' %}">Advanced</a></li>
 	    <li class="{% block nav_pmethod %}{% endblock %}"><a href="{% url 'trans:index_pmethod' %}">Settings</a></li>
 	  </ul>
-	  {{request.user}}
-	  <a href="/logout/">Logout</a>
+	    {{request.user}}<a href="/logout/">Logout</a>
 	</div><!--/.nav-collapse -->
       </div>
     </nav>
