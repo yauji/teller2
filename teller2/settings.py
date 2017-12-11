@@ -24,8 +24,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'gs=hv1ms$mx56=af&q$3b%*n!0y!bekov(s=kz1w@idetby1!o'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-#DEBUG = True
+#DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 #ALLOWED_HOSTS = []
@@ -146,10 +146,13 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
+
 # Fetch Django's project directory
 DJANGO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Fetch the project_root
 PROJECT_ROOT = os.path.dirname(DJANGO_ROOT)
 
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
+"""
+"""
 

@@ -574,8 +574,97 @@ def handle_uploaded_suica(f):
     with open('suica/tmp.txt', 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
-        
 
+
+#--everymonth-----
+def everymonth(request):
+    #pmethod
+    pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
+
+    #sort with group and order---
+    pmethod_list = []
+    if len(pmgroup_list) > 0:
+        pmg = pmgroup_list[0]
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
+        pmethod_list.extend(pmlist)
+
+
+    #category---
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+
+    #sort with group and order---
+    category_list = []
+    if len(categorygroup_list) > 0:
+        cg = categorygroup_list[0]
+        clist = Category.objects.filter(group = cg).order_by('order')
+        category_list.extend(clist)
+
+
+    date_list = []
+    if 'update' in request.POST:
+        #action_update = request.POST['update']
+        
+        str_datefrom = request.POST['datefrom']
+        datefrom = datetime.datetime.strptime(str_datefrom, '%Y/%m')
+
+        str_dateto = request.POST['dateto']
+        dateto = datetime.datetime.strptime(str_dateto, '%Y/%m')
+
+        for year in range(datefrom.year, dateto.year + 1):
+            monthfrom = datefrom.month
+            monthto = dateto.month
+            if datefrom.year != dateto.year:
+                if year != datefrom.year:
+                    monthfrom = 1
+                if year != dateto.year:
+                    monthto = 12
+            for month in range(monthfrom, monthto + 1):
+                date = datetime.datetime(year, month, 1,0,0,0)
+                date_list.append(date)
+        
+        
+        
+    """
+    # checked trans
+    tids = request.POST.getlist('tids')
+    dates = request.POST.getlist('dates')
+    cs = request.POST.getlist('cs')
+    names = request.POST.getlist('names')
+    expenses = request.POST.getlist('expenses')
+    pmethods = request.POST.getlist('pmethods')
+    memos = request.POST.getlist('memos')
+    share_types = request.POST.getlist('share_types')
+
+    i = 1
+    for expense in expenses:
+        if str(i) in tids:
+            date = datetime.datetime.strptime(dates[i-1], '%Y/%m/%d')
+            c = Category.objects.get(pk=cs[i-1])
+            pm = Pmethod.objects.get(pk=pmethods[i-1])
+
+            trans = Trans(date=date, \
+                          name=names[i-1], \
+                          expense=expenses[i-1], \
+                          memo=memos[i-1], \
+                          category=c,\
+                          pmethod=pm,\
+                          user=request.user, \
+                          share_type=share_types[i-1],\
+            )
+            trans.save()
+
+        i += 1
+    update_balance(trans)
+    """
+
+    context = {\
+               'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
+               'categorygroup_list' : categorygroup_list , \
+               'category_list' : category_list,\
+               'date_list' : date_list,\
+               
+    }
+    return render(request, 'trans/everymonth.html', context)
 
 
 

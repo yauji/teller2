@@ -22,7 +22,10 @@ urlpatterns = [
     url(r'^suica_upload$', views.suica_upload, name='suica_upload'),
     url(r'^suica_check$', views.suica_check, name='suica_check'),
     
+    # everymonth
+    url(r'^everymonth$', views.everymonth, name='everymonth'),
 
+    
     #pmethod
     url(r'^pmethod$', views.index_pmethod, name='index_pmethod'),
     url(r'^pmethod/add$', views.add_pmethod, name='add_pmethod'),
