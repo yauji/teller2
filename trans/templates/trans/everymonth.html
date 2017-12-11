@@ -58,7 +58,7 @@ Register transactions with every month
     <option value="3">pay4other</opetion>
   </select>
 
-
+  <input type="hidden" name="register" value="True"></input>
   <button type="submit" class="btn btn-primary btn-sm">Register</button>
 
   <table border="1" class="table table-striped" id="tablelist">
@@ -70,10 +70,10 @@ Register transactions with every month
     </tr>
     {% for date in date_list %}
     <tr>
-      <td>{{ date|date:"Y/n" }}</td>
+      <td>{{ date|date:"Y/n" }}<input type="hidden" id="dates" name="dates" value="{{ date|date:"Y/n/d" }}"></td>
       <td><input type="text" class=" mb-2 mr-sm-2 mb-sm-0" id="names" name="names" ></input></td>
       <td>
-	<input type="number" name="expenses" ></input>
+	<input type="number" name="expenses" value="0"></input>
       </td>
       <td><input type="text" class=" mb-2 mr-sm-2 mb-sm-0" name="memos"></input></td>
     </tr>

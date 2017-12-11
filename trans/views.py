@@ -600,6 +600,10 @@ def everymonth(request):
         category_list.extend(clist)
 
 
+    str_datefrom = ''
+    str_dateto = ''
+
+    # update period--------
     date_list = []
     if 'update' in request.POST:
         #action_update = request.POST['update']
@@ -622,47 +626,49 @@ def everymonth(request):
                 date = datetime.datetime(year, month, 1,0,0,0)
                 date_list.append(date)
         
-        
-        
-    """
-    # checked trans
-    tids = request.POST.getlist('tids')
-    dates = request.POST.getlist('dates')
-    cs = request.POST.getlist('cs')
-    names = request.POST.getlist('names')
-    expenses = request.POST.getlist('expenses')
-    pmethods = request.POST.getlist('pmethods')
-    memos = request.POST.getlist('memos')
-    share_types = request.POST.getlist('share_types')
 
-    i = 1
-    for expense in expenses:
-        if str(i) in tids:
-            date = datetime.datetime.strptime(dates[i-1], '%Y/%m/%d')
-            c = Category.objects.get(pk=cs[i-1])
-            pm = Pmethod.objects.get(pk=pmethods[i-1])
 
-            trans = Trans(date=date, \
-                          name=names[i-1], \
-                          expense=expenses[i-1], \
-                          memo=memos[i-1], \
-                          category=c,\
-                          pmethod=pm,\
-                          user=request.user, \
-                          share_type=share_types[i-1],\
-            )
-            trans.save()
+    #register
+    if 'register' in request.POST:
+        dates = request.POST.getlist('dates')
+        names = request.POST.getlist('names')
+        expenses = request.POST.getlist('expenses')
+        memos = request.POST.getlist('memos')
 
-        i += 1
-    update_balance(trans)
-    """
+        cid = int(request.POST['c'])
+        pmid = int(request.POST['pm'])
+        c = Category.objects.get(pk=cid)
+        pm = Pmethod.objects.get(pk=pmid)
+
+        share_type=request.POST['share_type']
+            
+
+        i = 1
+        for expense in expenses:
+            if expense != '0':
+                date = datetime.datetime.strptime(dates[i-1], '%Y/%m/%d')
+
+                trans = Trans(date=date, \
+                              name=names[i-1], \
+                              expense=expenses[i-1], \
+                              memo=memos[i-1], \
+                              category=c,\
+                              pmethod=pm,\
+                              user=request.user, \
+                              share_type=share_type,\
+                )
+                trans.save()
+
+            i += 1
+        update_balance(trans)
 
     context = {\
                'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
                'categorygroup_list' : categorygroup_list , \
                'category_list' : category_list,\
                'date_list' : date_list,\
-               
+               "datefrom":str_datefrom,\
+               "dateto":str_dateto,\
     }
     return render(request, 'trans/everymonth.html', context)
 
