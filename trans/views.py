@@ -574,8 +574,103 @@ def handle_uploaded_suica(f):
     with open('suica/tmp.txt', 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
+
+
+#--everymonth-----
+def everymonth(request):
+    #pmethod
+    pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
+
+    #sort with group and order---
+    pmethod_list = []
+    if len(pmgroup_list) > 0:
+        pmg = pmgroup_list[0]
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
+        pmethod_list.extend(pmlist)
+
+
+    #category---
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+
+    #sort with group and order---
+    category_list = []
+    if len(categorygroup_list) > 0:
+        cg = categorygroup_list[0]
+        clist = Category.objects.filter(group = cg).order_by('order')
+        category_list.extend(clist)
+
+
+    str_datefrom = ''
+    str_dateto = ''
+
+    # update period--------
+    date_list = []
+    if 'update' in request.POST:
+        #action_update = request.POST['update']
+        
+        str_datefrom = request.POST['datefrom']
+        datefrom = datetime.datetime.strptime(str_datefrom, '%Y/%m')
+
+        str_dateto = request.POST['dateto']
+        dateto = datetime.datetime.strptime(str_dateto, '%Y/%m')
+
+        for year in range(datefrom.year, dateto.year + 1):
+            monthfrom = datefrom.month
+            monthto = dateto.month
+            if datefrom.year != dateto.year:
+                if year != datefrom.year:
+                    monthfrom = 1
+                if year != dateto.year:
+                    monthto = 12
+            for month in range(monthfrom, monthto + 1):
+                date = datetime.datetime(year, month, 1,0,0,0)
+                date_list.append(date)
         
 
+
+    #register
+    if 'register' in request.POST:
+        dates = request.POST.getlist('dates')
+        names = request.POST.getlist('names')
+        expenses = request.POST.getlist('expenses')
+        memos = request.POST.getlist('memos')
+
+        cid = int(request.POST['c'])
+        pmid = int(request.POST['pm'])
+        c = Category.objects.get(pk=cid)
+        pm = Pmethod.objects.get(pk=pmid)
+
+        share_type=request.POST['share_type']
+            
+
+        i = 1
+        for expense in expenses:
+            if expense != '0':
+                date = datetime.datetime.strptime(dates[i-1], '%Y/%m/%d')
+
+                trans = Trans(date=date, \
+                              name=names[i-1], \
+                              expense=expenses[i-1], \
+                              memo=memos[i-1], \
+                              category=c,\
+                              pmethod=pm,\
+                              user=request.user, \
+                              share_type=share_type,\
+                )
+                trans.save()
+
+            i += 1
+        update_balance(trans)
+
+    context = {\
+               'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
+               'categorygroup_list' : categorygroup_list , \
+               'category_list' : category_list,\
+               'date_list' : date_list,\
+               "datefrom":str_datefrom,\
+               "dateto":str_dateto,\
+    }
+    return render(request, 'trans/everymonth.html', context)
 
 
 
