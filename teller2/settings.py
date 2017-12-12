@@ -79,7 +79,6 @@ WSGI_APPLICATION = 'teller2.wsgi.application'
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 """
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -97,6 +96,7 @@ DATABASES = {
          'PORT' : 5432,
      }
  }
+
 
 #         'HOST' : 'db',
 #         'NAME': 'teller2',
