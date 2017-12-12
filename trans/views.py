@@ -801,14 +801,16 @@ def update_balance(trans):
 #input: added trans
 def update_balance_para(pmethod, user, date):
     # update balance---
-    prevTrans = Trans.objects.filter(pmethod=pmethod, user=user, date__lt=date).order_by('date')[:1]
+    prevTrans = Trans.objects.filter(pmethod=pmethod, user=user, date__lt=date).order_by('-date', '-id')[:1]
 
     prevBalance = 0
     if len(prevTrans) != 0:
         prevBalance = prevTrans[0].balance
 
+    #print("------" + str(prevBalance))
+
     # get newer transs--
-    transs = Trans.objects.filter(pmethod=pmethod, user=user, date__gte=date).order_by('date')
+    transs = Trans.objects.filter(pmethod=pmethod, user=user, date__gte=date).order_by('date', 'id')
 
     for t in transs:
         #print(t.name)
