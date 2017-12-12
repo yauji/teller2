@@ -18,7 +18,7 @@ ADD uwsgi.ini /code/teller2
 ADD teller2_nginx.conf /etc/nginx/conf.d/
 
 ENV DB_PASSWORD=${DB_PASSWORD}
-ENV POSTGRES_PORT_5432_TCP_ADDR=${POSTGRES_PORT_5432_TCP_ADDR}
+#ENV POSTGRES_PORT_5432_TCP_ADDR=${POSTGRES_PORT_5432_TCP_ADDR}
 #RUN python /code/manage.py collectstatic --noinput
 RUN python /code/teller2/manage.py collectstatic --noinput
 

@@ -92,7 +92,8 @@ DATABASES = {
          'NAME': 'teller2',
          'USER': 'postgres',
          'PASSWORD' : environ['DB_PASSWORD'],
-         'HOST' : environ['POSTGRES_PORT_5432_TCP_ADDR'],
+         'HOST' : 'db',
+         #'HOST' : environ['POSTGRES_PORT_5432_TCP_ADDR'],
          'PORT' : 5432,
      }
  }
