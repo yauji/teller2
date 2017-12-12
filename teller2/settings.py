@@ -78,6 +78,8 @@ WSGI_APPLICATION = 'teller2.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
+"""
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -88,14 +90,13 @@ DATABASES = {
 DATABASES = {
     'default': {
          'ENGINE': 'django.db.backends.postgresql_psycopg2',
-         'NAME': 'postgres',
+         'NAME': 'teller2',
          'USER': 'postgres',
          'PASSWORD' : environ['DB_PASSWORD'],
          'HOST' : environ['POSTGRES_PORT_5432_TCP_ADDR'],
          'PORT' : 5432,
      }
  }
-"""
 
 #         'HOST' : 'db',
 #         'NAME': 'teller2',
