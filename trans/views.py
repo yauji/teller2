@@ -507,7 +507,11 @@ def suica_upload(request):
             trans.date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
             trans.name = splts[1] + splts[4]  + splts[3]  + splts[4]
             if len(splts) == 7:
-                expense = splts[6].replace('-', '').replace(',', '')
+                if splts[6].count('-'):
+                    expense = splts[6].replace('-', '').replace(',', '')
+                else:
+                    expense = splts[6].replace('+', '-').replace(',', '')
+                    #expense = '-' + expense
                 #expense = splts[5].replace('¥', '').replace(',', '')
                 trans.expense = expense
 
