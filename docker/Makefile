@@ -12,7 +12,7 @@ build:
 	cp -r ../static teller2
 	tar czvf teller2.tar.gz teller2
 	docker-compose build
-	docker build -t $(NAME):$(VERSION) .
+	#docker build -t $(NAME):$(VERSION)  .
 
 start:
 	docker run -it \
