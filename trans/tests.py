@@ -25,7 +25,8 @@ USER='admin'
 PASS='hogehoge'
 
 C_MOVE_ID = 101
-C_WITHDRAW_ID = 103
+C_WITHDRAW_ID = 110
+#C_WITHDRAW_ID = 103
 
 
 class PmethodTestCase(TestCase):

@@ -21,7 +21,8 @@ from .models import Trans, PmethodGroup, Pmethod, CategoryGroup, Category
 SHARE_TYPES_OWN = 1
 
 C_MOVE_ID = 101
-C_WITHDRAW_ID = 103
+C_WITHDRAW_ID = 110
+#C_WITHDRAW_ID = 103
 
 SUICA_KURIKOSHI = '繰\u3000'
 
@@ -506,7 +507,11 @@ def suica_upload(request):
             trans.date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
             trans.name = splts[1] + splts[4]  + splts[3]  + splts[4]
             if len(splts) == 7:
-                expense = splts[6].replace('-', '').replace(',', '')
+                if splts[6].count('-'):
+                    expense = splts[6].replace('-', '').replace(',', '')
+                else:
+                    expense = splts[6].replace('+', '-').replace(',', '')
+                    #expense = '-' + expense
                 #expense = splts[5].replace('¥', '').replace(',', '')
                 trans.expense = expense
 
@@ -574,8 +579,103 @@ def handle_uploaded_suica(f):
     with open('suica/tmp.txt', 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
+
+
+#--everymonth-----
+def everymonth(request):
+    #pmethod
+    pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
+
+    #sort with group and order---
+    pmethod_list = []
+    if len(pmgroup_list) > 0:
+        pmg = pmgroup_list[0]
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
+        pmethod_list.extend(pmlist)
+
+
+    #category---
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+
+    #sort with group and order---
+    category_list = []
+    if len(categorygroup_list) > 0:
+        cg = categorygroup_list[0]
+        clist = Category.objects.filter(group = cg).order_by('order')
+        category_list.extend(clist)
+
+
+    str_datefrom = ''
+    str_dateto = ''
+
+    # update period--------
+    date_list = []
+    if 'update' in request.POST:
+        #action_update = request.POST['update']
+        
+        str_datefrom = request.POST['datefrom']
+        datefrom = datetime.datetime.strptime(str_datefrom, '%Y/%m')
+
+        str_dateto = request.POST['dateto']
+        dateto = datetime.datetime.strptime(str_dateto, '%Y/%m')
+
+        for year in range(datefrom.year, dateto.year + 1):
+            monthfrom = datefrom.month
+            monthto = dateto.month
+            if datefrom.year != dateto.year:
+                if year != datefrom.year:
+                    monthfrom = 1
+                if year != dateto.year:
+                    monthto = 12
+            for month in range(monthfrom, monthto + 1):
+                date = datetime.datetime(year, month, 1,0,0,0)
+                date_list.append(date)
         
 
+
+    #register
+    if 'register' in request.POST:
+        dates = request.POST.getlist('dates')
+        names = request.POST.getlist('names')
+        expenses = request.POST.getlist('expenses')
+        memos = request.POST.getlist('memos')
+
+        cid = int(request.POST['c'])
+        pmid = int(request.POST['pm'])
+        c = Category.objects.get(pk=cid)
+        pm = Pmethod.objects.get(pk=pmid)
+
+        share_type=request.POST['share_type']
+            
+
+        i = 1
+        for expense in expenses:
+            if expense != '0':
+                date = datetime.datetime.strptime(dates[i-1], '%Y/%m/%d')
+
+                trans = Trans(date=date, \
+                              name=names[i-1], \
+                              expense=expenses[i-1], \
+                              memo=memos[i-1], \
+                              category=c,\
+                              pmethod=pm,\
+                              user=request.user, \
+                              share_type=share_type,\
+                )
+                trans.save()
+
+            i += 1
+        update_balance(trans)
+
+    context = {\
+               'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
+               'categorygroup_list' : categorygroup_list , \
+               'category_list' : category_list,\
+               'date_list' : date_list,\
+               "datefrom":str_datefrom,\
+               "dateto":str_dateto,\
+    }
+    return render(request, 'trans/everymonth.html', context)
 
 
 
@@ -705,14 +805,16 @@ def update_balance(trans):
 #input: added trans
 def update_balance_para(pmethod, user, date):
     # update balance---
-    prevTrans = Trans.objects.filter(pmethod=pmethod, user=user, date__lt=date).order_by('date')[:1]
+    prevTrans = Trans.objects.filter(pmethod=pmethod, user=user, date__lt=date).order_by('-date', '-id')[:1]
 
     prevBalance = 0
     if len(prevTrans) != 0:
         prevBalance = prevTrans[0].balance
 
+    #print("------" + str(prevBalance))
+
     # get newer transs--
-    transs = Trans.objects.filter(pmethod=pmethod, user=user, date__gte=date).order_by('date')
+    transs = Trans.objects.filter(pmethod=pmethod, user=user, date__gte=date).order_by('date', 'id')
 
     for t in transs:
         #print(t.name)

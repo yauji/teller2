@@ -24,8 +24,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'gs=hv1ms$mx56=af&q$3b%*n!0y!bekov(s=kz1w@idetby1!o'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-#DEBUG = True
+#DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 #ALLOWED_HOSTS = []
@@ -78,6 +78,7 @@ WSGI_APPLICATION = 'teller2.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
+"""
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -88,19 +89,13 @@ DATABASES = {
 DATABASES = {
     'default': {
          'ENGINE': 'django.db.backends.postgresql_psycopg2',
-         'NAME': 'postgres',
+         'NAME': 'teller2',
          'USER': 'postgres',
          'PASSWORD' : environ['DB_PASSWORD'],
          'HOST' : environ['POSTGRES_PORT_5432_TCP_ADDR'],
          'PORT' : 5432,
      }
  }
-"""
-
-#         'HOST' : 'db',
-#         'NAME': 'teller2',
-#         'HOST' : '192.168.10.131',
-
 
 
 
@@ -146,10 +141,13 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
+
 # Fetch Django's project directory
 DJANGO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Fetch the project_root
 PROJECT_ROOT = os.path.dirname(DJANGO_ROOT)
 
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
+"""
+"""
 
