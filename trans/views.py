@@ -21,7 +21,8 @@ from .models import Trans, PmethodGroup, Pmethod, CategoryGroup, Category
 SHARE_TYPES_OWN = 1
 
 C_MOVE_ID = 101
-C_WITHDRAW_ID = 103
+C_WITHDRAW_ID = 110
+#C_WITHDRAW_ID = 103
 
 SUICA_KURIKOSHI = '繰\u3000'
 

@@ -27,11 +27,11 @@
 	},
         {
 	    "model": "trans.Category",
-	    "pk": 103,
+	    "pk": 110,
 	    "fields": {
 		"name": "withdraw",
 		"group_id": 101,
-		"order": 103
+		"order": 110
 	    }
 	}
 ]
