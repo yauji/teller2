@@ -541,6 +541,8 @@ def suica_upload(request):
         
 
 def suica_check(request):
+    suica_jaccs_register(request)
+    """
     # checked trans
     tids = request.POST.getlist('tids')
     dates = request.POST.getlist('dates')
@@ -571,6 +573,7 @@ def suica_check(request):
 
         i += 1
     update_balance(trans)
+    """
 
     return redirect('/t/')
 
@@ -634,8 +637,8 @@ def jaccs_upload(request):
         for l in contents:
             splts = l.split('\t')
 
-            print('------')
-            print(splts)
+            #print('------')
+            #print(splts)
 
             if len(splts) == 1:
                 continue
@@ -681,6 +684,11 @@ def jaccs_upload(request):
         
 
 def jaccs_check(request):
+    suica_jaccs_register(request)
+
+    return redirect('/t/')
+
+def suica_jaccs_register(request):
     # checked trans
     tids = request.POST.getlist('tids')
     dates = request.POST.getlist('dates')
@@ -711,8 +719,7 @@ def jaccs_check(request):
 
         i += 1
     update_balance(trans)
-
-    return redirect('/t/')
+    
 
 
 
