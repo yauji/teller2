@@ -33,6 +33,24 @@
 		"group_id": 101,
 		"order": 110
 	    }
+	},
+        {
+	    "model": "trans.PmethodGroup",
+	    "pk": 3,
+	    "fields": {
+		"name": "creditcard",
+		"order": 3,
+		"user_id": 1
+	    }
+	},
+        {
+	    "model": "trans.Pmethod",
+	    "pk": 210,
+	    "fields": {
+		"name": "jaccs",
+		"group": 3,
+		"order": 210
+	    }
 	}
 ]
 	    

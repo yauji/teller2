@@ -22,6 +22,10 @@ urlpatterns = [
     url(r'^suica_upload$', views.suica_upload, name='suica_upload'),
     url(r'^suica_check$', views.suica_check, name='suica_check'),
     
+    # jaccs
+    url(r'^jaccs_upload$', views.jaccs_upload, name='jaccs_upload'),
+    url(r'^jaccs_check$', views.jaccs_check, name='jaccs_check'),
+    
     # everymonth
     url(r'^everymonth$', views.everymonth, name='everymonth'),
 
