@@ -24,7 +24,11 @@ C_MOVE_ID = 101
 C_WITHDRAW_ID = 110
 #C_WITHDRAW_ID = 103
 
+PM_JACCS_ID = 210
+
+
 SUICA_KURIKOSHI = '繰\u3000'
+JACCS_DISCOUNT = 'discount with J-depo:'
 
 @login_required(login_url='/login/')
 def index(request):
@@ -537,6 +541,8 @@ def suica_upload(request):
         
 
 def suica_check(request):
+    suica_jaccs_register(request)
+    """
     # checked trans
     tids = request.POST.getlist('tids')
     dates = request.POST.getlist('dates')
@@ -567,6 +573,7 @@ def suica_check(request):
 
         i += 1
     update_balance(trans)
+    """
 
     return redirect('/t/')
 
@@ -581,6 +588,150 @@ def handle_uploaded_suica(f):
             destination.write(chunk)
 
 
+
+#--- jaccs ----
+
+def jaccs_upload(request):
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+
+    category_list = []
+    if len(categorygroup_list) > 0:
+        cg = categorygroup_list[0]
+        clist = Category.objects.filter(group = cg).order_by('order')
+        category_list.extend(clist)
+
+
+    if request.method == 'GET':
+        context = {'categorygroup_list': categorygroup_list,\
+                   'category_list' : category_list,\
+        }
+        return render(request, 'trans/jaccs_upload.html', context)
+
+    elif request.method == 'POST':
+        if not 'file' in request.FILES:
+            context = {'categorygroup_list': categorygroup_list,\
+                       'category_list' : category_list,\
+                       'error_message': 'File is mandatory.',\
+            }
+            return render(request, 'trans/jaccs_upload.html', context)
+            
+        f = request.FILES['file']
+
+        with open('tmp_jaccs.txt', 'wb+') as destination:
+            for chunk in f.chunks():
+                destination.write(chunk)
+
+        f = open('tmp_jaccs.txt', 'r')
+        contents = []
+        for l in f.readlines():
+            contents.append(l)
+        f.close()
+
+        # get default cate, pmethod
+        cid = int(request.POST['c'])
+        c = Category.objects.get(pk=cid)
+        pm = Pmethod.objects.get(pk=PM_JACCS_ID)
+
+        trans_list = []
+        tmpid = 1
+        for l in contents:
+            splts = l.split('\t')
+
+            #print('------')
+            #print(splts)
+
+            if len(splts) == 1:
+                continue
+
+            if splts[1] == '':
+                continue
+
+            
+            trans = TransUi()
+
+            # this id is tmp
+            trans.id = tmpid
+            tmpid += 1
+            strdate = '20' + splts[1]
+            #strdate = request.POST['year'] + '/' + splts[0]
+            trans.date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
+            trans.name = splts[2] + splts[3]
+
+            expense = splts[10].replace(',', '')
+            trans.expense = expense
+
+            price = splts[8].replace(',', '')
+            if expense != price:
+                trans.memo = JACCS_DISCOUNT + price
+
+            trans.category = c
+            trans.pmethod = pm
+
+            #check same trans
+            checktranslist = Trans.objects.filter(date=trans.date, expense=trans.expense, category=c, pmethod=pm)
+
+            if len(checktranslist) > 0:
+                trans.selected = False
+
+            trans_list.append(trans)
+
+
+        context = {'categorygroup_list': categorygroup_list,\
+                   'trans_list': trans_list,\
+                   }
+        return render(request, 'trans/jaccs_check.html', context)
+        
+        
+
+def jaccs_check(request):
+    suica_jaccs_register(request)
+
+    return redirect('/t/')
+
+def suica_jaccs_register(request):
+    # checked trans
+    tids = request.POST.getlist('tids')
+    dates = request.POST.getlist('dates')
+    cs = request.POST.getlist('cs')
+    names = request.POST.getlist('names')
+    expenses = request.POST.getlist('expenses')
+    pmethods = request.POST.getlist('pmethods')
+    memos = request.POST.getlist('memos')
+    share_types = request.POST.getlist('share_types')
+
+    i = 1
+    for expense in expenses:
+        if str(i) in tids:
+            date = datetime.datetime.strptime(dates[i-1], '%Y/%m/%d')
+            c = Category.objects.get(pk=cs[i-1])
+            pm = Pmethod.objects.get(pk=pmethods[i-1])
+
+            trans = Trans(date=date, \
+                          name=names[i-1], \
+                          expense=expenses[i-1], \
+                          memo=memos[i-1], \
+                          category=c,\
+                          pmethod=pm,\
+                          user=request.user, \
+                          share_type=share_types[i-1],\
+            )
+            trans.save()
+
+        i += 1
+    update_balance(trans)
+    
+
+
+
+
+    
+
+def handle_uploaded_jaccs(f):
+    with open('jaccs/tmp.txt', 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+
+            
 #--everymonth-----
 def everymonth(request):
     #pmethod
