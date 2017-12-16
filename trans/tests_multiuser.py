@@ -63,31 +63,50 @@ class TransTestCase(TestCase):
 
 
     # monthly report-----------------
-    def test_mr_ok01(self):
-        #kokokara
+    def test_mr_multiuser_ok01(self):
+        #user1--
         c = Client()
-        c.login(username='test1', password='password')
+        c.login(username=USER1, password=PASS1)
 
         pms = Pmethod.objects.all()
-        #print(pms)
         cs = Category.objects.all()
 
         self.add_trans2(c, pms, cs)
 
+        
+        #user2--
+        c = Client()
+        c.login(username=USER2, password=PASS2)
+
+        pms = Pmethod.objects.all()
+        cs = Category.objects.all()
+
+        response = c.post('/t/add', {'date': '2017/01/01', 'name': '2item1',\
+                                     'c':cs[0].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':10000,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+
+
+
+        #actual, alluser--
         response = c.post('/t/monthlyreport',\
                           {\
                            'datefrom': '2017/01', 'dateto': '2017/03',\
+                           'alluser':'on'
         })
         self.assertEqual(response.status_code, 200)
 
-
         # list method (actual)---
         req = response.wsgi_request
-        self.user.username=''
-        req.user = self.user
+        #self.user1.username=''
+        req.user = self.user1
         res = views.monthlyreport(req)
         #print(res)
-
 
 
 
@@ -110,15 +129,72 @@ class TransTestCase(TestCase):
                 cui.selected = True
                 cui_list.append(cui)
 
-        #date---
-        """
-        dateto = datetime.datetime.now()
-        str_dateto = dateto.strftime('%Y/%m')
-        datefrom = dateto  + timedelta(weeks=-13)
-        str_datefrom = datefrom.strftime('%Y/%m')
-        """
+        #monthly report list----
+        monthlyreport_list = []
+
+        #2017/01
+        mr = MonthlyreportEachMonthUi()
+        mr.totalexpense = 10150
+        mr.totalincome = 0
+        mr.total = mr.totalincome - mr.totalexpense
+
+        mr.yearmonth = '2017/1'
+        monthlyreport_list.append(mr)
+        
+        #2017/02
+        mr = MonthlyreportEachMonthUi()
+        mr.totalexpense = 3
+        mr.totalincome = 10
+        mr.total = mr.totalincome - mr.totalexpense
+
+        mr.yearmonth = '2017/2'
+        monthlyreport_list.append(mr)
+        
+        #2017/03
+        mr = MonthlyreportEachMonthUi()
+        mr.totalexpense = 0
+        mr.totalincome = 0
+        mr.total = mr.totalincome - mr.totalexpense
+
+        mr.yearmonth = '2017/3'
+        monthlyreport_list.append(mr)
+        
+        
+
+        expected_html = render_to_string('trans/monthlyreport.html',\
+                                 {'request.user': USER1,\
+                                  'category_list' : cui_list,\
+                                  'datefrom' : '2017/01',\
+                                  'dateto' : '2017/03',\
+                                  'alluser' : True,\
+                                  'monthlyreport_list' : monthlyreport_list,\
+                                 })
+
+        #print(res.content.decode())
+        #print(expected_html)
+        
+        self.assertEqualExceptCSRF(res.content.decode(), expected_html)
 
 
+
+        #--------
+        #actual, not alluser--
+        c = Client()
+        c.login(username=USER1, password=PASS1)
+        
+        response = c.post('/t/monthlyreport',\
+                          {\
+                           'datefrom': '2017/01', 'dateto': '2017/03',\
+        })
+        self.assertEqual(response.status_code, 200)
+
+        # list method (actual)---
+        req = response.wsgi_request
+        req.user = self.user1
+        res = views.monthlyreport(req)
+        #print(res)
+
+        #expected--------
         #monthly report list----
         monthlyreport_list = []
 
@@ -152,11 +228,10 @@ class TransTestCase(TestCase):
         
 
         expected_html = render_to_string('trans/monthlyreport.html',\
-                                 {'request.user': 'admin',\
+                                 {'request.user': USER1,\
                                   'category_list' : cui_list,\
                                   'datefrom' : '2017/01',\
                                   'dateto' : '2017/03',\
-                                  'alluser' : True,\
                                   'monthlyreport_list' : monthlyreport_list,\
                                  })
 
@@ -164,6 +239,9 @@ class TransTestCase(TestCase):
         #print(expected_html)
         
         self.assertEqualExceptCSRF(res.content.decode(), expected_html)
+
+
+        
 
 
 
@@ -187,6 +265,55 @@ class TransTestCase(TestCase):
             self.remove_csrf(html_code1),
             self.remove_csrf(html_code2)
         )
+
+
+    #add trans------
+    def add_trans2(self, c, pms, cs):
+        #1st trans---
+        response = c.post('/t/add', {'date': '2017/01/01', 'name': 'item1',\
+                                     'c':cs[0].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':100,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+
+        #2nd trans---
+        response = c.post('/t/add', {'date': '2017/01/31', 'name': 'item2',\
+                                     'c':cs[1].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':50,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+        
+        #3rd trans---
+        response = c.post('/t/add', {'date': '2017/02/01', 'name': 'item3',\
+                                     'c':cs[0].id,\
+                                     'pm':pms[1].id,\
+                                     'expense':3,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+        
+        #4th trans---
+        response = c.post('/t/add', {'date': '2017/02/28', 'name': 'item4',\
+                                     'c':cs[0].id,\
+                                     'pm':pms[0].id,\
+                                     'expense':-10,\
+                                     'memo':'memo1',\
+                                     'share_type':1,\
+                                     'user_pay4':'',\
+        })
+        self.assertEqual(response.status_code, 302)
+        
+    
 
 
 
