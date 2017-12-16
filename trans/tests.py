@@ -703,6 +703,7 @@ class TransTestCase2(TestCase):
         response = c.post('/t/monthlyreport',\
                           {\
                            'datefrom': '2017/01', 'dateto': '2017/03',\
+                           'alluser':'on'
         })
         self.assertEqual(response.status_code, 200)
 

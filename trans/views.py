@@ -67,7 +67,7 @@ def index(request):
 # show monthlyrerpot
 @login_required(login_url='/login/')
 def monthlyreport(request):
-    print (request)
+    #print (request)
 
     #date---
     if 'datefrom' not in request.POST:
@@ -87,8 +87,10 @@ def monthlyreport(request):
     str_dateto = dateto.strftime('%Y/%m')
 
 
-    #todo
-    alluser = True
+
+    alluser = False
+    if 'alluser' in request.POST:
+        alluser = True
 
     #category--
     category_list = get_category_list_ui(request)
@@ -112,14 +114,24 @@ def monthlyreport(request):
 
             
             # sum total for each month---
-            expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0, includemonthlysum=True).aggregate(Sum('expense'))
+            expense = 0
+            if alluser:
+                expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0, includemonthlysum=True).aggregate(Sum('expense'))
+            else:
+                expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0, includemonthlysum=True, user=request.user).aggregate(Sum('expense'))
+                
 
             if expense["expense__sum"] is not None:
                 mr.totalexpense = expense["expense__sum"]
             else:
                 mr.totalexpense = 0
+
+
+            if alluser:
+                income = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__lt=0, includemonthlysum=True).aggregate(Sum('expense'))
+            else:
+                income = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__lt=0, includemonthlysum=True, user=request.user).aggregate(Sum('expense'))
                 
-            income = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__lt=0, includemonthlysum=True).aggregate(Sum('expense'))
             if income["expense__sum"] is not None:
                 mr.totalincome = income["expense__sum"] * -1
             else:
@@ -133,8 +145,12 @@ def monthlyreport(request):
             eachCates = []
             for c in get_category_list():
                 if str(c.id) in request.POST.getlist('categorys'):
-                    #todo consider user
-                    sum = Trans.objects.filter(category=c, date__gte=scfrom, date__lt=scto).aggregate(Sum('expense'))
+                    
+                    if alluser:
+                        sum = Trans.objects.filter(category=c, date__gte=scfrom, date__lt=scto).aggregate(Sum('expense'))
+                    else:
+                        sum = Trans.objects.filter(category=c, date__gte=scfrom, date__lt=scto, user=request.user).aggregate(Sum('expense'))
+                        
 
                     eachCate = {}
                     eachCate["category_id"] = c.id
