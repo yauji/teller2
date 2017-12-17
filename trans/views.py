@@ -28,8 +28,10 @@ PM_JACCS_ID = 210
 
 
 SUICA_KURIKOSHI = '繰\u3000'
+
 JACCS_DISCOUNT = 'discount with J-depo:'
 
+SALARY_MAPPING_FNAME = 'mapping_item_cid.txt'
 
 
 
@@ -757,16 +759,6 @@ def handle_uploaded_jaccs(f):
 #--- salary ----
 
 def salary_upload(request):
-    """
-    categorygroup_list = CategoryGroup.objects.order_by('order')
-
-    category_list = []
-    if len(categorygroup_list) > 0:
-        cg = categorygroup_list[0]
-        clist = Category.objects.filter(group = cg).order_by('order')
-        category_list.extend(clist)
-    """
-
     pmethodgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
 
     pmethod_list = []
@@ -774,11 +766,6 @@ def salary_upload(request):
         pmg = pmethodgroup_list[0]
         pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
         pmethod_list.extend(pmlist)
-
-    """
-    date = datetime.datetime.now()
-    year = date.year
-    """
 
     if request.method == 'GET':
         context = {'pmethodgroup_list': pmethodgroup_list,\
@@ -809,7 +796,7 @@ def salary_upload(request):
 
 
         #open mapping between item and cid--
-        f = open('mapping_item_cid.txt', 'r')
+        f = open(SALARY_MAPPING_FNAME, 'r')
         CS_SALARY = {}
         for l in f.readlines():
             splts = l.split(',')
@@ -817,10 +804,8 @@ def salary_upload(request):
         f.close()
 
 
-        # get default cate, pmethod
-        #cid = int(request.POST['c'])
+        # get default pmethod
         pmid = int(request.POST['pm'])
-        #c = Category.objects.get(pk=cid)
         pm = Pmethod.objects.get(pk=pmid)
 
         trans_list = []
@@ -837,7 +822,6 @@ def salary_upload(request):
             splts = l.split(' : ')
             print(splts)
             trans = TransUi()
-            #trans = Trans()
 
             # this id is tmp
             trans.id = tmpid
@@ -869,8 +853,6 @@ def salary_upload(request):
                 trans.selected = False
 
             trans_list.append(trans)
-                
-
 
         context = {
                    'trans_list': trans_list,\
