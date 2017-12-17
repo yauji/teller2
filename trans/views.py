@@ -31,13 +31,6 @@ SUICA_KURIKOSHI = '繰\u3000'
 JACCS_DISCOUNT = 'discount with J-depo:'
 
 
-CS_SALARY = {}
-CS_SALARY['月俸'] = 221
-CS_SALARY['住宅手当'] = 226
-CS_SALARY['持株会奨励金'] = 229
-
-CS_SALARY['健康保険料'] = 230
-
 
 
 @login_required(login_url='/login/')
@@ -814,6 +807,16 @@ def salary_upload(request):
             contents.append(l)
         f.close()
 
+
+        #open mapping between item and cid--
+        f = open('mapping_item_cid.txt', 'r')
+        CS_SALARY = {}
+        for l in f.readlines():
+            splts = l.split(',')
+            CS_SALARY[splts[0]] = int(splts[1])
+        f.close()
+
+
         # get default cate, pmethod
         #cid = int(request.POST['c'])
         pmid = int(request.POST['pm'])
@@ -880,9 +883,6 @@ def salary_check(request):
     suica_jaccs_register(request)
 
     return redirect('/t/')
-
-
-#hoge
 
 
 
