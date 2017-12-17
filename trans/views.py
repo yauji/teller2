@@ -781,7 +781,17 @@ def salary_upload(request):
                        'error_message': 'File is mandatory.',\
             }
             return render(request, 'trans/salary_upload.html', context)
-            
+
+        if request.POST['date'] == '':
+            context = {\
+                       'pmethodgroup_list': pmethodgroup_list,\
+                       'pmethod_list': pmethod_list,\
+                       'error_message': 'Date should be YY/mm/dd.' + request.POST['date'],\
+            }
+            return render(request, 'trans/salary_upload.html', context)
+
+
+        
         f = request.FILES['file']
 
         with open('tmp_salary.txt', 'wb+') as destination:
