@@ -30,6 +30,16 @@ PM_JACCS_ID = 210
 SUICA_KURIKOSHI = '繰\u3000'
 JACCS_DISCOUNT = 'discount with J-depo:'
 
+
+CS_SALARY = {}
+CS_SALARY['月俸'] = 221
+CS_SALARY['住宅手当'] = 226
+CS_SALARY['持株会奨励金'] = 229
+
+CS_SALARY['健康保険料'] = 230
+
+
+
 @login_required(login_url='/login/')
 def index(request):
     latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date', '-id')[:30]
@@ -597,11 +607,12 @@ def suica_check(request):
 
 
     
-
+"""
 def handle_uploaded_suica(f):
     with open('suica/tmp.txt', 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
+"""
 
 
 
@@ -741,11 +752,139 @@ def suica_jaccs_register(request):
 
 
     
+"""
 
 def handle_uploaded_jaccs(f):
     with open('jaccs/tmp.txt', 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
+"""
+
+
+#--- salary ----
+
+def salary_upload(request):
+    """
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+
+    category_list = []
+    if len(categorygroup_list) > 0:
+        cg = categorygroup_list[0]
+        clist = Category.objects.filter(group = cg).order_by('order')
+        category_list.extend(clist)
+    """
+
+    pmethodgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
+
+    pmethod_list = []
+    if len(pmethodgroup_list) > 0:
+        pmg = pmethodgroup_list[0]
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
+        pmethod_list.extend(pmlist)
+
+    """
+    date = datetime.datetime.now()
+    year = date.year
+    """
+
+    if request.method == 'GET':
+        context = {'pmethodgroup_list': pmethodgroup_list,\
+                   'pmethod_list': pmethod_list,\
+        }
+        return render(request, 'trans/salary_upload.html', context)
+
+    elif request.method == 'POST':
+        if not 'file' in request.FILES:
+            context = {\
+                       'pmethodgroup_list': pmethodgroup_list,\
+                       'pmethod_list': pmethod_list,\
+                       'error_message': 'File is mandatory.',\
+            }
+            return render(request, 'trans/salary_upload.html', context)
+            
+        f = request.FILES['file']
+
+        with open('tmp_salary.txt', 'wb+') as destination:
+            for chunk in f.chunks():
+                destination.write(chunk)
+
+        f = open('tmp_salary.txt', 'r')
+        contents = []
+        for l in f.readlines():
+            contents.append(l)
+        f.close()
+
+        # get default cate, pmethod
+        #cid = int(request.POST['c'])
+        pmid = int(request.POST['pm'])
+        #c = Category.objects.get(pk=cid)
+        pm = Pmethod.objects.get(pk=pmid)
+
+        trans_list = []
+        tmpid = 1
+        fIncome = True
+        for l in contents:
+            if 'in\n' == l:
+                fIncome = True
+                continue
+            elif 'out\n' == l:
+                fIncome = False
+                continue
+                
+            splts = l.split(' : ')
+            print(splts)
+            trans = TransUi()
+            #trans = Trans()
+
+            # this id is tmp
+            trans.id = tmpid
+            tmpid += 1
+            strdate = request.POST['date']
+            trans.date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
+            
+            trans.name = ''
+            expense = splts[1].replace(',', '').replace('\n','')
+            if fIncome:
+                expense = '-' + expense
+
+            trans.expense = expense
+            trans.pmethod = pm
+
+
+            #category
+            if not splts[0] in CS_SALARY:
+                continue
+            
+            cid = CS_SALARY[splts[0]]
+            c = Category.objects.get(pk=cid)
+            trans.category = c
+
+            #check same trans
+            checktranslist = Trans.objects.filter(date=trans.date, expense=trans.expense, category=c, pmethod=pm)
+
+            if len(checktranslist) > 0:
+                trans.selected = False
+
+            trans_list.append(trans)
+                
+
+
+        context = {
+                   'trans_list': trans_list,\
+                   }
+        return render(request, 'trans/salary_check.html', context)
+        
+        
+
+def salary_check(request):
+    suica_jaccs_register(request)
+
+    return redirect('/t/')
+
+
+#hoge
+
+
 
             
 #--everymonth-----
