@@ -10,6 +10,7 @@ build:
 	cp -r ../manage.py teller2
 	cp -r ../templates teller2
 	cp -r ../static teller2
+	cp -r ../mapping_item_cid.txt teller2
 	tar czvf teller2.tar.gz teller2
 	docker-compose build
 	#docker build -t $(NAME):$(VERSION)  .
