@@ -26,6 +26,10 @@ urlpatterns = [
     url(r'^jaccs_upload$', views.jaccs_upload, name='jaccs_upload'),
     url(r'^jaccs_check$', views.jaccs_check, name='jaccs_check'),
     
+    # salary
+    url(r'^salary_upload$', views.salary_upload, name='salary_upload'),
+    url(r'^salary_check$', views.salary_check, name='salary_check'),
+    
     # everymonth
     url(r'^everymonth$', views.everymonth, name='everymonth'),
 
