@@ -363,13 +363,14 @@ def list(request):
             dateto = datetime.datetime.now()
         else:
             dateto = datetime.datetime.strptime(str_dateto, '%Y/%m/%d')
+    dateto = dateto + timedelta(days=1)
 
 
     #category--
     #print(request.POST.getlist('categorys'))
     latest_trans_list = Trans.objects.filter(user=request.user)\
                         .filter(date__gte=datefrom)\
-                        .filter(date__lte=dateto)
+                        .filter(date__lt=dateto)
                         #.order_by('-date', '-id')[:100]
                         #.order_by('-date', '-id')[:100]
 
