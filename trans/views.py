@@ -38,6 +38,10 @@ SALARY_OTHER_ID = 249
 
 @login_required(login_url='/login/')
 def index(request):
+    return indexcore(request, None)
+
+
+def indexcore(request, trans):
     latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date', '-id')[:100]
     #pmethod
     pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
@@ -60,13 +64,25 @@ def index(request):
         clist = Category.objects.filter(group = cg).order_by('order')
         category_list.extend(clist)
 
+    date = ''
+    name = ''
+    expense = ''
+    
+    if trans != None:
+        date = trans.date
+        name = trans.name
+        expense = trans.expense
+
 
     context = {'latest_trans_list': latest_trans_list,\
                'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
                'categorygroup_list' : categorygroup_list , \
                'category_list' : category_list,\
+               'date' : date,\
+               'expense' : expense,\
     }
     return render(request, 'trans/index.html', context)
+    
 
 
 
@@ -249,9 +265,9 @@ def add(request):
             )
             trans.save()
             update_balance(trans)
-
-
-    return redirect('/t/')
+            
+    #return redirect('/t/')
+    return indexcore(request, trans)
 
 # dispatch delete, withdraw function
 def multi_trans_select(request):

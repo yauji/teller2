@@ -17,13 +17,13 @@
 <form action="{% url 'trans:add' %}" method="post" class="form-inline">
     {% csrf_token %}
     <label class="sr-only" for="inlineFormInput">Date</label>
-    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="date" name="date" placeholder="yyyy/mm/dd">
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="date" name="date" placeholder="yyyy/mm/dd" value="{{date|date:"Y/n/d" }}">
 
     <label class="sr-only" for="inlineFormInput">Name</label>
     <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="name" name="name"   placeholder="Enter item name">
 
     <label class="sr-only" for="inlineFormCustomSelect">Expense</label>
-    <input type="number" class="form-control" id="expense" name="expense" placeholder="Enter expense">
+    <input type="number" class="form-control" id="expense" name="expense" placeholder="Enter expense" value="{{expense}}">
 
     <label class="sr-only" for="inlineFormCustomSelect">Memo</label>
     <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="memo" name="memo" placeholder="Enter memo">
