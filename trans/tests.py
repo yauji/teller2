@@ -627,7 +627,7 @@ class TransTestCase2(TestCase):
                                   'pmgroup_list': pmgs, \
                                   'categorygroup_list' : cgs , \
                                   'category_list' : cui_list,\
-                                  'datefrom' : '2000/01/01',\
+                                  'datefrom' : '2017/01/01',\
                                   'dateto' : str_dateto,\
                                  })
 

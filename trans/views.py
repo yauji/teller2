@@ -38,6 +38,10 @@ SALARY_OTHER_ID = 249
 
 @login_required(login_url='/login/')
 def index(request):
+    return indexcore(request)
+
+
+def indexcore(request):
     latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date', '-id')[:100]
     #pmethod
     pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
@@ -67,6 +71,7 @@ def index(request):
                'category_list' : category_list,\
     }
     return render(request, 'trans/index.html', context)
+    
 
 
 
