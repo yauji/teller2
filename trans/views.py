@@ -842,8 +842,12 @@ def salary_upload(request):
             
             trans.name = ''
             expense = splts[1].replace(',', '').replace('\n','')
+            expense = expense.replace('−', '-')
             if fIncome:
-                expense = '-' + expense
+                if not expense.count('-'):
+                    expense = '-' + expense
+                else:
+                    expense = expense.replace('-', '') 
 
             trans.expense = expense
             trans.pmethod = pm
