@@ -9,11 +9,11 @@ $(function() {
 
     //events---
     $('#ccheck').click(function(e) {
-	$("#category > input:checkbox").prop("checked", true);
+	$("#category > span > input:checkbox").prop("checked", true);
     });
 
     $('#cuncheck').click(function(e) {
-	$("#category > input:checkbox").prop("checked", false);
+	$("#category > span > input:checkbox").prop("checked", false);
     });
 
     

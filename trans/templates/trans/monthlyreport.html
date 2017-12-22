@@ -20,11 +20,18 @@
 
   <div id="category">
     Categories:
+    <span>
     {% for c in category_list %}
     {% if c.first_in_group %}
-    <br/> {{c.group.name}}:
+    </span>
+    <br/>
+    {{c.group.name}}:
+    <button type="button" class="btn btn-success btn-xs" onclick='$("#category > #s{{c.id}} > input:checkbox").prop("checked", true);'>|</button>
+    <button type="button" class="btn btn-success btn-xs" onclick='$("#category > #s{{c.id}} > input:checkbox").prop("checked", false);'>O</button>
+    <span id="s{{c.id}}">
     {% endif %}
     <input type="checkbox" name="categorys" value="{{ c.id }}" {% if c.selected %}checked="checked"{% endif %}>{{c.name}}</input>
+
   {% endfor %}
     <br/>
   <button id="ccheck" type="button" class="btn btn-success btn-xs">Check</button>
