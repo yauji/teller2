@@ -89,7 +89,7 @@ class TransTestCase(TestCase):
                                      'share_type':1,\
                                      'user_pay4':'',\
         })
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
 
 
 
@@ -278,7 +278,7 @@ class TransTestCase(TestCase):
                                      'share_type':1,\
                                      'user_pay4':'',\
         })
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
 
         #2nd trans---
         response = c.post('/t/add', {'date': '2017/01/31', 'name': 'item2',\
@@ -289,7 +289,7 @@ class TransTestCase(TestCase):
                                      'share_type':1,\
                                      'user_pay4':'',\
         })
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         
         #3rd trans---
         response = c.post('/t/add', {'date': '2017/02/01', 'name': 'item3',\
@@ -300,7 +300,7 @@ class TransTestCase(TestCase):
                                      'share_type':1,\
                                      'user_pay4':'',\
         })
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         
         #4th trans---
         response = c.post('/t/add', {'date': '2017/02/28', 'name': 'item4',\
@@ -311,7 +311,7 @@ class TransTestCase(TestCase):
                                      'share_type':1,\
                                      'user_pay4':'',\
         })
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         
     
 
