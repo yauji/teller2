@@ -32,6 +32,7 @@ SUICA_KURIKOSHI = '繰\u3000'
 JACCS_DISCOUNT = 'discount with J-depo:'
 
 SALARY_MAPPING_FNAME = 'mapping_item_cid.txt'
+SALARY_OTHER_ID = 249
 
 
 
@@ -831,7 +832,6 @@ def salary_upload(request):
                 continue
                 
             splts = l.split(' : ')
-            print(splts)
             trans = TransUi()
 
             # this id is tmp
@@ -852,12 +852,15 @@ def salary_upload(request):
             trans.expense = expense
             trans.pmethod = pm
 
+            trans.name = splts[0]
+
 
             #category
             if not splts[0] in CS_SALARY:
-                continue
-            
-            cid = CS_SALARY[splts[0]]
+                #continue
+                cid = SALARY_OTHER_ID
+            else:
+                cid = CS_SALARY[splts[0]]
             c = Category.objects.get(pk=cid)
             trans.category = c
 
