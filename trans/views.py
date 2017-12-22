@@ -38,7 +38,7 @@ SALARY_OTHER_ID = 249
 
 @login_required(login_url='/login/')
 def index(request):
-    latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date', '-id')[:30]
+    latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date', '-id')[:100]
     #pmethod
     pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
 
@@ -346,7 +346,7 @@ def list(request):
     #print(request.POST)
     
     if 'datefrom' not in request.POST:
-        str_datefrom = '2000/01/01'
+        str_datefrom = '2017/01/01'
         #datefrom = datetime.datetime.strptime('2000/01/01', '%Y/%m/%d')
     else:
         str_datefrom = request.POST['datefrom']
@@ -414,7 +414,7 @@ def list(request):
 
     
     #--
-    paginator = Paginator(latest_trans_list, 50)
+    paginator = Paginator(latest_trans_list, 100)
 
     page = request.GET.get('page')
     #print(page)
