@@ -19,6 +19,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Trans, PmethodGroup, Pmethod, CategoryGroup, Category
 
 SHARE_TYPES_OWN = 1
+SHARE_TYPES_SHARE = 2
 
 C_MOVE_ID = 101
 C_WITHDRAW_ID = 110
@@ -79,8 +80,7 @@ def indexcore(request, trans, trans_move):
     date = ''
     name = ''
     expense = ''
-    #hoge
-    
+
     if trans != None:
         date = trans.date
         name = trans.name
@@ -723,6 +723,8 @@ def jaccs_upload(request):
             trans.category = c
             trans.pmethod = pm
 
+            trans.share_type = SHARE_TYPES_SHARE
+            
             #check same trans--
             checktranslist = Trans.objects.filter(date=trans.date, expense=trans.expense, pmethod=pm)
             #checktranslist = Trans.objects.filter(date=trans.date, expense=trans.expense, category=c, pmethod=pm)            
@@ -731,7 +733,9 @@ def jaccs_upload(request):
 
             #tmp for migrated data
             datetmp = trans.date + timedelta(days=-1)
-            checktranslist = Trans.objects.filter(date=datetmp, expense=trans.expense, pmethod=pm)
+            checktranslist = Trans.objects.filter(date__gte=datetmp)\
+                             .filter(date__lte=trans.date)\
+                             .filter(expense=trans.expense, pmethod=pm)
             if len(checktranslist) > 0:
                 trans.selected = False
 
