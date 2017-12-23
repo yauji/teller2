@@ -38,10 +38,10 @@ SALARY_OTHER_ID = 249
 
 @login_required(login_url='/login/')
 def index(request):
-    return indexcore(request, None)
+    return indexcore(request, None, None)
 
 
-def indexcore(request, trans):
+def indexcore(request, trans, trans_move):
     latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date', '-id')[:100]
     #pmethod
     pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
@@ -53,6 +53,14 @@ def indexcore(request, trans):
         pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
         pmethod_list.extend(pmlist)
 
+    pmethod_list_move = pmethod_list
+
+
+    if trans != None:
+        pmethod_list = []
+        pmethod_list.append(trans.pmethod)
+        pmethod_list_move = []
+        pmethod_list_move.append(trans_move.pmethod)
 
     #category---
     categorygroup_list = CategoryGroup.objects.order_by('order')
@@ -64,9 +72,14 @@ def indexcore(request, trans):
         clist = Category.objects.filter(group = cg).order_by('order')
         category_list.extend(clist)
 
+    if trans != None:
+        category_list = []
+        category_list.append(trans.category)
+        
     date = ''
     name = ''
     expense = ''
+    #hoge
     
     if trans != None:
         date = trans.date
@@ -76,6 +89,7 @@ def indexcore(request, trans):
 
     context = {'latest_trans_list': latest_trans_list,\
                'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
+               'pmethod_list_move': pmethod_list_move,\
                'categorygroup_list' : categorygroup_list , \
                'category_list' : category_list,\
                'date' : date,\
@@ -247,6 +261,8 @@ def add(request):
 
     update_balance(trans)
 
+    trans0 = trans
+
 
     #for move---
     if cid == C_MOVE_ID:
@@ -267,7 +283,7 @@ def add(request):
             update_balance(trans)
             
     #return redirect('/t/')
-    return indexcore(request, trans)
+    return indexcore(request, trans0, trans)
 
 # dispatch delete, withdraw function
 def multi_trans_select(request):
