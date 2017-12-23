@@ -723,9 +723,15 @@ def jaccs_upload(request):
             trans.category = c
             trans.pmethod = pm
 
-            #check same trans
-            checktranslist = Trans.objects.filter(date=trans.date, expense=trans.expense, category=c, pmethod=pm)
+            #check same trans--
+            checktranslist = Trans.objects.filter(date=trans.date, expense=trans.expense, pmethod=pm)
+            #checktranslist = Trans.objects.filter(date=trans.date, expense=trans.expense, category=c, pmethod=pm)            
+            if len(checktranslist) > 0:
+                trans.selected = False
 
+            #tmp for migrated data
+            datetmp = trans.date + timedelta(days=-1)
+            checktranslist = Trans.objects.filter(date=datetmp, expense=trans.expense, pmethod=pm)
             if len(checktranslist) > 0:
                 trans.selected = False
 
