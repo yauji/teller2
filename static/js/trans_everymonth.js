@@ -1,6 +1,9 @@
 
 $(function() {
     //init format---
+    $('.day').datepicker({
+	format: "yyyy/mm/dd"
+    });
     $('.datepicker').datepicker({
 	format: "yyyy/mm",
 	startView: "months",
