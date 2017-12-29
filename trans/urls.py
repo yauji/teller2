@@ -33,6 +33,11 @@ urlpatterns = [
     # everymonth
     url(r'^everymonth$', views.everymonth, name='everymonth'),
 
+
+    #annual report
+    url(r'^annualreport$', views.annualreport, name='annualreport'),
+    
+
     
     #pmethod
     url(r'^pmethod$', views.index_pmethod, name='index_pmethod'),
