@@ -1027,6 +1027,108 @@ def everymonth(request):
 
 
 
+# show annualrerpot
+@login_required(login_url='/login/')
+def annualreport(request):
+    #print (request)
+
+    #year---
+    if 'yearfrom' not in request.POST:
+        dnow = datetime.datetime.now()
+        yearnow = dnow.year
+        yearfrom = yearnow - 5
+    else:
+        yearfrom = request.POST['yearfrom']
+
+    if 'dateto' not in request.POST:
+        dnow = datetime.datetime.now()
+        yearnow = dnow.year
+        yearto = yearnow
+    else:
+        yearto = request.POST['dateto']
+
+    alluser = False
+    if 'alluser' in request.POST:
+        alluser = True
+
+    #category--
+    category_list = get_category_list_ui(request)
+
+    #annual report---
+    annualreport_list = []
+    for year in range(int(yearfrom), int(yearto) + 1):
+        mr = MonthlyreportEachMonthUi()
+
+        scfrom = datetime.datetime(year, 1, 1,0,0,0)
+        scto = scfrom + relativedelta(years=1)
+            
+        # sum total for each month---
+        expense = 0
+        if alluser:
+            expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0, includemonthlysum=True).aggregate(Sum('expense'))
+        else:
+            expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0, includemonthlysum=True, user=request.user).aggregate(Sum('expense'))
+                
+
+        if expense["expense__sum"] is not None:
+            mr.totalexpense = expense["expense__sum"]
+        else:
+            mr.totalexpense = 0
+
+
+        if alluser:
+            income = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__lt=0, includemonthlysum=True).aggregate(Sum('expense'))
+        else:
+            income = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__lt=0, includemonthlysum=True, user=request.user).aggregate(Sum('expense'))
+                
+        if income["expense__sum"] is not None:
+            mr.totalincome = income["expense__sum"] * -1
+        else:
+            mr.totalincome = 0
+
+        mr.total = mr.totalincome - mr.totalexpense
+
+            
+
+        #
+        eachCates = []
+        for c in get_category_list():
+            if str(c.id) in request.POST.getlist('categorys'):
+                    
+                if alluser:
+                    sum = Trans.objects.filter(category=c, date__gte=scfrom, date__lt=scto).aggregate(Sum('expense'))
+                else:
+                    sum = Trans.objects.filter(category=c, date__gte=scfrom, date__lt=scto, user=request.user).aggregate(Sum('expense'))
+                        
+
+                eachCate = {}
+                eachCate["category_id"] = c.id
+                
+                if sum["expense__sum"] is not None:
+                    eachCate["sum"]  = sum["expense__sum"]
+                else:
+                    eachCate["sum"]  = 0
+                eachCates.append(eachCate)
+
+        mr.yearmonth = str(year)
+        mr.dateTo = str(year) + "/" + str(12) + "/" + get_lastday(year, 12)
+        mr.eachCates = eachCates
+                
+        annualreport_list.append(mr)
+
+    context = {
+        "yearfrom":yearfrom,
+        "yearto":yearto,
+        "category_list":category_list,
+        "annualreport_list":annualreport_list,
+        "alluser":alluser,
+    }
+    return render(request, 'trans/annualreport.html', context)
+
+
+
+
+
 #---methods for internal------------------------
         
 def get_pmethod_list_ui(request, pmethods):
@@ -1139,6 +1241,7 @@ class MonthlyreportEachMonthUi():
     totalexpense = 0
     totalincome = 0
     total = 0
+
 
     
     
