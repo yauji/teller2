@@ -44,27 +44,65 @@ def index(request):
 
 def indexcore(request, trans, trans_move):
     latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date', '-id')[:100]
+
     #pmethod
-    pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
+    #pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
+    pmglist = PmethodGroup.objects.filter(user=request.user).order_by('order')
+    pmgroup_list = []
+    if 'pmg' in request.POST:
+        for pmg in pmglist:
+            if pmg.id == int(request.POST['pmg']):
+                pmgui = PmethodGroupUi()
+                pmgui.id = pmg.id
+                pmgui.name = pmg.name
+                pmgui.selected = True
+                pmgroup_list.append(pmgui)
+            else:
+                pmgroup_list.append(pmg)
+    else:
+        pmgroup_list.extend(pmglist)
+            
 
     #sort with group and order---
     pmethod_list = []
     if len(pmgroup_list) > 0:
+        if 'pmg' in request.POST:
+            pmg = PmethodGroup.objects.get(pk=int(request.POST['pmg']))
+        else:
+            pmg = pmgroup_list[0]
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
+        if 'pm' in request.POST:
+            for pm in pmlist:
+                if pm.id == int(request.POST['pm']):
+                    pmui = PmethodUi()
+                    pmui.id = pm.id
+                    pmui.name = pm.name
+                    pmui.group = pm.group
+                    pmui.selected = True
+                    pmethod_list.append(pmui)
+                else:
+                    pmethod_list.append(pm)
+        else:
+            pmethod_list.extend(pmlist)
+                
+            
+                    
+        '''
         pmg = pmgroup_list[0]
         pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
         pmethod_list.extend(pmlist)
+        '''
 
     pmethod_list_move = pmethod_list
 
 
     if trans != None:
-        pmethod_list = []
-        pmethod_list.append(trans.pmethod)
+        #pmethod_list = []
+        #pmethod_list.append(trans.pmethod)
         pmethod_list_move = []
         pmethod_list_move.append(trans_move.pmethod)
 
     #category---
-    #categorygroup_list = CategoryGroup.objects.order_by('order')
     cglist = CategoryGroup.objects.order_by('order')
     categorygroup_list = []
     if 'cg' in request.POST:
@@ -101,8 +139,8 @@ def indexcore(request, trans, trans_move):
                     category_list.append(cui)
                 else:
                     category_list.append(c)
-            else:
-                category_list.extend(clist)
+        else:
+            category_list.extend(clist)
 
         
     date = ''
@@ -1292,6 +1330,10 @@ class CategoryGroupUi(CategoryGroup):
 class CategoryUi(Category):
     selected = False
     first_in_group = False
+
+    
+class PmethodGroupUi(PmethodGroup):
+    selected = False
 
 class PmethodUi(Pmethod):
     selected = False
