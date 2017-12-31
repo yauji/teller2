@@ -1027,7 +1027,7 @@ def everymonth(request):
 
 
 
-# show annualrerpot
+# show annualrerpot----
 @login_required(login_url='/login/')
 def annualreport(request):
     #print (request)
@@ -1124,6 +1124,43 @@ def annualreport(request):
         "alluser":alluser,
     }
     return render(request, 'trans/annualreport.html', context)
+
+
+
+# show totalbalance-----
+@login_required(login_url='/login/')
+def totalbalance(request):
+    #pmethod
+    pmgroup_list = PmethodGroup.objects.order_by('order')
+
+
+    sum = 0
+
+    balance_list = []
+    for pmg in pmgroup_list:
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
+
+        for pm in pmlist:
+            trans = Trans.objects.filter(pmethod = pm).order_by('-date')[:1]
+                    
+            b = BalanceUi()
+            b.pmgroup = pmg.name
+            b.pmethod = pm.name
+            if len(trans) > 0:
+                b.balance = trans[0].balance
+                b.lastupdated = trans[0].date
+                sum += trans[0].balance
+            else:
+                b.balance = 0
+                b.lastupdated = ''
+
+            balance_list.append(b)
+            
+    context = {
+        "balance_list":balance_list,
+        "sum": sum,
+    }
+    return render(request, 'trans/totalbalance.html', context)
 
 
 
@@ -1241,6 +1278,12 @@ class MonthlyreportEachMonthUi():
     totalexpense = 0
     totalincome = 0
     total = 0
+
+class BalanceUi():
+    pmgroup = ''
+    pmethod = ''
+    balance = 0
+    lastupdated = ''
 
 
     

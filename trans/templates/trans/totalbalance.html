@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block nav_totalbalance %}active{% endblock %}
+
+
+{% block contents %} 
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+
+<table border="1" class="table table-striped">
+  <tr>
+    <th>pmethod group</th>
+    <th>pmethod</th>
+    <th>balance</th>
+    <th>last updated</th>
+  </tr>
+  {% for b in balance_list %}
+  <tr>
+    <td>{{b.pmgroup}}</td>
+    <td>{{b.pmethod}}</td>
+    <td>{{b.balance| intcomma}}</td>
+    <td>{{b.lastupdated}}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+sum: {{sum| intcomma}}
+
+
+{% endblock contents %}
+
+
+{% block exscript %}
+<script type="text/javascript" src="../static/js/trans_monthlyreport.js"></script>
+
+
+{% endblock exscript %}
+
+    
+{% block script %}
+{% endblock script %}
