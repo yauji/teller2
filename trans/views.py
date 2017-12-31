@@ -67,8 +67,8 @@ def indexcore(request, trans, trans_move):
     #categorygroup_list = CategoryGroup.objects.order_by('order')
     cglist = CategoryGroup.objects.order_by('order')
     categorygroup_list = []
-    for cg in cglist:
-        if 'cg' in request.POST:
+    if 'cg' in request.POST:
+        for cg in cglist:
             if cg.id == int(request.POST['cg']):
                 cgui = CategoryGroupUi()
                 cgui.id = cg.id
@@ -77,9 +77,9 @@ def indexcore(request, trans, trans_move):
                 categorygroup_list.append(cgui)
             else:
                 categorygroup_list.append(cg)
-        else:
-            categorygroup_list.append(cg)
-                
+    else:
+        categorygroup_list.extend(cglist)
+        
 
     #sort with group and order---
     category_list = []
@@ -90,8 +90,8 @@ def indexcore(request, trans, trans_move):
         else:
             cg = categorygroup_list[0]
         clist = Category.objects.filter(group = cg).order_by('order')
-        for c in clist:
-            if 'c' in request.POST:
+        if 'c' in request.POST:
+            for c in clist:
                 if c.id == int(request.POST['c']):
                     cui = CategoryUi()
                     cui.id = c.id
@@ -102,14 +102,8 @@ def indexcore(request, trans, trans_move):
                 else:
                     category_list.append(c)
             else:
-                category_list.append(c)
-        #category_list.extend(clist)
+                category_list.extend(clist)
 
-    '''
-    if trans != None:
-        category_list = []
-        category_list.append(trans.category)
-    '''
         
     date = ''
     name = ''
