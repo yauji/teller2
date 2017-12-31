@@ -575,6 +575,7 @@ class TransTestCase2(TestCase):
 
         # get expected html--
         latest_trans_list = Trans.objects.all()
+        
         paginator = Paginator(latest_trans_list, 50)
         transs = paginator.page(1)
             
@@ -629,6 +630,7 @@ class TransTestCase2(TestCase):
                                   'category_list' : cui_list,\
                                   'datefrom' : '2017/01/01',\
                                   'dateto' : str_dateto,\
+                                  'actual' : 0,\
                                  })
 
         #print(expected_html)
