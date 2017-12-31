@@ -494,7 +494,7 @@ def list(request):
             #if not str(pm.id) in request.POST.getlist('pmethods'):
                 latest_trans_list = latest_trans_list.exclude(pmethod=pm)
 
-    latest_trans_list = latest_trans_list.order_by('-date', '-id')[:300]
+    latest_trans_list = latest_trans_list.order_by('-date', '-id')[:500]
     #latest_trans_list = latest_trans_list.order_by('-date', '-id')[:100]
 
                 
@@ -512,6 +512,8 @@ def list(request):
 
     
     #--
+    #hoge
+    #paginator = Paginator(latest_trans_list, 10)
     paginator = Paginator(latest_trans_list, 100)
 
     page = request.GET.get('page')
