@@ -31,13 +31,13 @@
     <label class="sr-only" for="inlineFormCustomSelect">Category</label>
     <select  class="custom-select mb-2 mr-sm-2 mb-sm-0" name="cg" id="cg">
     {% for cg in categorygroup_list %}    
-    <option value="{{cg.id}}">{{cg.name}}</opetion>
+    <option value="{{cg.id}}" {% if cg.selected %}selected="True"{% endif %}>{{cg.name}}</opetion>
     {% endfor %}
     </select>
   
     <select name="c" id="c">
     {% for c in category_list %}    
-    <option value="{{c.id}}">{{c.name}}</opetion>
+    <option value="{{c.id}}" {% if c.selected %}selected="True"{% endif %}>{{c.name}}</opetion>
     {% endfor %}
     </select>
 

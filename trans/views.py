@@ -64,18 +64,52 @@ def indexcore(request, trans, trans_move):
         pmethod_list_move.append(trans_move.pmethod)
 
     #category---
-    categorygroup_list = CategoryGroup.objects.order_by('order')
+    #categorygroup_list = CategoryGroup.objects.order_by('order')
+    cglist = CategoryGroup.objects.order_by('order')
+    categorygroup_list = []
+    for cg in cglist:
+        if 'cg' in request.POST:
+            if cg.id == int(request.POST['cg']):
+                cgui = CategoryGroupUi()
+                cgui.id = cg.id
+                cgui.name = cg.name
+                cgui.selected = True
+                categorygroup_list.append(cgui)
+            else:
+                categorygroup_list.append(cg)
+        else:
+            categorygroup_list.append(cg)
+                
 
     #sort with group and order---
     category_list = []
     if len(categorygroup_list) > 0:
-        cg = categorygroup_list[0]
+        #find selected category group
+        if 'cg' in request.POST:
+            cg = CategoryGroup.objects.get(pk=int(request.POST['cg']))
+        else:
+            cg = categorygroup_list[0]
         clist = Category.objects.filter(group = cg).order_by('order')
-        category_list.extend(clist)
+        for c in clist:
+            if 'c' in request.POST:
+                if c.id == int(request.POST['c']):
+                    cui = CategoryUi()
+                    cui.id = c.id
+                    cui.name = c.name
+                    cui.group = c.group
+                    cui.selected = True
+                    category_list.append(cui)
+                else:
+                    category_list.append(c)
+            else:
+                category_list.append(c)
+        #category_list.extend(clist)
 
+    '''
     if trans != None:
         category_list = []
         category_list.append(trans.category)
+    '''
         
     date = ''
     name = ''
@@ -1257,6 +1291,9 @@ def get_lastday(year, month):
 
 class TransUi(Trans):
     selected = True
+
+class CategoryGroupUi(CategoryGroup):
+    selected = False
 
 class CategoryUi(Category):
     selected = False
