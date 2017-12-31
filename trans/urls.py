@@ -37,6 +37,9 @@ urlpatterns = [
     #annual report
     url(r'^annualreport$', views.annualreport, name='annualreport'),
     
+    #total balance
+    url(r'^totalbalance$', views.totalbalance, name='totalbalance'),
+    
 
     
     #pmethod
