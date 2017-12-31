@@ -17,10 +17,16 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Trans, PmethodGroup, Pmethod, CategoryGroup, Category
+from .models import SHARE_TYPES
 
 SHARE_TYPES_OWN = 1
 SHARE_TYPES_SHARE = 2
 SHARE_TYPES_PAY4OTHER = 3
+'''
+SHARE_TYPES_OWN_STR = 
+SHARE_TYPES_SHARE_STR = 2
+SHARE_TYPES_PAY4OTHER_STR = 3
+'''
 
 C_MOVE_ID = 101
 C_WITHDRAW_ID = 110
@@ -511,7 +517,46 @@ def list(request):
     categorygroup_list = CategoryGroup.objects.order_by('order')
     category_list = get_category_list_ui(request)
 
-    
+
+    #for diff with actual balance--
+    if 'actual' in request.POST and request.POST['actual'] != '':
+    #if request.POST['actual'] != '':
+        tlist = []
+
+        #actual = request.POST['actual']
+        actual = int(request.POST['actual'])
+        
+        for t in latest_trans_list:
+            tui = TransUi()
+            tui.id = t.id
+            tui.date = t.date
+            tui.name = t.name
+            tui.expense = t.expense
+            tui.balance = t.balance
+            tui.diff = actual - t.balance
+            
+            tui.memo = t.memo
+            tui.pmethod = t.pmethod
+            tui.category = t.category
+            tui.user = t.user
+            tui.share_type = t.share_type
+            for stype in SHARE_TYPES:
+                if stype[0] == t.share_type:
+                    print(stype[1])
+                    tui.share_type_str = stype[1]
+            
+            tui.user_pay4 = t.user_pay4
+            tui.includebalance = t.includebalance
+            tui.includemonthlysum = t.includemonthlysum
+
+            tlist.append(tui)
+
+        latest_trans_list = []
+        latest_trans_list.extend(tlist)
+    else:
+        actual = 0
+            
+        
     #--
     #hoge
     #paginator = Paginator(latest_trans_list, 10)
@@ -536,6 +581,7 @@ def list(request):
                'category_list' : category_list,\
                'datefrom' : str_datefrom,\
                'dateto' : str_dateto,\
+               'actual' : actual,\
     }
     return render(request, 'trans/list.html', context)
 
@@ -1366,6 +1412,10 @@ def get_lastday(year, month):
 
 class TransUi(Trans):
     selected = True
+
+    #for list
+    diff = 0
+    str_share_type = ''
 
 class CategoryGroupUi(CategoryGroup):
     selected = False

@@ -45,6 +45,10 @@
       <button id="pmuncheck" type="button" class="btn btn-success btn-xs">Uncheck</button>
     </div>
 
+    <div>
+    <input type="number" class="form-control" id="actual" name="actual" placeholder="Enter actual balance" value="{{actual}}">
+    </div>
+
     <button type="submit" class="btn btn-primary btn-sm">Search</button>
 
     <input type="hidden" name="filtered" value="False"></input>
@@ -101,6 +105,7 @@ sum;
 	<th>Item</th>
 	<th>Expense</th>
 	<th>Balance</th>
+	<th>Diff</th>
 	<th>Payment method</th>
 	<th>Category</th>
 	<th>Memo</th>
@@ -118,12 +123,13 @@ sum;
 	<td>{{ trans.name }}</td>
 	<td>{{ trans.expense| intcomma }}</td>
 	<td>{{ trans.balance| intcomma  }}</td>
+	<td>{{ trans.diff| intcomma  }}</td>
 	<td>{{ trans.pmethod.name }}</td>
 	<td>{{ trans.category.name }}</td>
 	<td>{{ trans.memo }}</td>
 	<td>{{ trans.id }}</td>
 	<td>{{ trans.user }}</td>
-	<td>{{ trans.share_type }}</td>
+	<td>{{ trans.share_type_str }}</td>
 	<td>{{ trans.user_pay4 }}</td>
 	<td>{{ trans.includebalance }}</td>
 	<td>{{ trans.includemonthlysum }}</td>	
