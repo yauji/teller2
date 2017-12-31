@@ -20,6 +20,7 @@ from .models import Trans, PmethodGroup, Pmethod, CategoryGroup, Category
 
 SHARE_TYPES_OWN = 1
 SHARE_TYPES_SHARE = 2
+SHARE_TYPES_PAY4OTHER = 3
 
 C_MOVE_ID = 101
 C_WITHDRAW_ID = 110
@@ -1230,6 +1231,46 @@ def totalbalance(request):
         "sum": sum,
     }
     return render(request, 'trans/totalbalance.html', context)
+
+
+# show shared expense-----
+@login_required(login_url='/login/')
+def sharedexpense(request):
+
+    users = User.objects.order_by('id')
+
+    sharedexpense_list = []
+    for user in users:
+        se = SharedexpenseUi()
+        se.user = user
+
+        se.shared = Trans.objects.filter(user=user, share_type=SHARE_TYPES_SHARE).aggregate(Sum('expense'))['expense__sum']
+        if se.shared == None:
+            se.shared = 0
+
+        se.pay4other = Trans.objects.filter(user=user, share_type=SHARE_TYPES_PAY4OTHER).aggregate(Sum('expense'))['expense__sum']
+        if se.pay4other == None:
+            se.pay4other = 0
+
+        se.total = se.shared / 2 + se.pay4other
+
+        sharedexpense_list.append(se)
+        
+            
+    context = {
+        'sharedexpense_list': sharedexpense_list,
+    }
+    return render(request, 'trans/sharedexpense.html', context)
+
+
+class SharedexpenseUi():
+    user = None
+    shared = 0
+    pay4other = 0
+
+    total = 0
+    
+
 
 
 
