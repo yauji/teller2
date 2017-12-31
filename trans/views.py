@@ -1146,6 +1146,7 @@ def totalbalance(request):
             b = BalanceUi()
             b.pmgroup = pmg.name
             b.pmethod = pm.name
+            b.user = pmg.user
             if len(trans) > 0:
                 b.balance = trans[0].balance
                 b.lastupdated = trans[0].date
@@ -1282,6 +1283,7 @@ class MonthlyreportEachMonthUi():
 class BalanceUi():
     pmgroup = ''
     pmethod = ''
+    user = ''
     balance = 0
     lastupdated = ''
 
