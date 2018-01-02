@@ -40,6 +40,9 @@ urlpatterns = [
     #total balance
     url(r'^totalbalance$', views.totalbalance, name='totalbalance'),
     
+    #shared expense
+    url(r'^sharedexpense$', views.sharedexpense, name='sharedexpense'),
+    
 
     
     #pmethod
