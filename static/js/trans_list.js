@@ -62,6 +62,16 @@ $(function() {
 	    });
     });
 
+
+    $('#checkall').click(function(e) {
+	$("td > input:checkbox").prop("checked", true);
+    });
+
+    $('#uncheckall').click(function(e) {
+	$("td > input:checkbox").prop("checked", false);
+    });
+
+    
     
 
 });

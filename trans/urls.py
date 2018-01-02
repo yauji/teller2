@@ -33,6 +33,17 @@ urlpatterns = [
     # everymonth
     url(r'^everymonth$', views.everymonth, name='everymonth'),
 
+
+    #annual report
+    url(r'^annualreport$', views.annualreport, name='annualreport'),
+    
+    #total balance
+    url(r'^totalbalance$', views.totalbalance, name='totalbalance'),
+    
+    #shared expense
+    url(r'^sharedexpense$', views.sharedexpense, name='sharedexpense'),
+    
+
     
     #pmethod
     url(r'^pmethod$', views.index_pmethod, name='index_pmethod'),

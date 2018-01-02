@@ -17,8 +17,16 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Trans, PmethodGroup, Pmethod, CategoryGroup, Category
+from .models import SHARE_TYPES
 
 SHARE_TYPES_OWN = 1
+SHARE_TYPES_SHARE = 2
+SHARE_TYPES_PAY4OTHER = 3
+'''
+SHARE_TYPES_OWN_STR = 
+SHARE_TYPES_SHARE_STR = 2
+SHARE_TYPES_PAY4OTHER_STR = 3
+'''
 
 C_MOVE_ID = 101
 C_WITHDRAW_ID = 110
@@ -32,40 +40,136 @@ SUICA_KURIKOSHI = '繰\u3000'
 JACCS_DISCOUNT = 'discount with J-depo:'
 
 SALARY_MAPPING_FNAME = 'mapping_item_cid.txt'
+SALARY_OTHER_ID = 249
 
 
 
 @login_required(login_url='/login/')
 def index(request):
-    latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date', '-id')[:30]
+    return indexcore(request, None, None)
+
+
+def indexcore(request, trans, trans_move):
+    latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date', '-id')[:100]
+
     #pmethod
-    pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
+    #pmgroup_list = PmethodGroup.objects.filter(user=request.user).order_by('order')
+    pmglist = PmethodGroup.objects.filter(user=request.user).order_by('order')
+    pmgroup_list = []
+    if 'pmg' in request.POST:
+        for pmg in pmglist:
+            if pmg.id == int(request.POST['pmg']):
+                pmgui = PmethodGroupUi()
+                pmgui.id = pmg.id
+                pmgui.name = pmg.name
+                pmgui.selected = True
+                pmgroup_list.append(pmgui)
+            else:
+                pmgroup_list.append(pmg)
+    else:
+        pmgroup_list.extend(pmglist)
+            
 
     #sort with group and order---
     pmethod_list = []
     if len(pmgroup_list) > 0:
+        if 'pmg' in request.POST:
+            pmg = PmethodGroup.objects.get(pk=int(request.POST['pmg']))
+        else:
+            pmg = pmgroup_list[0]
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
+        if 'pm' in request.POST:
+            for pm in pmlist:
+                if pm.id == int(request.POST['pm']):
+                    pmui = PmethodUi()
+                    pmui.id = pm.id
+                    pmui.name = pm.name
+                    pmui.group = pm.group
+                    pmui.selected = True
+                    pmethod_list.append(pmui)
+                else:
+                    pmethod_list.append(pm)
+        else:
+            pmethod_list.extend(pmlist)
+                
+            
+                    
+        '''
         pmg = pmgroup_list[0]
         pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
         pmethod_list.extend(pmlist)
+        '''
 
+    pmethod_list_move = pmethod_list
+
+
+    if trans != None:
+        #pmethod_list = []
+        #pmethod_list.append(trans.pmethod)
+        pmethod_list_move = []
+        pmethod_list_move.append(trans_move.pmethod)
 
     #category---
-    categorygroup_list = CategoryGroup.objects.order_by('order')
+    cglist = CategoryGroup.objects.order_by('order')
+    categorygroup_list = []
+    if 'cg' in request.POST:
+        for cg in cglist:
+            if cg.id == int(request.POST['cg']):
+                cgui = CategoryGroupUi()
+                cgui.id = cg.id
+                cgui.name = cg.name
+                cgui.selected = True
+                categorygroup_list.append(cgui)
+            else:
+                categorygroup_list.append(cg)
+    else:
+        categorygroup_list.extend(cglist)
+        
 
     #sort with group and order---
     category_list = []
     if len(categorygroup_list) > 0:
-        cg = categorygroup_list[0]
+        #find selected category group
+        if 'cg' in request.POST:
+            cg = CategoryGroup.objects.get(pk=int(request.POST['cg']))
+        else:
+            cg = categorygroup_list[0]
         clist = Category.objects.filter(group = cg).order_by('order')
-        category_list.extend(clist)
+        if 'c' in request.POST:
+            for c in clist:
+                if c.id == int(request.POST['c']):
+                    cui = CategoryUi()
+                    cui.id = c.id
+                    cui.name = c.name
+                    cui.group = c.group
+                    cui.selected = True
+                    category_list.append(cui)
+                else:
+                    category_list.append(c)
+        else:
+            category_list.extend(clist)
+
+        
+    date = ''
+    name = ''
+    expense = ''
+
+    if trans != None:
+        date = trans.date
+        name = trans.name
+        expense = trans.expense
 
 
     context = {'latest_trans_list': latest_trans_list,\
                'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
+               'pmethod_list_move': pmethod_list_move,\
                'categorygroup_list' : categorygroup_list , \
                'category_list' : category_list,\
+               'date' : date,\
+               'expense' : expense,\
     }
     return render(request, 'trans/index.html', context)
+    
 
 
 
@@ -234,6 +338,8 @@ def add(request):
 
     update_balance(trans)
 
+    trans0 = trans
+
 
     #for move---
     if cid == C_MOVE_ID:
@@ -252,9 +358,9 @@ def add(request):
             )
             trans.save()
             update_balance(trans)
-
-
-    return redirect('/t/')
+            
+    #return redirect('/t/')
+    return indexcore(request, trans0, trans)
 
 # dispatch delete, withdraw function
 def multi_trans_select(request):
@@ -349,7 +455,7 @@ def list(request):
     #print(request.POST)
     
     if 'datefrom' not in request.POST:
-        str_datefrom = '2000/01/01'
+        str_datefrom = '2017/01/01'
         #datefrom = datetime.datetime.strptime('2000/01/01', '%Y/%m/%d')
     else:
         str_datefrom = request.POST['datefrom']
@@ -399,7 +505,7 @@ def list(request):
             #if not str(pm.id) in request.POST.getlist('pmethods'):
                 latest_trans_list = latest_trans_list.exclude(pmethod=pm)
 
-    latest_trans_list = latest_trans_list.order_by('-date', '-id')[:300]
+    latest_trans_list = latest_trans_list.order_by('-date', '-id')[:500]
     #latest_trans_list = latest_trans_list.order_by('-date', '-id')[:100]
 
                 
@@ -415,9 +521,50 @@ def list(request):
     categorygroup_list = CategoryGroup.objects.order_by('order')
     category_list = get_category_list_ui(request)
 
-    
+
+    #for diff with actual balance--
+    if 'actual' in request.POST and request.POST['actual'] != '':
+    #if request.POST['actual'] != '':
+        tlist = []
+
+        #actual = request.POST['actual']
+        actual = int(request.POST['actual'])
+        
+        for t in latest_trans_list:
+            tui = TransUi()
+            tui.id = t.id
+            tui.date = t.date
+            tui.name = t.name
+            tui.expense = t.expense
+            tui.balance = t.balance
+            tui.diff = actual - t.balance
+            
+            tui.memo = t.memo
+            tui.pmethod = t.pmethod
+            tui.category = t.category
+            tui.user = t.user
+            tui.share_type = t.share_type
+            for stype in SHARE_TYPES:
+                if stype[0] == t.share_type:
+                    #print(stype[1])
+                    tui.share_type_str = stype[1]
+            
+            tui.user_pay4 = t.user_pay4
+            tui.includebalance = t.includebalance
+            tui.includemonthlysum = t.includemonthlysum
+
+            tlist.append(tui)
+
+        latest_trans_list = []
+        latest_trans_list.extend(tlist)
+    else:
+        actual = 0
+            
+        
     #--
-    paginator = Paginator(latest_trans_list, 50)
+    #hoge
+    #paginator = Paginator(latest_trans_list, 10)
+    paginator = Paginator(latest_trans_list, 100)
 
     page = request.GET.get('page')
     #print(page)
@@ -430,7 +577,15 @@ def list(request):
         # If page is out of range (e.g. 9999), deliver last page of results.
         transs = paginator.page(paginator.num_pages)
 
-    #print(transs.number)
+
+    if request.method == 'GET':
+        detail = False
+    else:
+        if 'detail' in request.POST:
+            detail = True
+        else:
+            detail = False
+
         
     context = {'latest_trans_list': transs,\
                'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
@@ -438,6 +593,8 @@ def list(request):
                'category_list' : category_list,\
                'datefrom' : str_datefrom,\
                'dateto' : str_dateto,\
+               'actual' : actual,\
+               'detail' : detail,\
     }
     return render(request, 'trans/list.html', context)
 
@@ -694,9 +851,19 @@ def jaccs_upload(request):
             trans.category = c
             trans.pmethod = pm
 
-            #check same trans
-            checktranslist = Trans.objects.filter(date=trans.date, expense=trans.expense, category=c, pmethod=pm)
+            trans.share_type = SHARE_TYPES_SHARE
+            
+            #check same trans--
+            checktranslist = Trans.objects.filter(date=trans.date, expense=trans.expense, pmethod=pm)
+            #checktranslist = Trans.objects.filter(date=trans.date, expense=trans.expense, category=c, pmethod=pm)            
+            if len(checktranslist) > 0:
+                trans.selected = False
 
+            #tmp for migrated data
+            datetmp = trans.date + timedelta(days=-1)
+            checktranslist = Trans.objects.filter(date__gte=datetmp)\
+                             .filter(date__lte=trans.date)\
+                             .filter(expense=trans.expense, pmethod=pm)
             if len(checktranslist) > 0:
                 trans.selected = False
 
@@ -835,7 +1002,6 @@ def salary_upload(request):
                 continue
                 
             splts = l.split(' : ')
-            print(splts)
             trans = TransUi()
 
             # this id is tmp
@@ -846,18 +1012,25 @@ def salary_upload(request):
             
             trans.name = ''
             expense = splts[1].replace(',', '').replace('\n','')
+            expense = expense.replace('−', '-')
             if fIncome:
-                expense = '-' + expense
+                if not expense.count('-'):
+                    expense = '-' + expense
+                else:
+                    expense = expense.replace('-', '') 
 
             trans.expense = expense
             trans.pmethod = pm
 
+            trans.name = splts[0]
+
 
             #category
             if not splts[0] in CS_SALARY:
-                continue
-            
-            cid = CS_SALARY[splts[0]]
+                #continue
+                cid = SALARY_OTHER_ID
+            else:
+                cid = CS_SALARY[splts[0]]
             c = Category.objects.get(pk=cid)
             trans.category = c
 
@@ -982,6 +1155,186 @@ def everymonth(request):
 
 
 
+# show annualrerpot----
+@login_required(login_url='/login/')
+def annualreport(request):
+    #print (request)
+
+    #year---
+    if 'yearfrom' not in request.POST:
+        dnow = datetime.datetime.now()
+        yearnow = dnow.year
+        yearfrom = yearnow - 5
+    else:
+        yearfrom = request.POST['yearfrom']
+
+    if 'dateto' not in request.POST:
+        dnow = datetime.datetime.now()
+        yearnow = dnow.year
+        yearto = yearnow
+    else:
+        yearto = request.POST['dateto']
+
+    alluser = False
+    if 'alluser' in request.POST:
+        alluser = True
+
+    #category--
+    category_list = get_category_list_ui(request)
+
+    #annual report---
+    annualreport_list = []
+    for year in range(int(yearfrom), int(yearto) + 1):
+        mr = MonthlyreportEachMonthUi()
+
+        scfrom = datetime.datetime(year, 1, 1,0,0,0)
+        scto = scfrom + relativedelta(years=1)
+            
+        # sum total for each month---
+        expense = 0
+        if alluser:
+            expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0, includemonthlysum=True).aggregate(Sum('expense'))
+        else:
+            expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0, includemonthlysum=True, user=request.user).aggregate(Sum('expense'))
+                
+
+        if expense["expense__sum"] is not None:
+            mr.totalexpense = expense["expense__sum"]
+        else:
+            mr.totalexpense = 0
+
+
+        if alluser:
+            income = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__lt=0, includemonthlysum=True).aggregate(Sum('expense'))
+        else:
+            income = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__lt=0, includemonthlysum=True, user=request.user).aggregate(Sum('expense'))
+                
+        if income["expense__sum"] is not None:
+            mr.totalincome = income["expense__sum"] * -1
+        else:
+            mr.totalincome = 0
+
+        mr.total = mr.totalincome - mr.totalexpense
+
+            
+
+        #
+        eachCates = []
+        for c in get_category_list():
+            if str(c.id) in request.POST.getlist('categorys'):
+                    
+                if alluser:
+                    sum = Trans.objects.filter(category=c, date__gte=scfrom, date__lt=scto).aggregate(Sum('expense'))
+                else:
+                    sum = Trans.objects.filter(category=c, date__gte=scfrom, date__lt=scto, user=request.user).aggregate(Sum('expense'))
+                        
+
+                eachCate = {}
+                eachCate["category_id"] = c.id
+                
+                if sum["expense__sum"] is not None:
+                    eachCate["sum"]  = sum["expense__sum"]
+                else:
+                    eachCate["sum"]  = 0
+                eachCates.append(eachCate)
+
+        mr.yearmonth = str(year)
+        mr.dateTo = str(year) + "/" + str(12) + "/" + get_lastday(year, 12)
+        mr.eachCates = eachCates
+                
+        annualreport_list.append(mr)
+
+    context = {
+        "yearfrom":yearfrom,
+        "yearto":yearto,
+        "category_list":category_list,
+        "annualreport_list":annualreport_list,
+        "alluser":alluser,
+    }
+    return render(request, 'trans/annualreport.html', context)
+
+
+
+# show totalbalance-----
+@login_required(login_url='/login/')
+def totalbalance(request):
+    #pmethod
+    pmgroup_list = PmethodGroup.objects.order_by('order')
+
+
+    sum = 0
+
+    balance_list = []
+    for pmg in pmgroup_list:
+        pmlist = Pmethod.objects.filter(group = pmg).order_by('order')
+
+        for pm in pmlist:
+            trans = Trans.objects.filter(pmethod = pm).order_by('-date')[:1]
+                    
+            b = BalanceUi()
+            b.pmgroup = pmg.name
+            b.pmethod = pm.name
+            b.user = pmg.user
+            if len(trans) > 0:
+                b.balance = trans[0].balance
+                b.lastupdated = trans[0].date
+                sum += trans[0].balance
+            else:
+                b.balance = 0
+                b.lastupdated = ''
+
+            balance_list.append(b)
+            
+    context = {
+        "balance_list":balance_list,
+        "sum": sum,
+    }
+    return render(request, 'trans/totalbalance.html', context)
+
+
+# show shared expense-----
+@login_required(login_url='/login/')
+def sharedexpense(request):
+
+    users = User.objects.order_by('id')
+
+    sharedexpense_list = []
+    for user in users:
+        se = SharedexpenseUi()
+        se.user = user
+
+        se.shared = Trans.objects.filter(user=user, share_type=SHARE_TYPES_SHARE).aggregate(Sum('expense'))['expense__sum']
+        if se.shared == None:
+            se.shared = 0
+
+        se.pay4other = Trans.objects.filter(user=user, share_type=SHARE_TYPES_PAY4OTHER).aggregate(Sum('expense'))['expense__sum']
+        if se.pay4other == None:
+            se.pay4other = 0
+
+        se.total = se.shared / 2 + se.pay4other
+
+        sharedexpense_list.append(se)
+        
+            
+    context = {
+        'sharedexpense_list': sharedexpense_list,
+    }
+    return render(request, 'trans/sharedexpense.html', context)
+
+
+class SharedexpenseUi():
+    user = None
+    shared = 0
+    pay4other = 0
+
+    total = 0
+    
+
+
+
+
+
+
 #---methods for internal------------------------
         
 def get_pmethod_list_ui(request, pmethods):
@@ -1073,9 +1426,20 @@ def get_lastday(year, month):
 class TransUi(Trans):
     selected = True
 
+    #for list
+    diff = 0
+    str_share_type = ''
+
+class CategoryGroupUi(CategoryGroup):
+    selected = False
+
 class CategoryUi(Category):
     selected = False
     first_in_group = False
+
+    
+class PmethodGroupUi(PmethodGroup):
+    selected = False
 
 class PmethodUi(Pmethod):
     selected = False
@@ -1094,6 +1458,14 @@ class MonthlyreportEachMonthUi():
     totalexpense = 0
     totalincome = 0
     total = 0
+
+class BalanceUi():
+    pmgroup = ''
+    pmethod = ''
+    user = ''
+    balance = 0
+    lastupdated = ''
+
 
     
     

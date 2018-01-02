@@ -70,7 +70,9 @@ Register transactions with every month
     </tr>
     {% for date in date_list %}
     <tr>
-      <td>{{ date|date:"Y/n" }}<input type="hidden" id="dates" name="dates" value="{{ date|date:"Y/n/d" }}"></td>
+      <td>
+	<input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker day" id="dates" name="dates"  placeholder="yyyy/mm/dd" value="{{date|date:"Y/n/d"}}">
+      </td>
       <td><input type="text" class=" mb-2 mr-sm-2 mb-sm-0" id="names" name="names" ></input></td>
       <td>
 	<input type="number" name="expenses" value="0"></input>
