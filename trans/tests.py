@@ -631,6 +631,7 @@ class TransTestCase2(TestCase):
                                   'datefrom' : '2017/01/01',\
                                   'dateto' : str_dateto,\
                                   'actual' : 0,\
+                                  'detail' : False,\
                                  })
 
         #print(expected_html)
