@@ -542,7 +542,7 @@ def list(request):
             tui.share_type = t.share_type
             for stype in SHARE_TYPES:
                 if stype[0] == t.share_type:
-                    print(stype[1])
+                    #print(stype[1])
                     tui.share_type_str = stype[1]
             
             tui.user_pay4 = t.user_pay4
@@ -573,7 +573,15 @@ def list(request):
         # If page is out of range (e.g. 9999), deliver last page of results.
         transs = paginator.page(paginator.num_pages)
 
-    #print(transs.number)
+
+    if request.method == 'GET':
+        detail = False
+    else:
+        if 'detail' in request.POST:
+            detail = True
+        else:
+            detail = False
+
         
     context = {'latest_trans_list': transs,\
                'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
@@ -582,6 +590,7 @@ def list(request):
                'datefrom' : str_datefrom,\
                'dateto' : str_dateto,\
                'actual' : actual,\
+               'detail' : detail,\
     }
     return render(request, 'trans/list.html', context)
 

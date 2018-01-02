@@ -46,7 +46,8 @@
     </div>
 
     <div>
-    <input type="number" class="form-control" id="actual" name="actual" placeholder="Enter actual balance" value="{{actual}}">
+      <input type="checkbox" name="detail" value="{{ detail }}"  {% if detail %}checked="checked"{% endif %}>Show detail</input>
+      <input type="number" class="form-control" id="actual" name="actual" placeholder="Enter actual balance" value="{{actual}}">
     </div>
 
     <button type="submit" class="btn btn-primary btn-sm">Search</button>
@@ -102,19 +103,21 @@ sum;
     <tr>
       <th></th>
       <th>Date</th>
-	<th>Item</th>
-	<th>Expense</th>
-	<th>Balance</th>
-	<th>Diff</th>
-	<th>Payment method</th>
-	<th>Category</th>
-	<th>Memo</th>
+      <th>Item</th>
+      <th>Expense</th>
+      <th>Balance</th>
+      <th>Diff</th>
+      <th>Payment method</th>
+      <th>Category</th>
+      <th>Memo</th>
+      <th>share type</th>
+      {% if detail %}
       <th>(id)</th>
-	<th>(User)</th>
-	<th>(share type)</th>
-	<th>(user pay4)</th>
-	<th>(include balance)</th>
-	<th>(include monthly sum)</th>
+      <th>(User)</th>
+      <th>(user pay4)</th>
+      <th>(include balance)</th>
+      <th>(include monthly sum)</th>
+      {% endif %}
       </tr>
       {% for trans in latest_trans_list %}
       <tr>
@@ -127,12 +130,14 @@ sum;
 	<td>{{ trans.pmethod.name }}</td>
 	<td>{{ trans.category.name }}</td>
 	<td>{{ trans.memo }}</td>
+	<td>{{ trans.share_type_str }}</td>
+	{% if detail %}
 	<td>{{ trans.id }}</td>
 	<td>{{ trans.user }}</td>
-	<td>{{ trans.share_type_str }}</td>
 	<td>{{ trans.user_pay4 }}</td>
 	<td>{{ trans.includebalance }}</td>
-	<td>{{ trans.includemonthlysum }}</td>	
+	<td>{{ trans.includemonthlysum }}</td>
+	{% endif %}
       </tr>
       {% endfor %}
   </table>
