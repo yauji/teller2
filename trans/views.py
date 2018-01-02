@@ -260,9 +260,9 @@ def monthlyreport(request):
                 if str(c.id) in request.POST.getlist('categorys'):
                     
                     if alluser:
-                        sum = Trans.objects.filter(category=c, date__gte=scfrom, date__lt=scto).exclude(category=cmove).aggregate(Sum('expense'))
+                        sum = Trans.objects.filter(category=c, date__gte=scfrom, date__lt=scto).aggregate(Sum('expense'))
                     else:
-                        sum = Trans.objects.filter(category=c, date__gte=scfrom, date__lt=scto, user=request.user).exclude(category=cmove).aggregate(Sum('expense'))
+                        sum = Trans.objects.filter(category=c, date__gte=scfrom, date__lt=scto, user=request.user).aggregate(Sum('expense'))
                         
 
                     eachCate = {}
@@ -1182,6 +1182,8 @@ def annualreport(request):
     #category--
     category_list = get_category_list_ui(request)
 
+    cmove = Category.objects.get(pk=C_MOVE_ID)
+
     #annual report---
     annualreport_list = []
     for year in range(int(yearfrom), int(yearto) + 1):
@@ -1193,9 +1195,9 @@ def annualreport(request):
         # sum total for each month---
         expense = 0
         if alluser:
-            expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0, includemonthlysum=True).aggregate(Sum('expense'))
+            expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0, includemonthlysum=True).exclude(category=cmove).aggregate(Sum('expense'))
         else:
-            expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0, includemonthlysum=True, user=request.user).aggregate(Sum('expense'))
+            expense = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__gte=0, includemonthlysum=True, user=request.user).exclude(category=cmove).aggregate(Sum('expense'))
                 
 
         if expense["expense__sum"] is not None:
@@ -1205,9 +1207,9 @@ def annualreport(request):
 
 
         if alluser:
-            income = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__lt=0, includemonthlysum=True).aggregate(Sum('expense'))
+            income = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__lt=0, includemonthlysum=True).exclude(category=cmove).aggregate(Sum('expense'))
         else:
-            income = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__lt=0, includemonthlysum=True, user=request.user).aggregate(Sum('expense'))
+            income = Trans.objects.filter(date__gte=scfrom, date__lt=scto, expense__lt=0, includemonthlysum=True, user=request.user).exclude(category=cmove).aggregate(Sum('expense'))
                 
         if income["expense__sum"] is not None:
             mr.totalincome = income["expense__sum"] * -1
