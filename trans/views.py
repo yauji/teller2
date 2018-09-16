@@ -829,8 +829,6 @@ def jaccs_upload(request):
 
         
         '''
-        
-        
         f = codecs.open('tmp_jaccs.txt', 'r', 'ascii')
         content = f.read().decode('utf-8')
         print(content)
@@ -905,7 +903,15 @@ def jaccs_upload(request):
             trans_list.append(trans)
 
 
+        category_list = []
+        if len(categorygroup_list) > 0:
+            cg = categorygroup_list[0]
+            clist = Category.objects.filter(group = cg).order_by('order')
+            category_list.extend(clist)
+            
+
         context = {'categorygroup_list': categorygroup_list,\
+                   'category_list': category_list,\
                    'trans_list': trans_list,\
                    }
         return render(request, 'trans/jaccs_check.html', context)

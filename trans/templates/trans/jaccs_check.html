@@ -28,10 +28,13 @@ JACCS record registeror - check
 	<select  class="cg custom-select mb-2 mr-sm-2 mb-sm-0" name="cg{{trans.id}}" id="cg0">
 	  {% for cg in categorygroup_list %}    
 	  <option value="{{cg.id}}">{{cg.name}}</opetion>
-{% endfor %}
+          {% endfor %}
 </select>
 <select name="cs" id="c0">
-  <option value="{{trans.category.id}}">{{trans.category.name}}</opetion>
+	  {% for c in category_list %}    
+	  <option value="{{c.id}}">{{c.name}}</opetion>
+          {% endfor %}
+
 </select>
 </td>      
 <td>{{ trans.expense| intcomma }}
