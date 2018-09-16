@@ -2,6 +2,7 @@ import datetime
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 import json
+import codecs
 
 from django import forms
 from django.shortcuts import get_object_or_404, render, redirect
@@ -799,11 +800,45 @@ def jaccs_upload(request):
             }
             return render(request, 'trans/jaccs_upload.html', context)
             
+
+        '''
         f = request.FILES['file']
 
         with open('tmp_jaccs.txt', 'wb+') as destination:
             for chunk in f.chunks():
                 destination.write(chunk)
+        '''
+
+        '''
+        content = f.read().decode('utf-8')
+        fout = open('tmp_jaccs.txt', 'w')
+        fout.write(content)
+        '''
+
+        
+        f = codecs.EncodedFile(request.FILES['file'],"utf-8")
+        content = f.read()
+        #content = f.read()
+        #print(content)
+        #print(content.decode('utf-8'))
+
+        fout = open('tmp_jaccs.txt', 'w')
+        fout.write(content.decode('utf-8'))
+        fout.close()
+        
+
+        
+        '''
+        
+        
+        f = codecs.open('tmp_jaccs.txt', 'r', 'ascii')
+        content = f.read().decode('utf-8')
+        print(content)
+        contents = []
+        for l in f.readlines():
+            contents.append(l)
+        f.close()
+        '''
 
         f = open('tmp_jaccs.txt', 'r')
         contents = []
