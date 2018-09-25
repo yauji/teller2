@@ -32,7 +32,7 @@ JACCS record registeror - check
 </select>
 <select name="cs" id="c0">
 	  {% for c in category_list %}    
-	  <option value="{{c.id}}">{{c.name}}</opetion>
+	  <option value="{{c.id}}"  {% if c.selected %}selected="True"{% endif %}>{{c.name}}</opetion>
           {% endfor %}
 
 </select>
