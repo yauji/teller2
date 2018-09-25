@@ -563,7 +563,6 @@ def list(request):
             
         
     #--
-    #hoge
     #paginator = Paginator(latest_trans_list, 10)
     paginator = Paginator(latest_trans_list, 100)
 
@@ -902,12 +901,35 @@ def jaccs_upload(request):
 
             trans_list.append(trans)
 
-
+        """
         category_list = []
         if len(categorygroup_list) > 0:
             cg = categorygroup_list[0]
             clist = Category.objects.filter(group = cg).order_by('order')
             category_list.extend(clist)
+        """
+        category_list = []
+        if len(categorygroup_list) > 0:
+            #find selected category group
+            if 'cg' in request.POST:
+                cg = CategoryGroup.objects.get(pk=int(request.POST['cg']))
+            else:
+                cg = categorygroup_list[0]
+            clist = Category.objects.filter(group = cg).order_by('order')
+            if 'c' in request.POST:
+                for c in clist:
+                    if c.id == int(request.POST['c']):
+                        cui = CategoryUi()
+                        cui.id = c.id
+                        cui.name = c.name
+                        cui.group = c.group
+                        cui.selected = True
+                        category_list.append(cui)
+                    else:
+                        category_list.append(c)
+            else:
+                category_list.extend(clist)
+        
             
 
         context = {'categorygroup_list': categorygroup_list,\
