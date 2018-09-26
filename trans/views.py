@@ -47,10 +47,10 @@ SALARY_OTHER_ID = 249
 
 @login_required(login_url='/login/')
 def index(request):
-    return indexcore(request, None, None)
+    return indexcore(request, None, None, 2)
 
 
-def indexcore(request, trans, trans_move):
+def indexcore(request, trans, trans_move, share_type_id):
     latest_trans_list = Trans.objects.filter(user=request.user).order_by('-date', '-id')[:100]
 
     #pmethod
@@ -161,6 +161,32 @@ def indexcore(request, trans, trans_move):
         expense = trans.expense
 
 
+    # share_type----
+    share_type_list = []
+    stui = ShareTypeUi()
+    stui.value = 1
+    stui.name = 'own'
+    if share_type_id == 1:
+        stui.selected = True
+    share_type_list.append(stui)
+
+    stui = ShareTypeUi()
+    stui.value = 2
+    stui.name = 'shared'
+    if share_type_id == 2:
+        stui.selected = True
+    share_type_list.append(stui)
+
+    stui = ShareTypeUi()
+    stui.value = 3
+    stui.name = 'pay4other'
+    if share_type_id == 3:
+        stui.selected = True
+    share_type_list.append(stui)
+
+    #hoge
+
+
     context = {'latest_trans_list': latest_trans_list,\
                'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
                'pmethod_list_move': pmethod_list_move,\
@@ -168,6 +194,7 @@ def indexcore(request, trans, trans_move):
                'category_list' : category_list,\
                'date' : date,\
                'expense' : expense,\
+               'share_type_list' : share_type_list,\
     }
     return render(request, 'trans/index.html', context)
     
@@ -361,7 +388,7 @@ def add(request):
             update_balance(trans)
             
     #return redirect('/t/')
-    return indexcore(request, trans0, trans)
+    return indexcore(request, trans0, trans, int(request.POST['share_type']))
 
 # dispatch delete, withdraw function
 def multi_trans_select(request):
@@ -1530,6 +1557,12 @@ class BalanceUi():
     user = ''
     balance = 0
     lastupdated = ''
+
+class ShareTypeUi():
+    value = ''
+    name = ''
+    selected = False
+    
 
 
     
