@@ -69,11 +69,11 @@
     {% endfor %}
   </select>
 
-  <select name="share_type" id="share_type">
-    <option value="1">own</opetion>
-    <option value="2" selected>share</opetion>
-    <option value="3">pay4other</opetion>
-  </select>
+<select name="share_type" id="share_type">
+    {% for st in share_type_list %}    
+    <option value="{{st.value}}" {% if st.selected %}selected="True"{% endif %}>{{st.name}}</opetion>
+{% endfor %}
+</select>
   <input type="text" name="user_pay4" id="user_pay4"/>
   
     <button type="submit" class="btn btn-primary btn-sm">Add</button>
