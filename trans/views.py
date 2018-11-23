@@ -184,8 +184,6 @@ def indexcore(request, trans, trans_move, share_type_id):
         stui.selected = True
     share_type_list.append(stui)
 
-    #hoge
-
 
     context = {'latest_trans_list': latest_trans_list,\
                'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
