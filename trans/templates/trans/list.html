@@ -48,6 +48,7 @@
     <div>
       <input type="checkbox" name="detail" value="{{ detail }}"  {% if detail %}checked="checked"{% endif %}>Show detail</input>
       <input type="number" class="form-control" id="actual" name="actual" placeholder="Enter actual balance" value="{{actual}}">
+      <input type="checkbox" name="includebalance" value="{{ includebalance }}"  {% if includebalance %}checked="checked"{% endif %}>Include balance</input>      
     </div>
 
     <button type="submit" class="btn btn-primary btn-sm">Search</button>
