@@ -184,8 +184,6 @@ def indexcore(request, trans, trans_move, share_type_id):
         stui.selected = True
     share_type_list.append(stui)
 
-    #hoge
-
 
     context = {'latest_trans_list': latest_trans_list,\
                'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list, \
@@ -533,6 +531,17 @@ def list(request):
             #if not str(pm.id) in request.POST.getlist('pmethods'):
                 latest_trans_list = latest_trans_list.exclude(pmethod=pm)
 
+
+    # filter with includebalance
+    includebalance=False
+    if request.method != 'GET':
+        if 'includebalance' in request.POST:
+            includebalance=True
+            
+            latest_trans_list = latest_trans_list.filter(includebalance=True)
+
+
+            
     latest_trans_list = latest_trans_list.order_by('-date', '-id')[:500]
     #latest_trans_list = latest_trans_list.order_by('-date', '-id')[:100]
 
@@ -622,6 +631,7 @@ def list(request):
                'dateto' : str_dateto,\
                'actual' : actual,\
                'detail' : detail,\
+               'includebalance' : includebalance,\
     }
     return render(request, 'trans/list.html', context)
 
