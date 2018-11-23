@@ -540,8 +540,8 @@ def list(request):
             
             latest_trans_list = latest_trans_list.filter(includebalance=True)
 
-    #hoge
 
+            
     latest_trans_list = latest_trans_list.order_by('-date', '-id')[:500]
     #latest_trans_list = latest_trans_list.order_by('-date', '-id')[:100]
 

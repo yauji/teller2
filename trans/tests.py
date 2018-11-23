@@ -632,6 +632,7 @@ class TransTestCase2(TestCase):
                                   'dateto' : str_dateto,\
                                   'actual' : 0,\
                                   'detail' : False,\
+                                  'includebalance' : False,\
                                  })
 
         #print(expected_html)
