@@ -531,6 +531,17 @@ def list(request):
             #if not str(pm.id) in request.POST.getlist('pmethods'):
                 latest_trans_list = latest_trans_list.exclude(pmethod=pm)
 
+
+    # filter with includebalance
+    includebalance=False
+    if request.method != 'GET':
+        if 'includebalance' in request.POST:
+            includebalance=True
+            
+            latest_trans_list = latest_trans_list.filter(includebalance=True)
+
+    #hoge
+
     latest_trans_list = latest_trans_list.order_by('-date', '-id')[:500]
     #latest_trans_list = latest_trans_list.order_by('-date', '-id')[:100]
 
@@ -620,6 +631,7 @@ def list(request):
                'dateto' : str_dateto,\
                'actual' : actual,\
                'detail' : detail,\
+               'includebalance' : includebalance,\
     }
     return render(request, 'trans/list.html', context)
 
