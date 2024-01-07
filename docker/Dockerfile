@@ -1,7 +1,7 @@
 FROM python:3
 ENV PYTHONUNBUFFERED 1
 RUN apt-get update
-RUN apt-get install -y swig libssl-dev dpkg-dev netcat
+RUN apt-get install -y swig libssl-dev dpkg-dev netcat-traditional
 RUN apt-get install -y nginx
 RUN mkdir /code
 WORKDIR /code
