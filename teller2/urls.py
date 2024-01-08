@@ -13,20 +13,40 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url, include
+"""
+#from django.urls import re_path
+from django.urls import re_path, include
+
+#from django.conf.urls import url, include
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 
 from trans.views import index
 
 urlpatterns = [
-    url('^', include('django.contrib.auth.urls')),
+    #re_path('^', include('django.contrib.auth.urls')),
     #url(r'^accounts/login/$', auth_views.LoginView.as_view(template_name='registration/login.html')),
     #url(r'^$', index),
-    url(r'^$', index, name='index'),
-    url(r'^t/', include('trans.urls')),
-    url(r'^admin/', admin.site.urls),
+    re_path(r'^$', index),
+    #re_path(r'^t/', include('trans.urls')),
+    #re_path(r'^admin/', admin.site.urls),
 ]
+"""
+from django.urls import include, re_path
+from django.contrib import admin
+from django.contrib.auth import views as auth_views
+
+from trans.views import index
+
+urlpatterns = [
+    re_path(r'^', include('django.contrib.auth.urls')),
+    # re_path(r'^accounts/login/$', auth_views.LoginView.as_view(template_name='registration/login.html')),
+    # re_path(r'^$', index),
+    re_path(r'^$', index, name='index'),
+    re_path(r'^t/', include('trans.urls')),
+    re_path(r'^admin/', admin.site.urls),
+]
+
 
 
 
