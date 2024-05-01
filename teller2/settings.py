@@ -86,6 +86,7 @@ DATABASES = {
     }
 }
 """
+"""
 DATABASES = {
     'default': {
          'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -97,6 +98,20 @@ DATABASES = {
          'PORT' : 5432,
      }
  }
+<<<<<<< HEAD
+=======
+"""
+DATABASES = {
+    'default': {
+         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+         'NAME': 'teller2',
+         'USER': 'postgres',
+         'PASSWORD' : environ['DB_PASSWORD'],
+         'HOST' : environ['POSTGRES_PORT_5432_TCP_ADDR'],
+         'PORT' : 5432,
+     }
+ }
+>>>>>>> f-update
 
 
 
