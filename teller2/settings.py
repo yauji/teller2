@@ -98,8 +98,6 @@ DATABASES = {
          'PORT' : 5432,
      }
  }
-<<<<<<< HEAD
-=======
 """
 DATABASES = {
     'default': {
@@ -111,7 +109,6 @@ DATABASES = {
          'PORT' : 5432,
      }
  }
->>>>>>> f-update
 
 
 
