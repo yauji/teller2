@@ -727,9 +727,26 @@ def suica_upload(request):
             # this id is tmp
             trans.id = tmpid
             tmpid += 1
-            strdate = request.POST['year'] + '/' + splts[0]
+
+            #hoge
+            print("hoge")
+            print(splts)
+            """
+            print(splts[0])
+            #mm/ddの5文字でない場合はスキップ
+            if len(splts[0]) != 5:
+                continue
+            """
+            strdate = request.POST['year'] + '/' + splts[1]
+            #strdate = request.POST['year'] + '/' + splts[0]
+            
+            strdate = strdate.strip()
+            #print(strdate)
+
             trans.date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
-            trans.name = splts[1] + splts[4]  + splts[3]  + splts[4]
+            trans.name = splts[2] + splts[3]  + splts[4]  + splts[5]
+            #trans.name = splts[1] + splts[4]  + splts[3]  + splts[4]
+            """
             if len(splts) == 7:
                 if splts[6].count('-'):
                     expense = splts[6].replace('-', '').replace(',', '')
@@ -738,7 +755,18 @@ def suica_upload(request):
                     #expense = '-' + expense
                 #expense = splts[5].replace('¥', '').replace(',', '')
                 trans.expense = expense
+            """                
+            expense = splts[7].replace('\n', '').replace(',', '').replace('+', '')
+            print(expense)
+            print( len(expense))
 
+            if len(expense) != 0:
+                trans.expense = int(expense)
+            else:
+                continue
+            #hoge                
+            
+            
             trans.category = c
             trans.pmethod = pm
 
