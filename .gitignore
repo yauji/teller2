@@ -1,2 +1,14 @@
 db.sqlite3
 trans/migrations/*
+teller2-venv
+.vscode/
+docker/pgdump-*
+docker/teller2.tar.gz
+docker/teller2
+mapping_item_cid.txt
+*.bak*
+teller2/__pycache__/
+teller2/urls.py.bak-url
+tmp_suica.txt
+trans/__pycache__/
+trans/urls.py-bak-url
