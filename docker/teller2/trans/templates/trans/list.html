@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block nav_list %}active{% endblock %}
+
+
+{% block contents %} 
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<div class="card" style="">
+  <div class="card-body">
+    <h4 class="card-title">Filter</h4>
+<form action="{% url 'trans:list' %}" method="post" class="form-inline">
+  {% csrf_token %}
+  
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="datefrom" name="datefrom"  placeholder="From yyyy/mm/dd" value="{{datefrom}}">
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="dateto" name="dateto"  placeholder="to yyyy/mm/dd" value="{{dateto}}">
+
+    <div id="category">
+      Categories:
+      {% for c in category_list %}
+      {% if c.first_in_group %}
+      <br/> {{c.group.name}}:
+      {% endif %}
+      
+      <input type="checkbox" name="categorys" value="{{ c.id }}" {% if c.selected %}checked="checked"{% endif %}>{{c.name}}</input>
+    {% endfor %}
+    <br/>
+    <button id="ccheck" type="button" class="btn btn-success btn-xs">Check</button>
+    <button id="cuncheck" type="button" class="btn btn-success btn-xs">Uncheck</button>
+    </div>
+    
+    <div id="pmethod">
+      Payment methods:
+      {% for pm in pmethod_list %}    
+      {% if pm.first_in_group %}
+      <br/> {{pm.group.name}}:
+      {% endif %}
+      <input type="checkbox" name="pmethods" value="{{ pm.id }}"  {% if pm.selected %}checked="checked"{% endif %}>{{pm.name}}</input>
+      {% endfor %}
+
+      <br/>
+      <button id="pmcheck" type="button" class="btn btn-success btn-xs">Check</button>
+      <button id="pmuncheck" type="button" class="btn btn-success btn-xs">Uncheck</button>
+    </div>
+
+    <div>
+      <input type="checkbox" name="detail" value="{{ detail }}"  {% if detail %}checked="checked"{% endif %}>Show detail</input>
+      <input type="number" class="form-control" id="actual" name="actual" placeholder="Enter actual balance" value="{{actual}}">
+      <input type="checkbox" name="includebalance" value="{{ includebalance }}"  {% if includebalance %}checked="checked"{% endif %}>Include balance</input>      
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-sm">Search</button>
+
+    <input type="hidden" name="filtered" value="False"></input>
+</form>
+
+  </div>
+</div>
+
+
+
+<form action="{% url 'trans:multi_trans_select' %}" method="post"  class="form-inline">
+  <!--	-->
+  {% csrf_token %}
+<div class="card" style="">
+  <div class="card-body">
+    <h4 class="card-title">Withdraw</h4>
+  
+  <label  class="sr-only" for="inlineFormInput" >Date</label>
+  <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="date" name="date" placeholder="yyyy/mm/dd">
+  
+  <label  class="sr-only" >Payment method</label>
+    <select name="pmg" id="pmg">
+    {% for pmg in pmgroup_list %}    
+    <option value="{{pmg.id}}">{{pmg.name}}</opetion>
+    {% endfor %}
+  </select>
+
+  <select name="pm" id="pm">
+    {% for pm in pmethod_list %}    
+    <option value="{{pm.id}}">{{pm.name}}</opetion>
+    {% endfor %}
+  </select>
+
+<label  class="sr-only" >memo</label>
+<input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="memo" name="memo">
+
+sum;
+<a id="sum">0</a>
+
+  
+<input type="submit" class="btn btn-primary btn-sm" name="withdraw" value="Withdraw" />
+
+  </div>
+</div>
+
+
+<button id="checkall" type="button" class="btn btn-success btn-xs">Check all</button>
+<button id="uncheckall" type="button" class="btn btn-success btn-xs">Uncheck all</button>
+
+  <table border="1" class="table table-striped">
+    <tr>
+      <th></th>
+      <th>Date</th>
+      <th>Item</th>
+      <th>Expense</th>
+      <th>Balance</th>
+      <th>Diff</th>
+      <th>Payment method</th>
+      <th>Category</th>
+      <th>Memo</th>
+      <th>share type</th>
+      {% if detail %}
+      <th>(id)</th>
+      <th>(User)</th>
+      <th>(user pay4)</th>
+      <th>(include balance)</th>
+      <th>(include monthly sum)</th>
+      {% endif %}
+      </tr>
+      {% for trans in latest_trans_list %}
+      <tr>
+	<td> <input type="checkbox" name="tids" value="{{ trans.id }}" /></td>
+	<td>{{ trans.date|date:"Y/n/d" }}</td>
+	<td>{{ trans.name }}</td>
+	<td>{{ trans.expense| intcomma }}</td>
+	<td>{{ trans.balance| intcomma  }}</td>
+	<td>{{ trans.diff| intcomma  }}</td>
+	<td>{{ trans.pmethod.name }}</td>
+	<td>{{ trans.category.name }}</td>
+	<td>{{ trans.memo }}</td>
+	<td>{{ trans.share_type_str }}</td>
+	{% if detail %}
+	<td>{{ trans.id }}</td>
+	<td>{{ trans.user }}</td>
+	<td>{{ trans.user_pay4 }}</td>
+	<td>{{ trans.includebalance }}</td>
+	<td>{{ trans.includemonthlysum }}</td>
+	{% endif %}
+      </tr>
+      {% endfor %}
+  </table>
+  <input type="submit" name="delete" value="Delete"  class="btn btn-primary btn-sm"/>
+</form>
+
+<div class="pagination">
+  <span class="step-links">
+    {% if latest_trans_list.has_previous %}
+    <a href="?page={{ latest_trans_list.previous_page_number }}">previous</a>
+    {% endif %}
+
+    <span class="current">
+      Page {{ latest_trans_list.number }} of {{ latest_trans_list.paginator.num_pages }}.
+    </span>
+
+    {% if latest_trans_list.has_next %}
+    <a href="?page={{ latest_trans_list.next_page_number }}">next</a>
+    {% endif %}
+  </span>
+</div>
+
+{% endblock contents %}
+
+
+{% block exscript %}
+<script type="text/javascript" src="../static/js/trans_list.js"></script>
+{% endblock exscript %}
+
+    
+{% block script %}
+{% endblock script %}
+  
+

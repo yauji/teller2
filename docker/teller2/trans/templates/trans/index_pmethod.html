@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block nav_pmethod %}active{% endblock %}
+
+{% block contents %} 
+
+<p class="h2"> Payment method group</p>
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+
+<form action="{% url 'trans:add_pmgroup' %}" method="post">
+  {% csrf_token %}
+  name:<input type="text" name="name" id="name"  />
+  <input type="submit" value="Add" />
+</form>
+
+
+  <table border="1" class="table table-striped">
+    <thead>
+    <tr>
+      <th></th>
+      <th>Name</th>
+      <th></th>
+    </tr>
+    </thead>
+    {% for pmg in pmgroup_list %}
+    <tbody>
+    <tr>
+      <td>
+	<!--<input type="checkbox" name="cb" value="{{ pmg.id }}" />-->{{pmg.order}}</td>
+      <td>{{ pmg.name }}</td>
+      <td> <a href="{% url 'trans:edit_pmgroup' pmg.id %}">Edit</a>
+	| <a href="{% url 'trans:delete_pmgroup' pmg.id %}">Delete</a>
+	| <a href="{% url 'trans:up_pmgroup' pmg.id %}">Up</a>
+      </td>
+    </tr>
+    </tbody>
+    {% endfor %}
+  </table>
+
+
+
+<p class="h2"> Payment method</p>
+
+<form action="{% url 'trans:add_pmethod' %}" method="post">
+  {% csrf_token %}
+  <input type="textbox" name="name" id="idname" value="" />
+
+  <select name="pmg" id="pmg">
+    {% for pmg in pmgroup_list %}    
+    <option value="{{pmg.id}}">{{pmg.name}}</opetion>
+    {% endfor %}
+  </select>
+
+  <input type="submit" value="Add" />
+</form>
+
+
+<table border="1" class="table table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Group</th>
+      <th>Name</th>
+      <th></th>
+    </tr>
+  </thead>
+  {% for pm in pmethod_list %}
+  <tbody>
+    <tr>
+      <td>{{ pm.id }}
+	<!--<input type="checkbox" name="cb" value="{{ pmg.id }}" />-->{{pmg.order}}</td>
+      <td>{{ pm.group.name }}</td>
+      <td>{{ pm.name }}</td>
+      <td> <a href="{% url 'trans:edit_pmethod' pm.id %}">Edit</a>
+	| <a href="{% url 'trans:delete_pmethod' pm.id %}">Delete</a>
+	| <a href="{% url 'trans:up_pmethod' pm.id %}">Up</a>
+      </td>
+    </tr>
+  </tbody>
+  {% endfor %}
+</table>
+
+
+
+
+<p class="h2"> Category group</p>
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+
+<form action="{% url 'trans:add_categorygroup' %}" method="post">
+  {% csrf_token %}
+  name:<input type="text" name="name" id="name"  />
+  <input type="submit" value="Add" />
+</form>
+
+
+  <table border="1" class="table table-striped">
+    <thead>
+    <tr>
+      <th></th>
+      <th>Name</th>
+      <th></th>
+    </tr>
+    </thead>
+    {% for cg in categorygroup_list %}
+    <tbody>
+    <tr>
+      <td>
+	<!--<input type="checkbox" name="cb" value="{{ cg.id }}" />-->{{cg.order}}</td>
+      <td>{{ cg.name }}</td>
+      <td> <a href="{% url 'trans:edit_categorygroup' cg.id %}">Edit</a>
+	| <a href="{% url 'trans:delete_categorygroup' cg.id %}">Delete</a>
+	| <a href="{% url 'trans:up_categorygroup' cg.id %}">Up</a>
+      </td>
+      <td>{{ cg.id }}</td>
+    </tr>
+    </tbody>
+    {% endfor %}
+  </table>
+
+
+
+<p class="h2"> Category</p>
+
+<form action="{% url 'trans:add_category' %}" method="post">
+  {% csrf_token %}
+  <input type="textbox" name="name" id="idname" value="" />
+
+  <select name="cg" id="cg">
+    {% for cg in categorygroup_list %}    
+    <option value="{{cg.id}}">{{cg.name}}</opetion>
+    {% endfor %}
+  </select>
+
+  <input type="submit" value="Add" />
+</form>
+
+
+<table border="1" class="table table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Group</th>
+      <th>Name</th>
+      <th></th>
+    </tr>
+  </thead>
+  {% for c in category_list %}
+  <tbody>
+    <tr>
+      <td>
+	<!--<input type="checkbox" name="cb" value="{{ cg.id }}" />-->{{cg.order}}</td>
+      <td>{{ c.group.name }}</td>
+      <td>{{ c.name }}</td>
+      <td> <a href="{% url 'trans:edit_category' c.id %}">Edit</a>
+	| <a href="{% url 'trans:delete_category' c.id %}">Delete</a>
+	| <a href="{% url 'trans:up_category' c.id %}">Up</a>
+      </td>
+      <td>{{ c.id }}</td>
+    </tr>
+  </tbody>
+  {% endfor %}
+</table>
+
+
+{% endblock contents %}
+
+
+

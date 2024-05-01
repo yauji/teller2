@@ -43,6 +43,8 @@ JACCS_DISCOUNT = 'discount with J-depo:'
 SALARY_MAPPING_FNAME = 'mapping_item_cid.txt'
 SALARY_OTHER_ID = 249
 
+CATEGORY_ID_TRANSPORTATION = 3
+
 
 
 @login_required(login_url='/login/')
@@ -717,6 +719,8 @@ def suica_upload(request):
         c = Category.objects.get(pk=cid)
         pm = Pmethod.objects.get(pk=pmid)
 
+        c_transportation = Category.objects.get(pk=CATEGORY_ID_TRANSPORTATION)
+
         trans_list = []
         tmpid = 1
         for l in contents:
@@ -728,20 +732,8 @@ def suica_upload(request):
             trans.id = tmpid
             tmpid += 1
 
-            #hoge
-            print("hoge")
-            print(splts)
-            """
-            print(splts[0])
-            #mm/ddの5文字でない場合はスキップ
-            if len(splts[0]) != 5:
-                continue
-            """
             strdate = request.POST['year'] + '/' + splts[1]
-            #strdate = request.POST['year'] + '/' + splts[0]
-            
             strdate = strdate.strip()
-            #print(strdate)
 
             trans.date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
             trans.name = splts[2] + splts[3]  + splts[4]  + splts[5]
@@ -757,21 +749,27 @@ def suica_upload(request):
                 trans.expense = expense
             """                
             expense = splts[7].replace('\n', '').replace(',', '').replace('+', '')
-            print(expense)
-            print( len(expense))
 
             if len(expense) != 0:
                 trans.expense = int(expense)
             else:
                 continue
-            #hoge                
-            
-            
-            trans.category = c
+
+            str0 = splts[2].strip()
+            if str0 in ["入", "ﾊﾞｽ等"]:
+                trans.category = c_transportation
+            else:
+                trans.category = c
+
+            #print(splts[2])
+            #print(trans.category.name)
+
+
             trans.pmethod = pm
 
             #check same trans
-            checktranslist = Trans.objects.filter(date=trans.date, expense=trans.expense, category=c, pmethod=pm)
+            checktranslist = Trans.objects.filter(date=trans.date, expense=trans.expense, category=trans.category, pmethod=pm)
+            #checktranslist = Trans.objects.filter(date=trans.date, expense=trans.expense, category=c, pmethod=pm)
 
             if len(checktranslist) > 0:
                 trans.selected = False

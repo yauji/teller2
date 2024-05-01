@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block nav_trans %}active{% endblock %}
+
+
+{% block contents %} 
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<div class="card">
+  <div class="card-body">
+    <!--
+    <h4 class="card-title">Register</h4>
+-->
+
+<form action="{% url 'trans:add' %}" method="post" class="form-inline">
+    {% csrf_token %}
+    <label class="sr-only" for="inlineFormInput">Date</label>
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0 datepicker" id="date" name="date" placeholder="yyyy/mm/dd" value="{{date|date:"Y/n/d" }}">
+
+    <label class="sr-only" for="inlineFormInput">Name</label>
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="name" name="name"   placeholder="Enter item name">
+
+    <label class="sr-only" for="inlineFormCustomSelect">Expense</label>
+    <input type="number" class="form-control" id="expense" name="expense" placeholder="Enter expense" value="{{expense}}">
+
+    <label class="sr-only" for="inlineFormCustomSelect">Memo</label>
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="memo" name="memo" placeholder="Enter memo">
+
+    <label class="sr-only" for="inlineFormCustomSelect">Category</label>
+    <select  class="custom-select mb-2 mr-sm-2 mb-sm-0" name="cg" id="cg">
+    {% for cg in categorygroup_list %}    
+    <option value="{{cg.id}}" {% if cg.selected %}selected="True"{% endif %}>{{cg.name}}</opetion>
+    {% endfor %}
+    </select>
+  
+    <select name="c" id="c">
+    {% for c in category_list %}    
+    <option value="{{c.id}}" {% if c.selected %}selected="True"{% endif %}>{{c.name}}</opetion>
+    {% endfor %}
+    </select>
+
+    <label class="sr-only" for="inlineFormCustomSelect">Payment method</label>
+
+  <select name="pmg" id="pmg">
+    {% for pmg in pmgroup_list %}    
+    <option value="{{pmg.id}}" {% if pmg.selected %}selected="True"{% endif %}>{{pmg.name}}</opetion>
+    {% endfor %}
+  </select>
+
+  <select name="pm" id="pm">
+    {% for pm in pmethod_list %}    
+    <option value="{{pm.id}}" {% if pm.selected %}selected="True"{% endif %}>{{pm.name}}</opetion>
+    {% endfor %}
+  </select>
+
+  <!-- pmehtod (move target) -->
+  <label id="lmoveto" >move to: </label>
+  <select name="pmg2" id="pmg2">
+    {% for pmg in pmgroup_list %}    
+    <option value="{{pmg.id}}">{{pmg.name}}</opetion>
+    {% endfor %}
+  </select>
+
+  <select name="pm2" id="pm2">
+    {% for pm in pmethod_list_move %}    
+    <option value="{{pm.id}}">{{pm.name}}</opetion>
+    {% endfor %}
+  </select>
+
+<select name="share_type" id="share_type">
+    {% for st in share_type_list %}    
+    <option value="{{st.value}}" {% if st.selected %}selected="True"{% endif %}>{{st.name}}</opetion>
+{% endfor %}
+</select>
+  <input type="text" name="user_pay4" id="user_pay4"/>
+  
+    <button type="submit" class="btn btn-primary btn-sm">Add</button>
+</form>
+</div>
+</div>
+
+
+
+
+
+    <form action="{% url 'trans:delete' %}" method="post">
+	<!--	-->
+      {% csrf_token %}
+    
+    <table border="1" class="table table-striped">
+      <tr>
+	<th></th>
+      <th>Date</th>
+	<th>Item</th>
+	<th>Expense</th>
+	<th>Balance</th>
+	<th>Payment method</th>
+	<th>Category</th>
+	<th>Memo</th>
+	<th>(share type)</th>
+      </tr>
+      {% for trans in latest_trans_list %}
+      <tr>
+	<td> <input type="checkbox" name="tids" value="{{ trans.id }}" /></td>
+	<td>{{ trans.date|date:"Y/n/d" }}</td>
+	<td>{{ trans.name }}</td>
+	<td>{{ trans.expense| intcomma }}</td>
+	<td>{{ trans.balance| intcomma  }}</td>
+	<td>{{ trans.pmethod.name }}</td>
+	<td>{{ trans.category.name }}</td>
+	<td>{{ trans.memo }}</td>
+	<td>{{ trans.share_type }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+      <input type="submit" value="Delete" />
+</form>
+
+{% endblock contents %}
+
+
+{% block exscript %}
+    <script type="text/javascript" src="../static/js/trans_common.js"></script>
+    <script type="text/javascript" src="../static/js/trans_index.js"></script>
+{% endblock exscript %}
+
+{% block script %}
+{% endblock script %}
+
+
+
+
+
+
+
+
+
+
+
+    
+    

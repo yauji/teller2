@@ -1,0 +1,336 @@
+[
+    {
+	"model": "trans.CategoryGroup",
+	"pk": 101,
+	"fields": {
+	    "name": "system",
+	    "order": 101
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 101,
+	"fields": {
+	    "name": "move",
+	    "group_id": 101,
+	    "order": 101
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 102,
+	"fields": {
+	    "name": "clearance",
+	    "group_id": 101,
+	    "order": 102
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 110,
+	"fields": {
+	    "name": "withdraw",
+	    "group_id": 101,
+	    "order": 110
+	}
+    },
+    
+    {
+	"model": "trans.CategoryGroup",
+	"pk": 22,
+	"fields": {
+	    "name": "給与eriko",
+	    "order": 22
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 221,
+	"fields": {
+	    "name": "本給",
+	    "group_id": 22,
+	    "order": 221
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 268,
+	"fields": {
+	    "name": "家族手当",
+	    "group_id": 22,
+	    "order": 268
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 222,
+	"fields": {
+	    "name": "地域給",
+	    "group_id": 22,
+	    "order": 222
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 223,
+	"fields": {
+	    "name": "Ｓワーク手当",
+	    "group_id": 22,
+	    "order": 223
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 224,
+	"fields": {
+	    "name": "時間外手当",
+	    "group_id": 22,
+	    "order": 224
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 225,
+	"fields": {
+	    "name": "深夜勤務手当",
+	    "group_id": 22,
+	    "order": 225
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 226,
+	"fields": {
+	    "name": "住宅手当",
+	    "group_id": 22,
+	    "order": 226
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 227,
+	"fields": {
+	    "name": "通勤手当",
+	    "group_id": 22,
+	    "order": 227
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 228,
+	"fields": {
+	    "name": "昼食費補助",
+	    "group_id": 22,
+	    "order": 228
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 229,
+	"fields": {
+	    "name": "持株会奨励金",
+	    "group_id": 22,
+	    "order": 229
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 242,
+	"fields": {
+	    "name": "休業手当",
+	    "group_id": 22,
+	    "order": 242
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 246,
+	"fields": {
+	    "name": "臨時給与",
+	    "group_id": 22,
+	    "order": 246
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 247,
+	"fields": {
+	    "name": "賞与支給金",
+	    "group_id": 22,
+	    "order": 247
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 243,
+	"fields": {
+	    "name": "休業歩引",
+	    "group_id": 22,
+	    "order": 243
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 250,
+	"fields": {
+	    "name": "特許報奨金",
+	    "group_id": 22,
+	    "order": 250
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 230,
+	"fields": {
+	    "name": "健康保険料",
+	    "group_id": 22,
+	    "order": 230
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 231,
+	"fields": {
+	    "name": "厚生年金保険料",
+	    "group_id": 22,
+	    "order": 231
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 232,
+	"fields": {
+	    "name": "雇用保険料",
+	    "group_id": 22,
+	    "order": 232
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 233,
+	"fields": {
+	    "name": "所得税",
+	    "group_id": 22,
+	    "order": 233
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 234,
+	"fields": {
+	    "name": "住民税",
+	    "group_id": 22,
+	    "order": 234
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 235,
+	"fields": {
+	    "name": "持株会",
+	    "group_id": 22,
+	    "order": 235
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 236,
+	"fields": {
+	    "name": "持株会奨励金＿控除",
+	    "group_id": 22,
+	    "order": 236
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 248,
+	"fields": {
+	    "name": "持株会事務手数料",
+	    "group_id": 22,
+	    "order": 248
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 237,
+	"fields": {
+	    "name": "財形",
+	    "group_id": 22,
+	    "order": 237
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 238,
+	"fields": {
+	    "name": "生命保険",
+	    "group_id": 22,
+	    "order": 238
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 239,
+	"fields": {
+	    "name": "損害保険",
+	    "group_id": 22,
+	    "order": 239
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 240,
+	"fields": {
+	    "name": "組合費",
+	    "group_id": 22,
+	    "order": 240
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 241,
+	"fields": {
+	    "name": "闘争積立金",
+	    "group_id": 22,
+	    "order": 241
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 244,
+	"fields": {
+	    "name": "通勤手当＿会社負担",
+	    "group_id": 22,
+	    "order": 244
+	}
+    },
+    {
+	"model": "trans.Category",
+	"pk": 249,
+	"fields": {
+	    "name": "その他",
+	    "group_id": 22,
+	    "order": 249
+	}
+    },
+    
+    {
+	"model": "trans.PmethodGroup",
+	"pk": 3,
+	"fields": {
+	    "name": "creditcard",
+	    "order": 3,
+	    "user_id": 1
+	}
+    },
+    {
+	"model": "trans.Pmethod",
+	"pk": 210,
+	"fields": {
+	    "name": "jaccs",
+	    "group": 3,
+	    "order": 210
+	}
+    }
+]
+
