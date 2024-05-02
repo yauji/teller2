@@ -34,6 +34,12 @@ urlpatterns = [
     re_path(r'^rakutencard_check$', views.rakutencard_check,
             name='rakutencard_check'),
 
+    # Shinsei bank
+    re_path(r'^shinsei_upload$', views.shinsei_upload,
+            name='shinsei_upload'),
+    re_path(r'^shinsei_check$', views.shinsei_check,
+            name='shinsei_check'),
+
     # salary
     re_path(r'^salary_upload$', views.salary_upload, name='salary_upload'),
     re_path(r'^salary_check$', views.salary_check, name='salary_check'),
