@@ -24,7 +24,7 @@ SHARE_TYPES_OWN = 1
 SHARE_TYPES_SHARE = 2
 SHARE_TYPES_PAY4OTHER = 3
 '''
-SHARE_TYPES_OWN_STR = 
+SHARE_TYPES_OWN_STR =
 SHARE_TYPES_SHARE_STR = 2
 SHARE_TYPES_PAY4OTHER_STR = 3
 '''
@@ -34,6 +34,8 @@ C_WITHDRAW_ID = 110
 # C_WITHDRAW_ID = 103
 
 PM_JACCS_ID = 210
+PM_RAKUTENCARD_ID = 310
+PM_SHINSEI_ID = 13
 
 
 SUICA_KURIKOSHI = '繰\u3000'
@@ -1012,6 +1014,341 @@ def handle_uploaded_jaccs(f):
         for chunk in f.chunks():
             destination.write(chunk)
 """
+
+
+# --- rakutencard ----
+
+def rakutencard_upload(request):
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+
+    category_list = []
+    if len(categorygroup_list) > 0:
+        cg = categorygroup_list[0]
+        clist = Category.objects.filter(group=cg).order_by('order')
+        category_list.extend(clist)
+
+    if request.method == 'GET':
+        context = {'categorygroup_list': categorygroup_list,
+                   'category_list': category_list,
+                   }
+        return render(request, 'trans/rakutencard_upload.html', context)
+
+    elif request.method == 'POST':
+        if not 'file' in request.FILES:
+            context = {'categorygroup_list': categorygroup_list,
+                       'category_list': category_list,
+                       'error_message': 'File is mandatory.',
+                       }
+            return render(request, 'trans/rakutencard_upload.html', context)
+
+        f = codecs.EncodedFile(request.FILES['file'], "utf-8")
+        content = f.read()
+
+        fout = open('tmp_rakutencard.txt', 'w')
+        fout.write(content.decode('utf-8'))
+        fout.close()
+
+        f = open('tmp_rakutencard.txt', 'r')
+        contents = []
+        for l in f.readlines():
+            contents.append(l)
+        f.close()
+
+        # get default cate, pmethod
+        cid = int(request.POST['c'])
+        c = Category.objects.get(pk=cid)
+        pm = Pmethod.objects.get(pk=PM_RAKUTENCARD_ID)
+
+        trans_list = []
+        tmpid = 1
+        for l in contents:
+            splts = l.split(' ')
+
+            # print('------')
+            # print(splts)
+
+            if len(splts) == 1:
+                continue
+
+            trans = TransUi()
+
+            # this id is tmp
+            trans.id = tmpid
+            tmpid += 1
+            strdate = splts[0]
+            trans.date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
+            trans.name = splts[1]
+
+            expense = splts[4].replace(',', '')
+            trans.expense = expense
+
+            trans.category = c
+            trans.pmethod = pm
+
+            trans.share_type = SHARE_TYPES_SHARE
+
+            # check same trans--
+            checktranslist = Trans.objects.filter(
+                date=trans.date, expense=trans.expense, pmethod=pm)
+            # checktranslist = Trans.objects.filter(date=trans.date, expense=trans.expense, category=c, pmethod=pm)
+            if len(checktranslist) > 0:
+                trans.selected = False
+
+            '''
+            # tmp for migrated data
+            datetmp = trans.date + timedelta(days=-1)
+            checktranslist = Trans.objects.filter(date__gte=datetmp)\
+                .filter(date__lte=trans.date)\
+                .filter(expense=trans.expense, pmethod=pm)
+            if len(checktranslist) > 0:
+                trans.selected = False
+            '''
+
+            trans_list.append(trans)
+
+        """
+        category_list = []
+        if len(categorygroup_list) > 0:
+            cg = categorygroup_list[0]
+            clist = Category.objects.filter(group = cg).order_by('order')
+            category_list.extend(clist)
+        """
+        category_list = []
+        if len(categorygroup_list) > 0:
+            # find selected category group
+            if 'cg' in request.POST:
+                cg = CategoryGroup.objects.get(pk=int(request.POST['cg']))
+            else:
+                cg = categorygroup_list[0]
+            clist = Category.objects.filter(group=cg).order_by('order')
+            if 'c' in request.POST:
+                for c in clist:
+                    if c.id == int(request.POST['c']):
+                        cui = CategoryUi()
+                        cui.id = c.id
+                        cui.name = c.name
+                        cui.group = c.group
+                        cui.selected = True
+                        category_list.append(cui)
+                    else:
+                        category_list.append(c)
+            else:
+                category_list.extend(clist)
+
+        context = {'categorygroup_list': categorygroup_list,
+                   'category_list': category_list,
+                   'trans_list': trans_list,
+                   }
+        return render(request, 'trans/rakutencard_check.html', context)
+
+
+def rakutencard_check(request):
+    suica_rakutencard_register(request)
+
+    return redirect('/t/')
+
+
+def suica_rakutencard_register(request):
+    # checked trans
+    tids = request.POST.getlist('tids')
+    dates = request.POST.getlist('dates')
+    cs = request.POST.getlist('cs')
+    names = request.POST.getlist('names')
+    expenses = request.POST.getlist('expenses')
+    pmethods = request.POST.getlist('pmethods')
+    memos = request.POST.getlist('memos')
+    share_types = request.POST.getlist('share_types')
+
+    i = 1
+    for expense in expenses:
+        if str(i) in tids:
+            date = datetime.datetime.strptime(dates[i-1], '%Y/%m/%d')
+            c = Category.objects.get(pk=cs[i-1])
+            pm = Pmethod.objects.get(pk=pmethods[i-1])
+
+            trans = Trans(date=date,
+                          name=names[i-1],
+                          expense=expenses[i-1],
+                          memo=memos[i-1],
+                          category=c,
+                          pmethod=pm,
+                          user=request.user,
+                          share_type=share_types[i-1],
+                          )
+            trans.save()
+
+        i += 1
+    update_balance(trans)
+
+# --- shinsei ----
+def shinsei_upload(request):
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+
+    category_list = []
+    if len(categorygroup_list) > 0:
+        cg = categorygroup_list[0]
+        clist = Category.objects.filter(group=cg).order_by('order')
+        category_list.extend(clist)
+
+    date = datetime.datetime.now()
+    year = date.year
+
+    if request.method == 'GET':
+        context = {'categorygroup_list': categorygroup_list,
+                   'category_list': category_list,
+                   'year': year,
+                   }
+        return render(request, 'trans/shinsei_upload.html', context)
+
+    elif request.method == 'POST':
+        if not 'file' in request.FILES:
+            context = {'categorygroup_list': categorygroup_list,
+                       'category_list': category_list,
+                       'year': year,
+                       'error_message': 'File is mandatory.',
+                       }
+            return render(request, 'trans/shinsei_upload.html', context)
+
+        f = codecs.EncodedFile(request.FILES['file'], "utf-8")
+        content = f.read()
+
+        fout = open('tmp_shinsei.txt', 'w')
+        fout.write(content.decode('utf-8'))
+        fout.close()
+
+        f = open('tmp_shinsei.txt', 'r')
+        contents = []
+        for l in f.readlines():
+            contents.append(l)
+        f.close()
+
+        # get default cate, pmethod
+        cid = int(request.POST['c'])
+        c = Category.objects.get(pk=cid)
+        pm = Pmethod.objects.get(pk=PM_SHINSEI_ID)
+        
+        year = request.POST['year']
+
+        trans_list = []
+        tmpid = 1
+        for l in contents:
+            splts = l.split(' ')
+
+            # print('------')
+            # print(splts)
+
+            if len(splts) != 5:
+                continue
+
+            trans = TransUi()
+
+            # this id is tmp
+            trans.id = tmpid
+            tmpid += 1
+            strdate = year + '/' + splts[0]
+            trans.date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
+            trans.name = splts[4]
+
+            expense = splts[2].replace(',', '')
+            trans.expense = expense
+
+            trans.category = c
+            trans.pmethod = pm
+
+            trans.share_type = SHARE_TYPES_SHARE
+
+            # check same trans--
+            checktranslist = Trans.objects.filter(
+                date=trans.date, expense=trans.expense, pmethod=pm)
+            # checktranslist = Trans.objects.filter(date=trans.date, expense=trans.expense, category=c, pmethod=pm)
+            if len(checktranslist) > 0:
+                trans.selected = False
+
+            '''
+            # tmp for migrated data
+            datetmp = trans.date + timedelta(days=-1)
+            checktranslist = Trans.objects.filter(date__gte=datetmp)\
+                .filter(date__lte=trans.date)\
+                .filter(expense=trans.expense, pmethod=pm)
+            if len(checktranslist) > 0:
+                trans.selected = False
+            '''
+
+            trans_list.append(trans)
+
+        """
+        category_list = []
+        if len(categorygroup_list) > 0:
+            cg = categorygroup_list[0]
+            clist = Category.objects.filter(group = cg).order_by('order')
+            category_list.extend(clist)
+        """
+        category_list = []
+        if len(categorygroup_list) > 0:
+            # find selected category group
+            if 'cg' in request.POST:
+                cg = CategoryGroup.objects.get(pk=int(request.POST['cg']))
+            else:
+                cg = categorygroup_list[0]
+            clist = Category.objects.filter(group=cg).order_by('order')
+            if 'c' in request.POST:
+                for c in clist:
+                    if c.id == int(request.POST['c']):
+                        cui = CategoryUi()
+                        cui.id = c.id
+                        cui.name = c.name
+                        cui.group = c.group
+                        cui.selected = True
+                        category_list.append(cui)
+                    else:
+                        category_list.append(c)
+            else:
+                category_list.extend(clist)
+
+        context = {'categorygroup_list': categorygroup_list,
+                   'category_list': category_list,
+                   'trans_list': trans_list,
+                   }
+        return render(request, 'trans/shinsei_check.html', context)
+
+
+def shinsei_check(request):
+    suica_shinsei_register(request)
+
+    return redirect('/t/')
+
+
+def suica_shinsei_register(request):
+    # checked trans
+    tids = request.POST.getlist('tids')
+    dates = request.POST.getlist('dates')
+    cs = request.POST.getlist('cs')
+    names = request.POST.getlist('names')
+    expenses = request.POST.getlist('expenses')
+    pmethods = request.POST.getlist('pmethods')
+    memos = request.POST.getlist('memos')
+    share_types = request.POST.getlist('share_types')
+
+    i = 1
+    for expense in expenses:
+        if str(i) in tids:
+            date = datetime.datetime.strptime(dates[i-1], '%Y/%m/%d')
+            c = Category.objects.get(pk=cs[i-1])
+            pm = Pmethod.objects.get(pk=pmethods[i-1])
+
+            trans = Trans(date=date,
+                          name=names[i-1],
+                          expense=expenses[i-1],
+                          memo=memos[i-1],
+                          category=c,
+                          pmethod=pm,
+                          user=request.user,
+                          share_type=share_types[i-1],
+                          )
+            trans.save()
+
+        i += 1
+    update_balance(trans)
 
 
 # --- salary ----

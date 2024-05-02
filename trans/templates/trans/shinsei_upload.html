@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block contents %}
+
+<h3>Shinsei bank record registeror</h3>
+
+<ul>
+<li>入金は「-」を追加すること。</li>
+</ul>
+
+
+
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <input type="file" name="file">
+
+  <label class="sr-only" for="inlineFormCustomSelect">Default category</label>
+  <select  class="custom-select mb-2 mr-sm-2 mb-sm-0" name="cg" id="cg">
+    {% for cg in categorygroup_list %}    
+    <option value="{{cg.id}}">{{cg.name}}</opetion>
+    {% endfor %}
+  </select>
+  
+  <select name="c" id="c">
+    {% for c in category_list %}    
+    <option value="{{c.id}}">{{c.name}}</opetion>
+    {% endfor %}
+  </select>
+
+  <input type="number" class="" id="year" name="year" placeholder="Enter year" value="{{year}}">
+
+  <input type="submit" class="btn btn-primary btn-sm" value="Upload">
+</form>
+
+
+{{contents}}
+
+{% endblock contents %}
+
+{% block exscript %}
+<script type="text/javascript" src="../static/js/trans_common.js"></script>
+
+{% endblock exscript %}
+
+
