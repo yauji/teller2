@@ -726,7 +726,7 @@ def suica_upload(request):
                 ',', '').replace('+', '')
 
             if len(expense) != 0:
-                trans.expense = int(expense)
+                trans.expense = int(expense) * -1
             else:
                 continue
 
