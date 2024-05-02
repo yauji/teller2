@@ -1181,8 +1181,6 @@ def suica_rakutencard_register(request):
     update_balance(trans)
 
 # --- shinsei ----
-
-
 def shinsei_upload(request):
     categorygroup_list = CategoryGroup.objects.order_by('order')
 
@@ -1192,7 +1190,6 @@ def shinsei_upload(request):
         clist = Category.objects.filter(group=cg).order_by('order')
         category_list.extend(clist)
 
-    # hoge
     date = datetime.datetime.now()
     year = date.year
 
@@ -1230,7 +1227,6 @@ def shinsei_upload(request):
         c = Category.objects.get(pk=cid)
         pm = Pmethod.objects.get(pk=PM_SHINSEI_ID)
         
-        #hoge
         year = request.POST['year']
 
         trans_list = []
@@ -1249,7 +1245,6 @@ def shinsei_upload(request):
             # this id is tmp
             trans.id = tmpid
             tmpid += 1
-            # hoge
             strdate = year + '/' + splts[0]
             trans.date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
             trans.name = splts[4]
