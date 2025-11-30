@@ -1,4 +1,5 @@
-NAME=teller2
+#NAME=teller2
+NAME=docker-web-1
 VERSION=0.1
 
 build:
@@ -41,7 +42,17 @@ up: build
 down:
 	docker-compose down
 
-
-
 shell:
+	docker exec -it $(NAME) /bin/bash
+
+build-dev:
+	docker-compose -f docker-compose.dev.yml build
+
+up-dev: build-dev
+	docker-compose -f docker-compose.dev.yml up -d
+
+down-dev:
+	docker-compose -f docker-compose.dev.yml down
+
+shell-dev:
 	docker exec -it $(NAME) /bin/bash

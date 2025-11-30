@@ -50,11 +50,11 @@
 	  <ul class="nav navbar-nav">
 	    <li class="{% block nav_trans %}{% endblock %}"><a href="{% url 'trans:index' %}">Home</a></li>
 	    <li class="{% block nav_list %}{% endblock %}"><a href="{% url 'trans:list' %}">List</a></li>
-    	    <li class="{% block nav_monthlyreport %}{% endblock %}"><a href="{% url 'trans:monthlyreport' %}">Monthly report</a></li>
+	    <li class="{% block nav_monthlyreport %}{% endblock %}"><a href="{% url 'trans:monthlyreport' %}">Monthly report</a></li>
     	    <li class="{% block nav_advanced %}{% endblock %}"><a href="{% url 'trans:advanced' %}">Advanced</a></li>
 	    <li class="{% block nav_pmethod %}{% endblock %}"><a href="{% url 'trans:index_pmethod' %}">Settings</a></li>
 	  </ul>
-	    {{request.user}}<a href="/logout/">Logout</a>
+	    {{request.user}} <a href="/password_change/">Change password</a> <a href="/logout/">Logout</a>
 	</div><!--/.nav-collapse -->
       </div>
     </nav>
@@ -67,6 +67,12 @@
       {% block contents %}{% endblock %}
 
     </div><!-- /.container -->
+
+    <footer class="footer">
+      <div class="container text-center">
+        <p class="text-muted">v0.1.1 (2025-11-30)</p>
+      </div>
+    </footer>
 
 
     <!-- Bootstrap core JavaScript
@@ -92,4 +98,3 @@
 
   </body>
 </html>
-
