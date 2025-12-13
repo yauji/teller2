@@ -1,0 +1,5 @@
+# keyword,category_id
+# Add one mapping per line. Example:
+# amazon,101
+ＥＴＣ,3
+ドコモ,72

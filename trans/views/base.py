@@ -42,6 +42,7 @@ SUICA_KURIKOSHI = '繰\u3000'
 JACCS_DISCOUNT = 'discount with J-depo:'
 
 SALARY_MAPPING_FNAME = 'mapping_item_cid.txt'
+JACCS_CATEGORY_MAPPING_FNAME = 'mapping_jaccs_category.txt'
 SALARY_OTHER_ID = 249
 
 CATEGORY_ID_TRANSPORTATION = 3

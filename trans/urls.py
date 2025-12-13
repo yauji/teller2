@@ -26,6 +26,7 @@ urlpatterns = [
 
     # jaccs
     re_path(r'^jaccs_upload$', views.jaccs_upload, name='jaccs_upload'),
+    re_path(r'^jaccs_upload_new$', views.jaccs_upload_new, name='jaccs_upload_new'),
     re_path(r'^jaccs_check$', views.jaccs_check, name='jaccs_check'),
 
     # rakuten card
