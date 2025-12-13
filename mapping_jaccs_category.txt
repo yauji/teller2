@@ -1,0 +1,11 @@
+# keyword,category_id
+# Add one mapping per line. Example:
+# amazon,101
+ドコモ,72
+ラクテンモバイルツウシンリヨウ,72
+電気料金,105
+東京ガス,106
+タイムズカー,3
+ＥＴＣ,3
+デイズニープラス,4
+ＡＭＡＺＯＮ．ＣＯ,4

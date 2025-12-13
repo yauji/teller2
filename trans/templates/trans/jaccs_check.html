@@ -27,12 +27,12 @@ JACCS record registeror - check
       <td>
 	<select  class="cg custom-select mb-2 mr-sm-2 mb-sm-0" name="cg{{trans.id}}" id="cg0">
 	  {% for cg in categorygroup_list %}    
-	  <option value="{{cg.id}}">{{cg.name}}</opetion>
+	  <option value="{{cg.id}}" {% if trans.category.group.id == cg.id %}selected="True"{% endif %}>{{cg.name}}</opetion>
           {% endfor %}
 </select>
 <select name="cs" id="c0">
 	  {% for c in category_list %}    
-	  <option value="{{c.id}}"  {% if c.selected %}selected="True"{% endif %}>{{c.name}}</opetion>
+	  <option value="{{c.id}}"  {% if trans.category.id == c.id %}selected="True"{% endif %}>{{c.name}}</opetion>
           {% endfor %}
 
 </select>
@@ -60,6 +60,7 @@ JACCS record registeror - check
     </tr>
     {% endfor %}
 
+  </table>
   
   <input type="submit" value="register">
 </form>
@@ -75,4 +76,3 @@ JACCS record registeror - check
 <script type="text/javascript" src="../static/js/trans_suica.js"></script>
 <script type="text/javascript" src="../static/js/trans_common.js"></script>
 {% endblock exscript %}
-
