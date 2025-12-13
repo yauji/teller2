@@ -19,6 +19,28 @@
 
     <!-- Custom styles for this template -->
     <link href="starter-template.css" rel="stylesheet">
+    <style>
+      html, body {
+        height: 100%;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      body > .container {
+        flex: 1 0 auto;
+      }
+      .footer {
+        flex-shrink: 0;
+      }
+      /* ensure floated children don't collapse the container height */
+      .container::after {
+        content: "";
+        display: block;
+        clear: both;
+      }
+    </style>
 
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
