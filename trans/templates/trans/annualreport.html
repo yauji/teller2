@@ -97,11 +97,77 @@
   {% endfor %}
 </table>
 
+<div class="card mt-3">
+  <div class="card-body">
+    <h4 class="card-title">Annual totals (expense / income / total)</h4>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" id="toggleExpense" checked>
+      <label class="form-check-label" for="toggleExpense">Expense</label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" id="toggleIncome" checked>
+      <label class="form-check-label" for="toggleIncome">Income</label>
+    </div>
+    <canvas id="annualBarChart" height="100"></canvas>
+  </div>
+</div>
+
 {% endblock contents %}
 
 
 {% block exscript %}
 <script type="text/javascript" src="../static/js/trans_monthlyreport.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  (function() {
+    const labels = [{% for mr in annualreport_list %}"{{ mr.yearmonth }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+    const expenses = [{% for mr in annualreport_list %}{{ mr.totalexpense|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}];
+    const incomes = [{% for mr in annualreport_list %}{{ mr.totalincome|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}];
+    const totals = [{% for mr in annualreport_list %}{{ mr.total|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}];
+
+    const ctx = document.getElementById('annualBarChart');
+    if (ctx && labels.length) {
+      const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Expense', data: expenses, backgroundColor: 'rgba(220, 53, 69, 0.6)', hidden: false, key: 'expense' },
+            { label: 'Income', data: incomes, backgroundColor: 'rgba(40, 167, 69, 0.6)', hidden: false, key: 'income' },
+            { label: 'Total', data: totals, backgroundColor: 'rgba(23, 162, 184, 0.6)' },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            yAxes: [{
+              ticks: { beginAtZero: true },
+            }]
+          },
+          tooltips: { mode: 'index', intersect: false },
+          legend: { position: 'bottom' }
+        }
+      });
+
+      const expenseToggle = document.getElementById('toggleExpense');
+      const incomeToggle = document.getElementById('toggleIncome');
+      if (expenseToggle) {
+        expenseToggle.addEventListener('change', function() {
+          const ds = chart.data.datasets.find(d => d.label === 'Expense');
+          if (ds) ds.hidden = !this.checked;
+          chart.update();
+        });
+      }
+      if (incomeToggle) {
+        incomeToggle.addEventListener('change', function() {
+          const ds = chart.data.datasets.find(d => d.label === 'Income');
+          if (ds) ds.hidden = !this.checked;
+          chart.update();
+        });
+      }
+    }
+  })();
+</script>
 
 
 {% endblock exscript %}
