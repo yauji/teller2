@@ -47,6 +47,7 @@ JACCS_CATEGORY_MAPPING_FNAME = 'mapping_jaccs_category.txt'
 SALARY_OTHER_ID = 249
 
 CATEGORY_ID_TRANSPORTATION = 3
+CATEGORY_ID_MOVE = C_MOVE_ID
 
 
 @login_required(login_url='/login/')

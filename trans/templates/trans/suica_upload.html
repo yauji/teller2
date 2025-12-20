@@ -10,19 +10,6 @@ Suica record registeror
   {% csrf_token %}
   <input type="file" name="file">
 
-  <label class="sr-only" for="inlineFormCustomSelect">Default category</label>
-  <select  class="custom-select mb-2 mr-sm-2 mb-sm-0" name="cg" id="cg">
-    {% for cg in categorygroup_list %}    
-    <option value="{{cg.id}}">{{cg.name}}</opetion>
-    {% endfor %}
-  </select>
-  
-  <select name="c" id="c">
-    {% for c in category_list %}    
-    <option value="{{c.id}}">{{c.name}}</opetion>
-    {% endfor %}
-  </select>
-
   <select name="pmg" id="pmg">
     {% for pmg in pmethodgroup_list %}    
     <option value="{{pmg.id}}">{{pmg.name}}</opetion>
@@ -51,5 +38,4 @@ Suica record registeror
     <script type="text/javascript" src="../static/js/trans_common.js"></script>
 
 {% endblock exscript %}
-
 
