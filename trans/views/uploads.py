@@ -316,6 +316,10 @@ def suica_upload(request):
             elif len(parts) >= 2:
                 str0 = parts[1].strip()
 
+            # skip carry-over rows
+            if str0 == "繰":
+                continue
+
             # build name including 2nd column info
             name_with_col2 = ''.join(name_parts + [str0]).strip()
             name = name_with_col2 if name_with_col2 else ''.join(name_parts).strip()
