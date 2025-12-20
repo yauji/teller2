@@ -14,6 +14,7 @@ from .base import (
     CategoryUi,
     TransUi,
     update_balance,
+    C_MOVE_ID,
     SUICA_KURIKOSHI,
     JACCS_DISCOUNT,
     CATEGORY_ID_TRANSPORTATION,
@@ -21,6 +22,7 @@ from .base import (
     PM_RAKUTENCARD_ID,
     PM_SHINSEI_ID,
     SALARY_MAPPING_FNAME,
+    SHINSEI_CATEGORY_MAPPING_FNAME,
     JACCS_CATEGORY_MAPPING_FNAME,
     SALARY_OTHER_ID,
     SHARE_TYPES_SHARE,
@@ -134,6 +136,71 @@ def _make_aware(dt):
     if timezone.is_naive(dt):
         return timezone.make_aware(dt, timezone.get_default_timezone())
     return dt
+
+
+def _split_shinsei_row(row):
+    """Split Shinsei bank rows while preserving empty columns when possible."""
+    if '\t' in row:
+        return [col.strip() for col in row.split('\t')]
+    if ',' in row:
+        return [col.strip() for col in row.split(',')]
+    return [col for col in re.split(r'\s+', row.strip()) if col != '']
+
+
+def _load_shinsei_mappings(mapping_path):
+    """Load Shinsei keyword mappings (supports move-to/move-from)."""
+    if not os.path.exists(mapping_path):
+        return []
+
+    mappings = []
+    with open(mapping_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            stripped = line.strip()
+            if not stripped or stripped.startswith('#'):
+                continue
+
+            parts = [p.strip() for p in stripped.split(',')]
+            if len(parts) < 2:
+                continue
+
+            keyword = parts[0]
+            try:
+                cid = int(parts[1])
+            except ValueError:
+                continue
+
+            move_type = None
+            move_category_id = None
+            move_method_id = None
+            if len(parts) >= 3 and parts[2].lower() in ('move-to', 'move-from'):
+                move_type = parts[2].lower()
+                if len(parts) >= 4:
+                    try:
+                        move_method_id = int(parts[3])
+                    except ValueError:
+                        move_method_id = None
+                # category for move patterns is always move category (id=101)
+                move_category_id = C_MOVE_ID
+
+            mappings.append({
+                'keyword': keyword,
+                'category_id': cid,
+                'normalized_keyword': _normalize_for_match(keyword),
+                'move_type': move_type,
+                'move_category_id': move_category_id,
+                'move_method_id': move_method_id,
+            })
+
+    return mappings
+
+
+def _match_shinsei_mapping(text, mappings):
+    """Return first mapping that matches text."""
+    normalized_content = _normalize_for_match(text)
+    for m in mappings:
+        if m['normalized_keyword'] in normalized_content:
+            return m
+    return None
 
 
 # --- suica ----
@@ -374,6 +441,7 @@ def jaccs_upload(request):
         keyword_category_mappings = _load_keyword_category_mapping(
             JACCS_CATEGORY_MAPPING_FNAME)
         category_cache = {}
+        pmethod_cache = {}
 
         trans_list = []
         tmpid = 1
@@ -817,58 +885,143 @@ def shinsei_upload(request):
                        }
             return render(request, 'trans/shinsei_upload.html', context)
 
-        f = codecs.EncodedFile(request.FILES['file'], "utf-8")
-        content = f.read()
+        content = _read_uploaded_text(request.FILES['file'])
 
-        fout = open('tmp_shinsei.txt', 'w')
-        fout.write(content.decode('utf-8'))
-        fout.close()
+        tmp_fname = 'tmp_shinsei.txt'
+        with open(tmp_fname, 'w') as fout:
+            fout.write(content)
 
-        f = open('tmp_shinsei.txt', 'r')
-        contents = []
-        for l in f.readlines():
-            contents.append(l)
-        f.close()
+        contents = content.splitlines()
 
         # get default cate, pmethod
         cid = int(request.POST['c'])
-        c = Category.objects.get(pk=cid)
+        c_default = Category.objects.get(pk=cid)
         pm = Pmethod.objects.get(pk=PM_SHINSEI_ID)
-        
+
+        shinsei_mappings = _load_shinsei_mappings(
+            SHINSEI_CATEGORY_MAPPING_FNAME)
+        category_cache = {}
+        pmethod_cache = {}
+
         year = request.POST['year']
 
         trans_list = []
         tmpid = 1
         for l in contents:
-            splts = l.split(' ')
-
-            if len(splts) != 5:
+            row = l.strip()
+            if not row:
                 continue
 
-            trans = TransUi()
+            # expected format:
+            # mm/dd [desc ...] expense income balance memo
+            m = re.match(
+                r'^\s*(\d{1,2}/\d{1,2})\s+(.*?)\s+([\d,]+)(?:\s+([\d,]+))?\s+([\d,]+)(?:\s+(.*))?$',
+                row)
+            if not m:
+                continue
 
-            # this id is tmp
-            trans.id = tmpid
-            tmpid += 1
-            strdate = year + '/' + splts[0]
-            trans.date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
-            trans.name = splts[4]
+            date_part = m.group(1)
+            strdate = f"{year}/{date_part}"
 
-            expense = splts[2].replace(',', '')
-            trans.expense = expense
+            try:
+                parsed_date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
+            except ValueError:
+                continue
 
-            trans.category = c
-            trans.pmethod = pm
+            expense_raw = m.group(3)
+            income_raw = m.group(4)
+            balance_raw = m.group(5)
 
-            trans.share_type = SHARE_TYPES_SHARE
+            expense_val = _clean_amount(expense_raw)
+            income_val = _clean_amount(income_raw)
 
-            # check same trans--
-            checktranslist = Trans.objects.filter(
-                date=trans.date, expense=trans.expense, pmethod=pm)
-            if len(checktranslist) > 0:
-                trans.selected = False
+            if expense_val == '' and income_val == '':
+                continue
 
-            trans_list.append(trans)
+            # keep base amount from source columns for move splits
+            base_amount_raw = expense_val if expense_val != '' else income_val
+            base_amount = int(base_amount_raw) if base_amount_raw else 0
+
+            # Expense column is outflow; income column is inflow.
+            if income_val:
+                amount = -int(income_val)
+            elif expense_val.startswith('-'):
+                amount = int(expense_val)
+            else:
+                inflow_hints = ('振込', '振替', '給与', '賞与', '利息')
+                amount = -int(expense_val) if any(h in m.group(2) for h in inflow_hints) else int(expense_val)
+
+            desc = (m.group(2) or '').strip()
+            detail_text = (m.group(6) or '').strip()
+            name_parts = [p for p in (desc, detail_text) if p]
+            display_name = ' '.join(name_parts) if name_parts else desc
+
+            # category is determined primarily from the last column, but include
+            # description to widen the hit surface for mappings.
+            match_text = ' '.join([t for t in (detail_text, desc) if t])
+            mapping = _match_shinsei_mapping(match_text, shinsei_mappings)
+
+            def _get_category(cid):
+                if cid is None:
+                    return None
+                if cid in category_cache:
+                    return category_cache[cid]
+                try:
+                    category_cache[cid] = Category.objects.get(pk=cid)
+                    return category_cache[cid]
+                except Category.DoesNotExist:
+                    return None
+
+            def _get_pmethod(pid):
+                if pid is None:
+                    return None
+                if pid in pmethod_cache:
+                    return pmethod_cache[pid]
+                try:
+                    pmethod_cache[pid] = Pmethod.objects.get(pk=pid)
+                    return pmethod_cache[pid]
+                except Pmethod.DoesNotExist:
+                    return None
+
+            def _add_trans(expense_value, category_obj, pmethod_obj):
+                nonlocal tmpid
+                trans = TransUi()
+                trans.id = tmpid
+                tmpid += 1
+                trans.date = _make_aware(parsed_date)
+                trans.name = display_name
+                trans.expense = expense_value
+                trans.category = category_obj or c_default
+                trans.pmethod = pmethod_obj or pm
+                trans.share_type = SHARE_TYPES_SHARE
+                # check duplicates
+                checktranslist = Trans.objects.filter(
+                    date=trans.date, expense=trans.expense, user=request.user)
+                if len(checktranslist) > 0:
+                    trans.selected = False
+                trans_list.append(trans)
+
+            if mapping and mapping.get('move_type') in ('move-to', 'move-from') and mapping.get('move_category_id'):
+                amount_abs = abs(base_amount)
+                move_cat = _get_category(mapping.get('move_category_id'))
+                move_default_cat = _get_category(C_MOVE_ID)
+                if move_default_cat is None:
+                    move_default_cat = Category.objects.filter(
+                        name__icontains='move').order_by('id').first() or Category.objects.filter(name__icontains='移動').order_by('id').first()
+                move_method = _get_pmethod(mapping.get('move_method_id'))
+                move_default_method = _get_pmethod(PM_SHINSEI_ID)
+
+                if mapping['move_type'] == 'move-to':
+                    # outflow to move (pm 13), inflow to target (pm from mapping) both as move category
+                    _add_trans(amount_abs, move_default_cat, move_default_method)
+                    _add_trans(-amount_abs, move_default_cat, move_method)
+                else:
+                    # outflow from target (pm from mapping), inflow to move (pm 13)
+                    _add_trans(amount_abs, move_default_cat, move_method)
+                    _add_trans(-amount_abs, move_default_cat, move_default_method)
+            else:
+                target_category = _get_category(mapping['category_id']) if mapping else c_default
+                _add_trans(amount, target_category, pm)
 
         category_list = []
         if len(categorygroup_list) > 0:
@@ -891,6 +1044,16 @@ def shinsei_upload(request):
                         category_list.append(c)
             else:
                 category_list.extend(clist)
+
+        if len(trans_list) > 0:
+            used_category_ids = {
+                t.category.id for t in trans_list if getattr(t, 'category', None)}
+            existing_category_ids = {c.id for c in category_list}
+            missing_ids = used_category_ids - existing_category_ids
+            if missing_ids:
+                missing_categories = Category.objects.filter(
+                    id__in=missing_ids).order_by('group__order', 'order')
+                category_list.extend(list(missing_categories))
 
         context = {'categorygroup_list': categorygroup_list,
                    'category_list': category_list,

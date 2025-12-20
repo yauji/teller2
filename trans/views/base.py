@@ -42,6 +42,7 @@ SUICA_KURIKOSHI = '繰\u3000'
 JACCS_DISCOUNT = 'discount with J-depo:'
 
 SALARY_MAPPING_FNAME = 'mapping_item_cid.txt'
+SHINSEI_CATEGORY_MAPPING_FNAME = 'mapping_shinsei_category.txt'
 JACCS_CATEGORY_MAPPING_FNAME = 'mapping_jaccs_category.txt'
 SALARY_OTHER_ID = 249
 
@@ -1291,10 +1292,14 @@ def edit_category(request, category_id):
 
 
 def update_category(request, category_id):
-    cg = CategoryGroup.objects.get(pk=category_id)
-
-    cg.name = request.POST['name']
-    cg.save()
+    c = Category.objects.get(pk=category_id)
+    c.name = request.POST['name']
+    if 'cg' in request.POST:
+        try:
+            c.group = CategoryGroup.objects.get(pk=int(request.POST['cg']))
+        except (CategoryGroup.DoesNotExist, ValueError):
+            pass
+    c.save()
 
     return redirect('/t/pmethod')
 
