@@ -207,6 +207,9 @@ def _match_shinsei_mapping(text, mappings):
 # --- suica ----
 
 def suica_upload(request):
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+    category_list_all = Category.objects.all().order_by('group__order', 'order')
+
     pmethodgroup_list = PmethodGroup.objects.filter(
         user=request.user).order_by('order')
 
@@ -222,6 +225,8 @@ def suica_upload(request):
     if request.method == 'GET':
         context = {'pmethodgroup_list': pmethodgroup_list,
                    'pmethod_list': pmethod_list,
+                   'categorygroup_list': categorygroup_list,
+                   'category_list': category_list_all,
                    'year': year,
                    }
         return render(request, 'trans/suica_upload.html', context)
@@ -230,6 +235,8 @@ def suica_upload(request):
         if not 'file' in request.FILES:
             context = {'pmethodgroup_list': pmethodgroup_list,
                        'pmethod_list': pmethod_list,
+                       'categorygroup_list': categorygroup_list,
+                       'category_list': category_list_all,
                        'year': year,
                        'error_message': 'File is mandatory.',
                        }
@@ -354,9 +361,12 @@ def suica_upload(request):
             else:
                 _add_trans(expense_value, c_transportation, pm_default)
 
-        context = {'pmethodgroup_list': pmethodgroup_list,
-                   'trans_list': trans_list,
-                   }
+        context = {
+            'pmethodgroup_list': pmethodgroup_list,
+            'categorygroup_list': categorygroup_list,
+            'category_list': category_list_all,
+            'trans_list': trans_list,
+        }
         return render(request, 'trans/suica_check.html', context)
 
 
