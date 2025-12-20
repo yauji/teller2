@@ -951,20 +951,10 @@ def shinsei_upload(request):
                 inflow_hints = ('振込', '振替', '給与', '賞与', '利息')
                 amount = -int(expense_val) if any(h in m.group(2) for h in inflow_hints) else int(expense_val)
 
-            trans = TransUi()
-
-            # this id is tmp
-            trans.id = tmpid
-            tmpid += 1
-
-            trans.date = _make_aware(parsed_date)
-
             desc = (m.group(2) or '').strip()
             detail_text = (m.group(6) or '').strip()
             name_parts = [p for p in (desc, detail_text) if p]
-            trans.name = ' '.join(name_parts) if name_parts else desc
-
-            trans.expense = amount
+            display_name = ' '.join(name_parts) if name_parts else desc
 
             # category is determined primarily from the last column, but include
             # description to widen the hit surface for mappings.
@@ -999,7 +989,7 @@ def shinsei_upload(request):
                 trans.id = tmpid
                 tmpid += 1
                 trans.date = _make_aware(parsed_date)
-                trans.name = ' '.join([p for p in (desc, detail_text) if p]) if desc or detail_text else ''
+                trans.name = display_name
                 trans.expense = expense_value
                 trans.category = category_obj or c_default
                 trans.pmethod = pmethod_obj or pm
