@@ -856,7 +856,7 @@ def shinsei_upload(request):
             # expected format:
             # mm/dd [desc ...] expense income balance memo
             m = re.match(
-                r'^\s*(\d{1,2}/\d{1,2})\s+(.*?)\s+([\d,]*)(?:\s+([\d,]*))?\s+([\d,]+)(?:\s+(.*))?$',
+                r'^\s*(\d{1,2}/\d{1,2})\s+(.*?)\s+([\d,]+)(?:\s+([\d,]+))?\s+([\d,]+)(?:\s+(.*))?$',
                 row)
             if not m:
                 continue
@@ -897,13 +897,15 @@ def shinsei_upload(request):
             trans.date = _make_aware(parsed_date)
 
             desc = (m.group(2) or '').strip()
-            memo = (m.group(6) or '').strip()
-            name_parts = [p for p in (desc, memo) if p]
+            detail_text = (m.group(6) or '').strip()
+            name_parts = [p for p in (desc, detail_text) if p]
             trans.name = ' '.join(name_parts) if name_parts else desc
 
             trans.expense = amount
 
-            match_text = memo or trans.name
+            # category is determined primarily from the last column, but include
+            # description to widen the hit surface for mappings.
+            match_text = ' '.join([t for t in (detail_text, desc) if t])
             trans.category = _resolve_category_from_content(
                 match_text,
                 c_default,

@@ -32,7 +32,7 @@ JACCS record registeror - check
 </select>
 <select name="cs" id="c0">
 	  {% for c in category_list %}    
-	  <option value="{{c.id}}"  {% if c.selected %}selected="True"{% endif %}>{{c.name}}</opetion>
+	  <option value="{{c.id}}" {% if trans.category.id == c.id %}selected="True"{% endif %}>{{c.name}}</opetion>
           {% endfor %}
 
 </select>
@@ -75,4 +75,3 @@ JACCS record registeror - check
 <script type="text/javascript" src="../static/js/trans_suica.js"></script>
 <script type="text/javascript" src="../static/js/trans_common.js"></script>
 {% endblock exscript %}
-

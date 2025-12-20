@@ -1,3 +1,5 @@
 # keyword,category_id
 # Example:
 # utility,101
+ﾊﾅﾏﾙ,272
+ｲﾓｲﾓ,272
