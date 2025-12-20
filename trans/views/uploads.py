@@ -15,6 +15,7 @@ from .base import (
     TransUi,
     update_balance,
     C_MOVE_ID,
+    CATEGORY_ID_MOVE,
     SUICA_KURIKOSHI,
     JACCS_DISCOUNT,
     CATEGORY_ID_TRANSPORTATION,
@@ -207,12 +208,7 @@ def _match_shinsei_mapping(text, mappings):
 
 def suica_upload(request):
     categorygroup_list = CategoryGroup.objects.order_by('order')
-
-    category_list = []
-    if len(categorygroup_list) > 0:
-        cg = categorygroup_list[0]
-        clist = Category.objects.filter(group=cg).order_by('order')
-        category_list.extend(clist)
+    category_list_all = Category.objects.all().order_by('group__order', 'order')
 
     pmethodgroup_list = PmethodGroup.objects.filter(
         user=request.user).order_by('order')
@@ -227,20 +223,20 @@ def suica_upload(request):
     year = date.year
 
     if request.method == 'GET':
-        context = {'categorygroup_list': categorygroup_list,
-                   'category_list': category_list,
-                   'pmethodgroup_list': pmethodgroup_list,
+        context = {'pmethodgroup_list': pmethodgroup_list,
                    'pmethod_list': pmethod_list,
+                   'categorygroup_list': categorygroup_list,
+                   'category_list': category_list_all,
                    'year': year,
                    }
         return render(request, 'trans/suica_upload.html', context)
 
     elif request.method == 'POST':
         if not 'file' in request.FILES:
-            context = {'categorygroup_list': categorygroup_list,
-                       'category_list': category_list,
-                       'pmethodgroup_list': pmethodgroup_list,
+            context = {'pmethodgroup_list': pmethodgroup_list,
                        'pmethod_list': pmethod_list,
+                       'categorygroup_list': categorygroup_list,
+                       'category_list': category_list_all,
                        'year': year,
                        'error_message': 'File is mandatory.',
                        }
@@ -258,13 +254,15 @@ def suica_upload(request):
             contents.append(l)
         f.close()
 
-        # get default cate, pmethod
-        cid = int(request.POST['c'])
+        # get default pmethod
         pmid = int(request.POST['pm'])
-        c = Category.objects.get(pk=cid)
-        pm = Pmethod.objects.get(pk=pmid)
+        pm_default = Pmethod.objects.get(pk=pmid)
 
         c_transportation = Category.objects.get(pk=CATEGORY_ID_TRANSPORTATION)
+        c_move = Category.objects.get(pk=CATEGORY_ID_MOVE)
+        c_food = Category.objects.filter(name__icontains='食費').first()
+        if c_food is None:
+            c_food = c_transportation
 
         trans_list = []
         tmpid = 1
@@ -275,13 +273,6 @@ def suica_upload(request):
             splts = l.split('\t')
             # Drop empty columns while keeping order for newer formats.
             parts = [p for p in splts if p.strip() != '']
-
-            trans = TransUi()
-            # trans = Trans()
-
-            # this id is tmp
-            trans.id = tmpid
-            tmpid += 1
 
             # --- date ---
             date_part = None
@@ -295,7 +286,7 @@ def suica_upload(request):
                 continue
 
             strdate = request.POST['year'] + '/' + date_part
-            trans.date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
+            parsed_date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
 
             # --- name ---
             if len(splts) >= 6:
@@ -305,7 +296,6 @@ def suica_upload(request):
                 name_parts = parts[1:-2] if len(parts) > 3 else parts[1:]
             else:
                 name_parts = []
-            trans.name = ''.join(name_parts).strip()
 
             # --- amount ---
             if len(splts) >= 8:
@@ -319,41 +309,64 @@ def suica_upload(request):
                 ',', '').replace('+', '').replace('\\', '').replace('¥', '')
 
             if len(expense) != 0:
-                trans.expense = int(expense) * -1
+                sign = -1 if expense.startswith('+') else 1
+                expense_clean = re.sub(r'[^\d]', '', expense)
+                if expense_clean == '':
+                    continue
+                expense_value = int(expense_clean) * sign
             else:
                 continue
 
             str0 = ''
-            if len(splts) >= 3:
-                str0 = splts[2].strip()
+            if len(splts) >= 2:
+                str0 = splts[1].strip()
             elif len(parts) >= 2:
                 str0 = parts[1].strip()
 
-            if str0 in ["入", "ﾊﾞｽ等"]:
-                trans.category = c_transportation
-            else:
-                trans.category = c
+            # skip carry-over rows
+            if str0 == "繰":
+                continue
 
-            trans.pmethod = pm
+            # build name including 2nd column info
+            name_with_col2 = ''.join(name_parts + [str0]).strip()
+            name = name_with_col2 if name_with_col2 else ''.join(name_parts).strip()
 
-            # check same trans
-            checktranslist = Trans.objects.filter(
-                date=trans.date, expense=trans.expense, category=trans.category, pmethod=pm)
-
-            if len(checktranslist) > 0:
-                trans.selected = False
-
-            # チャージの場合、（「ｵｰﾄ」から始まる場合）、チェックを外す
-            if str0 == "ｵｰﾄ":
-                trans.selected = False
-
-            if trans.name != SUICA_KURIKOSHI:
+            def _add_trans(amount, category, pmethod):
+                nonlocal tmpid
+                trans = TransUi()
+                trans.id = tmpid
+                tmpid += 1
+                trans.date = parsed_date
+                trans.name = name
+                trans.expense = amount
+                trans.category = category
+                trans.pmethod = pmethod
+                # check same trans across pmethods
+                checktranslist = Trans.objects.filter(
+                    date=trans.date, expense=trans.expense, user=request.user)
+                if len(checktranslist) > 0:
+                    trans.selected = False
                 trans_list.append(trans)
 
-        context = {'categorygroup_list': categorygroup_list,
-                   'pmethodgroup_list': pmethodgroup_list,
-                   'trans_list': trans_list,
-                   }
+            col2_val = str0.strip()
+            if col2_val in ["入", "定", "精", "ﾊﾞｽ等"]:
+                _add_trans(expense_value, c_transportation, pm_default)
+            elif col2_val == "物販":
+                _add_trans(expense_value, c_food, pm_default)
+            elif col2_val == "ｵｰﾄ":
+                amount_abs = abs(expense_value)
+                pm_auto = Pmethod.objects.get(pk=14)
+                _add_trans(amount_abs, c_move, pm_auto)
+                _add_trans(-amount_abs, c_move, pm_default)
+            else:
+                _add_trans(expense_value, c_transportation, pm_default)
+
+        context = {
+            'pmethodgroup_list': pmethodgroup_list,
+            'categorygroup_list': categorygroup_list,
+            'category_list': category_list_all,
+            'trans_list': trans_list,
+        }
         return render(request, 'trans/suica_check.html', context)
 
 
