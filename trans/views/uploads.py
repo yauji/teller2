@@ -21,6 +21,7 @@ from .base import (
     PM_RAKUTENCARD_ID,
     PM_SHINSEI_ID,
     SALARY_MAPPING_FNAME,
+    SHINSEI_CATEGORY_MAPPING_FNAME,
     JACCS_CATEGORY_MAPPING_FNAME,
     SALARY_OTHER_ID,
     SHARE_TYPES_SHARE,
@@ -134,6 +135,15 @@ def _make_aware(dt):
     if timezone.is_naive(dt):
         return timezone.make_aware(dt, timezone.get_default_timezone())
     return dt
+
+
+def _split_shinsei_row(row):
+    """Split Shinsei bank rows while preserving empty columns when possible."""
+    if '\t' in row:
+        return [col.strip() for col in row.split('\t')]
+    if ',' in row:
+        return [col.strip() for col in row.split(',')]
+    return [col for col in re.split(r'\s+', row.strip()) if col != '']
 
 
 # --- suica ----
@@ -817,47 +827,89 @@ def shinsei_upload(request):
                        }
             return render(request, 'trans/shinsei_upload.html', context)
 
-        f = codecs.EncodedFile(request.FILES['file'], "utf-8")
-        content = f.read()
+        content = _read_uploaded_text(request.FILES['file'])
 
-        fout = open('tmp_shinsei.txt', 'w')
-        fout.write(content.decode('utf-8'))
-        fout.close()
+        tmp_fname = 'tmp_shinsei.txt'
+        with open(tmp_fname, 'w') as fout:
+            fout.write(content)
 
-        f = open('tmp_shinsei.txt', 'r')
-        contents = []
-        for l in f.readlines():
-            contents.append(l)
-        f.close()
+        contents = content.splitlines()
 
         # get default cate, pmethod
         cid = int(request.POST['c'])
-        c = Category.objects.get(pk=cid)
+        c_default = Category.objects.get(pk=cid)
         pm = Pmethod.objects.get(pk=PM_SHINSEI_ID)
-        
+
+        keyword_category_mappings = _load_keyword_category_mapping(
+            SHINSEI_CATEGORY_MAPPING_FNAME)
+        category_cache = {}
+
         year = request.POST['year']
 
         trans_list = []
         tmpid = 1
         for l in contents:
-            splts = l.split(' ')
-
-            if len(splts) != 5:
+            row = l.strip()
+            if not row:
                 continue
+
+            # expected format:
+            # mm/dd [desc ...] expense income balance memo
+            m = re.match(
+                r'^\s*(\d{1,2}/\d{1,2})\s+(.*?)\s+([\d,]*)(?:\s+([\d,]*))?\s+([\d,]+)(?:\s+(.*))?$',
+                row)
+            if not m:
+                continue
+
+            date_part = m.group(1)
+            strdate = f"{year}/{date_part}"
+
+            try:
+                parsed_date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
+            except ValueError:
+                continue
+
+            expense_raw = m.group(3)
+            income_raw = m.group(4)
+            balance_raw = m.group(5)
+
+            expense_val = _clean_amount(expense_raw)
+            income_val = _clean_amount(income_raw)
+
+            if expense_val == '' and income_val == '':
+                continue
+
+            # Expense column is outflow; income column is inflow.
+            if income_val:
+                amount = -int(income_val)
+            elif expense_val.startswith('-'):
+                amount = int(expense_val)
+            else:
+                inflow_hints = ('振込', '振替', '給与', '賞与', '利息')
+                amount = -int(expense_val) if any(h in m.group(2) for h in inflow_hints) else int(expense_val)
 
             trans = TransUi()
 
             # this id is tmp
             trans.id = tmpid
             tmpid += 1
-            strdate = year + '/' + splts[0]
-            trans.date = datetime.datetime.strptime(strdate, '%Y/%m/%d')
-            trans.name = splts[4]
 
-            expense = splts[2].replace(',', '')
-            trans.expense = expense
+            trans.date = _make_aware(parsed_date)
 
-            trans.category = c
+            desc = (m.group(2) or '').strip()
+            memo = (m.group(6) or '').strip()
+            name_parts = [p for p in (desc, memo) if p]
+            trans.name = ' '.join(name_parts) if name_parts else desc
+
+            trans.expense = amount
+
+            match_text = memo or trans.name
+            trans.category = _resolve_category_from_content(
+                match_text,
+                c_default,
+                keyword_category_mappings,
+                category_cache,
+            )
             trans.pmethod = pm
 
             trans.share_type = SHARE_TYPES_SHARE
@@ -891,6 +943,16 @@ def shinsei_upload(request):
                         category_list.append(c)
             else:
                 category_list.extend(clist)
+
+        if len(trans_list) > 0:
+            used_category_ids = {
+                t.category.id for t in trans_list if getattr(t, 'category', None)}
+            existing_category_ids = {c.id for c in category_list}
+            missing_ids = used_category_ids - existing_category_ids
+            if missing_ids:
+                missing_categories = Category.objects.filter(
+                    id__in=missing_ids).order_by('group__order', 'order')
+                category_list.extend(list(missing_categories))
 
         context = {'categorygroup_list': categorygroup_list,
                    'category_list': category_list,
