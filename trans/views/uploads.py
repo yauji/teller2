@@ -938,6 +938,10 @@ def shinsei_upload(request):
             if expense_val == '' and income_val == '':
                 continue
 
+            # keep base amount from source columns for move splits
+            base_amount_raw = expense_val if expense_val != '' else income_val
+            base_amount = int(base_amount_raw) if base_amount_raw else 0
+
             # Expense column is outflow; income column is inflow.
             if income_val:
                 amount = -int(income_val)
@@ -1008,7 +1012,7 @@ def shinsei_upload(request):
                 trans_list.append(trans)
 
             if mapping and mapping.get('move_type') in ('move-to', 'move-from') and mapping.get('move_category_id'):
-                amount_abs = abs(amount)
+                amount_abs = abs(base_amount)
                 move_cat = _get_category(mapping.get('move_category_id'))
                 move_default_cat = _get_category(C_MOVE_ID)
                 if move_default_cat is None:
