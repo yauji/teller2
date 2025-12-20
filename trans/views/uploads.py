@@ -996,7 +996,7 @@ def shinsei_upload(request):
                 trans.share_type = SHARE_TYPES_SHARE
                 # check duplicates
                 checktranslist = Trans.objects.filter(
-                    date=trans.date, expense=trans.expense, pmethod=pm)
+                    date=trans.date, expense=trans.expense, user=request.user)
                 if len(checktranslist) > 0:
                     trans.selected = False
                 trans_list.append(trans)
