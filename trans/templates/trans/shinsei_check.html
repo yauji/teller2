@@ -44,13 +44,14 @@ JACCS record registeror - check
   <input type="hidden" name="pmethods" value="{{trans.pmethod.id}}"></input>
 </td>
 
-<td><input type="text" class=" mb-2 mr-sm-2 mb-sm-0" name="memos" value="{{ trans.memo }}"></input></td>
-<td>
+      <td><input type="text" class=" mb-2 mr-sm-2 mb-sm-0" name="memos" value="{{ trans.memo }}"></input></td>
+      <td>
   <select name="share_types" value="{{trans.share_type}}">
     <option value="1">own</opetion>
     <option value="2" selected>share</opetion>
   </select>
 </td>
+      <td>{{ trans.pmethod.name }}</td>
 
       <td>{{ trans.id }}</td>
       <td>{{ trans.user }}</td>

@@ -14,6 +14,7 @@ from .base import (
     CategoryUi,
     TransUi,
     update_balance,
+    C_MOVE_ID,
     SUICA_KURIKOSHI,
     JACCS_DISCOUNT,
     CATEGORY_ID_TRANSPORTATION,
@@ -144,6 +145,62 @@ def _split_shinsei_row(row):
     if ',' in row:
         return [col.strip() for col in row.split(',')]
     return [col for col in re.split(r'\s+', row.strip()) if col != '']
+
+
+def _load_shinsei_mappings(mapping_path):
+    """Load Shinsei keyword mappings (supports move-to/move-from)."""
+    if not os.path.exists(mapping_path):
+        return []
+
+    mappings = []
+    with open(mapping_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            stripped = line.strip()
+            if not stripped or stripped.startswith('#'):
+                continue
+
+            parts = [p.strip() for p in stripped.split(',')]
+            if len(parts) < 2:
+                continue
+
+            keyword = parts[0]
+            try:
+                cid = int(parts[1])
+            except ValueError:
+                continue
+
+            move_type = None
+            move_category_id = None
+            move_method_id = None
+            if len(parts) >= 3 and parts[2].lower() in ('move-to', 'move-from'):
+                move_type = parts[2].lower()
+                if len(parts) >= 4:
+                    try:
+                        move_method_id = int(parts[3])
+                    except ValueError:
+                        move_method_id = None
+                # category for move patterns is always move category (id=101)
+                move_category_id = C_MOVE_ID
+
+            mappings.append({
+                'keyword': keyword,
+                'category_id': cid,
+                'normalized_keyword': _normalize_for_match(keyword),
+                'move_type': move_type,
+                'move_category_id': move_category_id,
+                'move_method_id': move_method_id,
+            })
+
+    return mappings
+
+
+def _match_shinsei_mapping(text, mappings):
+    """Return first mapping that matches text."""
+    normalized_content = _normalize_for_match(text)
+    for m in mappings:
+        if m['normalized_keyword'] in normalized_content:
+            return m
+    return None
 
 
 # --- suica ----
@@ -384,6 +441,7 @@ def jaccs_upload(request):
         keyword_category_mappings = _load_keyword_category_mapping(
             JACCS_CATEGORY_MAPPING_FNAME)
         category_cache = {}
+        pmethod_cache = {}
 
         trans_list = []
         tmpid = 1
@@ -840,9 +898,10 @@ def shinsei_upload(request):
         c_default = Category.objects.get(pk=cid)
         pm = Pmethod.objects.get(pk=PM_SHINSEI_ID)
 
-        keyword_category_mappings = _load_keyword_category_mapping(
+        shinsei_mappings = _load_shinsei_mappings(
             SHINSEI_CATEGORY_MAPPING_FNAME)
         category_cache = {}
+        pmethod_cache = {}
 
         year = request.POST['year']
 
@@ -906,23 +965,69 @@ def shinsei_upload(request):
             # category is determined primarily from the last column, but include
             # description to widen the hit surface for mappings.
             match_text = ' '.join([t for t in (detail_text, desc) if t])
-            trans.category = _resolve_category_from_content(
-                match_text,
-                c_default,
-                keyword_category_mappings,
-                category_cache,
-            )
-            trans.pmethod = pm
+            mapping = _match_shinsei_mapping(match_text, shinsei_mappings)
 
-            trans.share_type = SHARE_TYPES_SHARE
+            def _get_category(cid):
+                if cid is None:
+                    return None
+                if cid in category_cache:
+                    return category_cache[cid]
+                try:
+                    category_cache[cid] = Category.objects.get(pk=cid)
+                    return category_cache[cid]
+                except Category.DoesNotExist:
+                    return None
 
-            # check same trans--
-            checktranslist = Trans.objects.filter(
-                date=trans.date, expense=trans.expense, pmethod=pm)
-            if len(checktranslist) > 0:
-                trans.selected = False
+            def _get_pmethod(pid):
+                if pid is None:
+                    return None
+                if pid in pmethod_cache:
+                    return pmethod_cache[pid]
+                try:
+                    pmethod_cache[pid] = Pmethod.objects.get(pk=pid)
+                    return pmethod_cache[pid]
+                except Pmethod.DoesNotExist:
+                    return None
 
-            trans_list.append(trans)
+            def _add_trans(expense_value, category_obj, pmethod_obj):
+                nonlocal tmpid
+                trans = TransUi()
+                trans.id = tmpid
+                tmpid += 1
+                trans.date = _make_aware(parsed_date)
+                trans.name = ' '.join([p for p in (desc, detail_text) if p]) if desc or detail_text else ''
+                trans.expense = expense_value
+                trans.category = category_obj or c_default
+                trans.pmethod = pmethod_obj or pm
+                trans.share_type = SHARE_TYPES_SHARE
+                # check duplicates
+                checktranslist = Trans.objects.filter(
+                    date=trans.date, expense=trans.expense, pmethod=pm)
+                if len(checktranslist) > 0:
+                    trans.selected = False
+                trans_list.append(trans)
+
+            if mapping and mapping.get('move_type') in ('move-to', 'move-from') and mapping.get('move_category_id'):
+                amount_abs = abs(amount)
+                move_cat = _get_category(mapping.get('move_category_id'))
+                move_default_cat = _get_category(C_MOVE_ID)
+                if move_default_cat is None:
+                    move_default_cat = Category.objects.filter(
+                        name__icontains='move').order_by('id').first() or Category.objects.filter(name__icontains='移動').order_by('id').first()
+                move_method = _get_pmethod(mapping.get('move_method_id'))
+                move_default_method = _get_pmethod(PM_SHINSEI_ID)
+
+                if mapping['move_type'] == 'move-to':
+                    # outflow to move (pm 13), inflow to target (pm from mapping) both as move category
+                    _add_trans(amount_abs, move_default_cat, move_default_method)
+                    _add_trans(-amount_abs, move_default_cat, move_method)
+                else:
+                    # outflow from target (pm from mapping), inflow to move (pm 13)
+                    _add_trans(amount_abs, move_default_cat, move_method)
+                    _add_trans(-amount_abs, move_default_cat, move_default_method)
+            else:
+                target_category = _get_category(mapping['category_id']) if mapping else c_default
+                _add_trans(amount, target_category, pm)
 
         category_list = []
         if len(categorygroup_list) > 0:

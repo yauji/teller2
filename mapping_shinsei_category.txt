@@ -1,5 +1,12 @@
 # keyword,category_id
 # Example:
 # utility,101
+# move patterns (keyword, base_category_id, move-to/move-from, payment_method_id_for_paired_entry)
+# Example move-to: keyword triggers 2 entries (pm13 exp move, pm<method> inc move)
+# ﾊﾅﾏﾙ,101,move-to,4
+# Example move-from: keyword triggers 2 entries (pm<method> exp move, pm13 inc move)
+# ﾏﾈﾂｸｽ,101,move-from,4
 ﾊﾅﾏﾙ,272
 ｲﾓｲﾓ,272
+現金出金 ATM,101,move-to,1
+その他資金振替,101,move-from,305
