@@ -161,6 +161,15 @@ sum;
   </span>
 </div>
 
+<div class="card mt-2">
+  <div class="card-body">
+    <h5 class="card-title">Totals (filtered results)</h5>
+    <div>Expense: {{ total_expense|intcomma }}</div>
+    <div>Income: {{ total_income|intcomma }}</div>
+    <div>Net: {{ net_total|intcomma }}</div>
+  </div>
+</div>
+
 {% endblock contents %}
 
 
@@ -172,4 +181,3 @@ sum;
 {% block script %}
 {% endblock script %}
   
-
