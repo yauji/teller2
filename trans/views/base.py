@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.template import loader
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.db.models.deletion import ProtectedError
 # from django.db import IntegrityError
 # from django.db.IntegrityError import ProtectedError
@@ -543,6 +543,8 @@ def list(request):
     categorygroup_list = CategoryGroup.objects.order_by('order')
     category_list = get_category_list_ui(request)
 
+    totals_source = latest_trans_list
+
     # for diff with actual balance--
     if 'actual' in request.POST and request.POST['actual'] != '':
         # if request.POST['actual'] != '':
@@ -604,6 +606,19 @@ def list(request):
         else:
             detail = False
 
+    # totals for filtered list
+    if hasattr(totals_source, 'aggregate'):
+        total_expense = totals_source.aggregate(
+            total=Sum('expense', filter=Q(expense__gt=0)))['total'] or 0
+        total_income = totals_source.aggregate(
+            total=Sum('expense', filter=Q(expense__lt=0)))['total'] or 0
+    else:
+        # totals_source is a list
+        total_expense = sum(t.expense for t in totals_source if t.expense > 0)
+        total_income = sum(t.expense for t in totals_source if t.expense < 0)
+    total_income = -total_income
+    net_total = total_income - total_expense
+
     context = {'latest_trans_list': transs,
                'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list,
                'categorygroup_list': categorygroup_list,
@@ -613,6 +628,9 @@ def list(request):
                'actual': actual,
                'detail': detail,
                'includebalance': includebalance,
+               'total_expense': total_expense,
+               'total_income': total_income,
+               'net_total': net_total,
                }
     return render(request, 'trans/list.html', context)
 
