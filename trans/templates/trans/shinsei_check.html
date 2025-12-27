@@ -37,9 +37,7 @@ Shinsei bank record registeror - check
 
 </select>
 </td>      
-<td>{{ trans.expense| intcomma }}
-  <input type="hidden" name="expenses" value="{{trans.expense}}"></input>
-</td>
+<td><input type="number" class="form-control mb-2 mr-sm-2 mb-sm-0" name="expenses" value="{{ trans.expense }}" style="width: 140px;"></td>
 <td>{{ trans.pmethod.name }}
   <input type="hidden" name="pmethods" value="{{trans.pmethod.id}}"></input>
 </td>

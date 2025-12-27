@@ -16,6 +16,7 @@ urlpatterns = [
     re_path(r'^delete$', views.delete, name='delete'),
     re_path(r'^multi_trans_select$', views.multi_trans_select,
             name='multi_trans_select'),
+    re_path(r'^trans_update$', views.trans_update, name='trans_update'),
 
     # for ajax
     re_path(r'^sum_expense$', views.sum_expense, name='sum_expense'),
