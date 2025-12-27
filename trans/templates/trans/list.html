@@ -99,6 +99,7 @@ sum;
 
 <button id="checkall" type="button" class="btn btn-success btn-xs">Check all</button>
 <button id="uncheckall" type="button" class="btn btn-success btn-xs">Uncheck all</button>
+<button id="edit-selected" type="button" class="btn btn-info btn-xs">Edit selected</button>
 
   <table border="1" class="table table-striped">
     <tr>
@@ -122,7 +123,7 @@ sum;
       </tr>
       {% for trans in latest_trans_list %}
       <tr>
-	<td> <input type="checkbox" name="tids" value="{{ trans.id }}" /></td>
+	<td> <input type="checkbox" class="trans-checkbox" name="tids" value="{{ trans.id }}" data-date="{{ trans.date|date:"Y/n/d" }}" data-name="{{ trans.name|escape }}" data-expense="{{ trans.expense }}" data-pmethod="{{ trans.pmethod.id }}" data-category="{{ trans.category.id }}" data-memo="{{ trans.memo|escape }}" data-share="{{ trans.share_type }}" /></td>
 	<td>{{ trans.date|date:"Y/n/d" }}</td>
 	<td>{{ trans.name }}</td>
 	<td>{{ trans.expense| intcomma }}</td>
@@ -144,6 +145,68 @@ sum;
   </table>
   <input type="submit" name="delete" value="Delete"  class="btn btn-primary btn-sm"/>
 </form>
+
+<!-- Edit modal -->
+<div class="modal fade" id="editTransModal" tabindex="-1" role="dialog" aria-labelledby="editTransModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form id="edit-trans-form" method="post" action="{% url 'trans:trans_update' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="editTransModalLabel">Edit transaction</h4>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="trans_id" id="edit-trans-id">
+          <div class="form-group">
+            <label for="edit-date">Date</label>
+            <input type="text" class="form-control datepicker" id="edit-date" name="date" placeholder="yyyy/mm/dd">
+          </div>
+          <div class="form-group">
+            <label for="edit-name">Item</label>
+            <input type="text" class="form-control" id="edit-name" name="name">
+          </div>
+          <div class="form-group">
+            <label for="edit-expense">Expense</label>
+            <input type="number" class="form-control" id="edit-expense" name="expense">
+          </div>
+          <div class="form-group">
+            <label for="edit-category">Category</label>
+            <select class="form-control" id="edit-category" name="category">
+              {% for c in category_list %}
+              <option value="{{ c.id }}">{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-pmethod">Payment method</label>
+            <select class="form-control" id="edit-pmethod" name="pmethod">
+              {% for pm in pmethod_list %}
+              <option value="{{ pm.id }}">{{ pm.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-share-type">Share type</label>
+            <select class="form-control" id="edit-share-type" name="share_type">
+              {% for st in share_types %}
+              <option value="{{ st.0 }}">{{ st.1 }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-memo">Memo</label>
+            <input type="text" class="form-control" id="edit-memo" name="memo">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <div class="pagination">
   <span class="step-links">

@@ -6,9 +6,11 @@ $(function() {
     //init format---
     //$('#user_pay4').css('display', 'none');
 
-    $('.datepicker').datepicker({
-	format: "yyyy/mm/dd"
-    });
+    if ($.fn.datepicker) {
+        $('.datepicker').datepicker({
+            format: "yyyy/mm/dd"
+        });
+    }
 
     //events---
     $('#ccheck').click(function(e) {
@@ -71,7 +73,23 @@ $(function() {
 	$("td > input:checkbox").prop("checked", false);
     });
 
-    
+    $('#edit-selected').click(function() {
+        var checked = $(".trans-checkbox:checked");
+        if (checked.length === 0) {
+            alert('Select at least one transaction to edit.');
+            return;
+        }
+        var target = checked.first();
+        $('#edit-trans-id').val(target.val());
+        $('#edit-date').val(target.data('date'));
+        $('#edit-name').val(target.data('name'));
+        $('#edit-expense').val(target.data('expense'));
+        $('#edit-category').val(target.data('category'));
+        $('#edit-pmethod').val(target.data('pmethod'));
+        $('#edit-memo').val(target.data('memo'));
+        $('#edit-share-type').val(target.data('share'));
+        $('#editTransModal').modal('show');
+    });
     
 
 });
@@ -95,6 +113,4 @@ function changeEventPmg(e, targetname){
 	    }
 	});
 }    
-
-
 
