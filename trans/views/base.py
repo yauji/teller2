@@ -15,6 +15,7 @@ from django.db.models.deletion import ProtectedError
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.utils import timezone
 
 from ..models import Trans, PmethodGroup, Pmethod, CategoryGroup, Category
 from ..models import SHARE_TYPES
@@ -387,6 +388,58 @@ def multi_trans_select(request):
         return delete(request)
     elif 'withdraw' in request.POST:
         return withdraw(request)
+    elif 'edit' in request.POST:
+        return trans_update(request)
+
+
+@login_required(login_url='/login/')
+def trans_update(request):
+    if request.method != 'POST':
+        return redirect('/t/')
+
+    trans_id = request.POST.get('trans_id')
+    if not trans_id:
+        context = {'error_message': 'No transaction selected.'}
+        return render(request, 'trans/message.html', context)
+
+    trans = get_object_or_404(Trans, pk=trans_id)
+    if trans.user != request.user:
+        context = {'error_message': 'You cannot edit this transaction.'}
+        return render(request, 'trans/message.html', context)
+
+    old_pmethod = trans.pmethod
+    old_date = trans.date
+
+    try:
+        new_date = datetime.datetime.strptime(
+            request.POST.get('date'), '%Y/%m/%d')
+        if timezone.is_naive(new_date):
+            new_date = timezone.make_aware(
+                new_date, timezone.get_default_timezone())
+        if timezone.is_naive(old_date):
+            old_date = timezone.make_aware(
+                old_date, timezone.get_default_timezone())
+        trans.date = new_date
+        trans.name = request.POST.get('name', '')
+        trans.expense = int(request.POST.get('expense'))
+        trans.memo = request.POST.get('memo', '')
+        trans.category = Category.objects.get(
+            pk=int(request.POST.get('category')))
+        trans.pmethod = Pmethod.objects.get(pk=int(request.POST.get('pmethod')))
+        trans.share_type = int(request.POST.get('share_type'))
+    except (ValueError, Category.DoesNotExist, Pmethod.DoesNotExist):
+        context = {'error_message': 'Failed to update transaction.'}
+        return render(request, 'trans/message.html', context)
+
+    trans.save()
+
+    # update balances for both old/new pmethod timelines
+    first_date = min(old_date, trans.date)
+    update_balance_para(old_pmethod, trans.user, first_date)
+    if trans.pmethod != old_pmethod:
+        update_balance_para(trans.pmethod, trans.user, trans.date)
+
+    return redirect('/t/')
 
 
 # delete selected multiple transs
@@ -623,6 +676,7 @@ def list(request):
                'pmethod_list': pmethod_list, 'pmgroup_list': pmgroup_list,
                'categorygroup_list': categorygroup_list,
                'category_list': category_list,
+               'share_types': SHARE_TYPES,
                'datefrom': str_datefrom,
                'dateto': str_dateto,
                'actual': actual,
