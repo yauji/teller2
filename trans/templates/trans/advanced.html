@@ -5,11 +5,11 @@
 {% block contents %} 
 
 <li class=""><a href="{% url 'trans:suica_upload' %}">Suica upload</a></li>
-<li class=""><a href="{% url 'trans:jaccs_upload' %}">JACCS upload</a></li>
 <li class=""><a href="{% url 'trans:jaccs_upload_new' %}">JACCS upload (new)</a></li>
 <li class=""><a href="{% url 'trans:rakutencard_upload' %}">Rakuten card upload</a></li>
-<li class=""><a href="{% url 'trans:shinsei_upload' %}">Shinseibank upload</a></li>
 <li class=""><a href="{% url 'trans:salary_upload' %}">Salary upload</a></li>
+<li class=""><a href="{% url 'trans:shinsei_upload' %}">Shinseibank upload</a></li>
+<li class=""><a href="{% url 'trans:csv_upload' %}">Rakuten bank upload</a></li>
 <li class=""><a href="{% url 'trans:everymonth' %}">Register transactions with every month</a></li>
 
 <hr/>
@@ -18,6 +18,10 @@
 <li class=""><a href="{% url 'trans:totalbalance' %}">Total balance</a></li>
 <li class=""><a href="{% url 'trans:sharedexpense' %}">Shared expense</a></li>
 
+
+<hr/>
+<h3>backup</h3>
+<li class=""><a href="{% url 'trans:jaccs_upload' %}">JACCS upload</a></li>
 
 
 {% endblock contents %}
