@@ -907,8 +907,23 @@ def annualreport(request):
 # show totalbalance-----
 @login_required(login_url='/login/')
 def totalbalance(request):
+    # user filter
+    users = User.objects.order_by('id')
+    selected_user_ids = request.POST.getlist('users')
+    if not selected_user_ids:
+        selected_user_ids = [str(u.id) for u in users]
+    selected_user_ids_int = [int(uid) for uid in selected_user_ids]
+
+    user_choices = []
+    for u in users:
+        ui = SharedexpenseUi()
+        ui.user = u
+        ui.selected = str(u.id) in selected_user_ids
+        user_choices.append(ui)
+
     # pmethod
-    pmgroup_list = PmethodGroup.objects.order_by('order')
+    pmgroup_list = PmethodGroup.objects.filter(
+        user__in=selected_user_ids_int).order_by('order')
 
     sum = 0
 
@@ -936,6 +951,7 @@ def totalbalance(request):
     context = {
         "balance_list": balance_list,
         "sum": sum,
+        "user_choices": user_choices,
     }
     return render(request, 'trans/totalbalance.html', context)
 
@@ -1208,10 +1224,17 @@ def edit_pmethod(request, pmethod_id):
 
 
 def update_pmethod(request, pmethod_id):
-    pmg = PmethodGroup.objects.get(pk=pmethod_id)
+    pm = get_object_or_404(Pmethod, pk=pmethod_id)
 
-    pmg.name = request.POST['name']
-    pmg.save()
+    try:
+        pmg = PmethodGroup.objects.get(pk=int(request.POST['pmg']))
+    except (PmethodGroup.DoesNotExist, ValueError, TypeError):
+        context = {'error_message': 'Failed to update payment method (group not found).'}
+        return render(request, 'trans/message.html', context)
+
+    pm.name = request.POST.get('name', pm.name)
+    pm.group = pmg
+    pm.save()
 
     return redirect('/t/pmethod')
 
