@@ -22,6 +22,7 @@ from .base import (
     PM_JACCS_ID,
     PM_RAKUTENCARD_ID,
     PM_SHINSEI_ID,
+    PM_RAKUTENBANK_ID,
     SALARY_MAPPING_FNAME,
     SHINSEI_CATEGORY_MAPPING_FNAME,
     JACCS_CATEGORY_MAPPING_FNAME,
@@ -1112,6 +1113,154 @@ def suica_shinsei_register(request):
 
         i += 1
     update_balance(trans)
+
+
+# --- generic CSV upload (simple format) ----
+
+def csv_upload(request):
+    """
+    Upload CSV with format:
+    取引日(YYYYMMDD),入出金(円),取引後残高(円),入出金内容
+    """
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+
+    pmethodgroup_list = PmethodGroup.objects.filter(
+        user=request.user).order_by('order')
+    selected_pmg_id = None
+    selected_pm_id = PM_RAKUTENBANK_ID
+    pmethod_list = []
+    if len(pmethodgroup_list) > 0:
+        if 'pmg' in request.POST:
+            selected_pmg_id = int(request.POST['pmg'])
+            pmg = PmethodGroup.objects.get(pk=selected_pmg_id)
+        else:
+            pmg = pmethodgroup_list[0]
+            selected_pmg_id = pmg.id
+        pmethod_list = list(Pmethod.objects.filter(
+            group=pmg).order_by('order'))
+        if 'pm' in request.POST:
+            selected_pm_id = int(request.POST['pm'])
+        else:
+            # default to Rakuten bank id when available
+            if not any(pm.id == PM_RAKUTENBANK_ID for pm in pmethod_list):
+                selected_pm_id = pmethod_list[0].id
+    else:
+        pmethod_list = []
+
+    category_list = []
+    if len(categorygroup_list) > 0:
+        cg = categorygroup_list[0]
+        clist = Category.objects.filter(group=cg).order_by('order')
+        category_list.extend(clist)
+
+    if request.method == 'GET':
+        context = {'categorygroup_list': categorygroup_list,
+                   'category_list': category_list,
+                   'pmethodgroup_list': pmethodgroup_list,
+                   'pmethod_list': pmethod_list,
+                   'selected_pmg_id': selected_pmg_id,
+                   'selected_pm_id': selected_pm_id}
+        return render(request, 'trans/csv_upload.html', context)
+
+    if not request.FILES.get('file'):
+        context = {'categorygroup_list': categorygroup_list,
+                   'category_list': category_list,
+                   'pmethodgroup_list': pmethodgroup_list,
+                   'pmethod_list': pmethod_list,
+                   'selected_pmg_id': selected_pmg_id,
+                   'selected_pm_id': selected_pm_id,
+                   'error_message': 'File is mandatory.'}
+        return render(request, 'trans/csv_upload.html', context)
+
+    content = _read_uploaded_text(request.FILES['file'])
+    lines = content.splitlines()
+
+    # default category, pmethod
+    cid = int(request.POST['c'])
+    c_default = Category.objects.get(pk=cid)
+    pmid = request.POST.get('pm')
+    try:
+        pm = Pmethod.objects.get(pk=pmid)
+    except (Pmethod.DoesNotExist, ValueError, TypeError):
+        pm = Pmethod.objects.filter(pk=PM_RAKUTENBANK_ID).first()
+        if pm is None and pmethod_list:
+            pm = pmethod_list[0]
+
+    trans_list = []
+    tmpid = 1
+    for row in lines:
+        if not row or '取引日' in row:
+            continue
+
+        cols = [col.strip() for col in row.split(',')]
+        if len(cols) < 4:
+            continue
+
+        date_raw = cols[0]
+        try:
+            parsed_date = datetime.datetime.strptime(date_raw, '%Y%m%d')
+            parsed_date = _make_aware(parsed_date)
+        except ValueError:
+            continue
+
+        amount_raw = _clean_amount(cols[1])
+        if amount_raw == '':
+            continue
+
+        amt = int(amount_raw)
+        # Positive amounts are income (store as negative); negatives are expense.
+        expense_val = -amt if amt > 0 else abs(amt)
+
+        name = cols[3]
+
+        trans = TransUi()
+        trans.id = tmpid
+        tmpid += 1
+        trans.date = parsed_date
+        trans.name = name
+        trans.expense = expense_val
+        trans.category = c_default
+        trans.pmethod = pm
+        trans.share_type = SHARE_TYPES_SHARE
+        trans.memo = ''
+
+        checktranslist = Trans.objects.filter(
+            date=trans.date, expense=trans.expense, user=request.user)
+        if len(checktranslist) > 0:
+            trans.selected = False
+        trans_list.append(trans)
+
+    # rebuild category list with selection retained
+    category_list = []
+    if len(categorygroup_list) > 0:
+        if 'cg' in request.POST:
+            cg = CategoryGroup.objects.get(pk=int(request.POST['cg']))
+        else:
+            cg = categorygroup_list[0]
+        clist = Category.objects.filter(group=cg).order_by('order')
+        if 'c' in request.POST:
+            for c in clist:
+                if c.id == int(request.POST['c']):
+                    cui = CategoryUi()
+                    cui.id = c.id
+                    cui.name = c.name
+                    cui.group = c.group
+                    cui.selected = True
+                    category_list.append(cui)
+                else:
+                    category_list.append(c)
+        else:
+            category_list.extend(clist)
+
+    context = {'categorygroup_list': categorygroup_list,
+               'category_list': category_list,
+               'trans_list': trans_list}
+    return render(request, 'trans/csv_check.html', context)
+
+
+def csv_check(request):
+    suica_shinsei_register(request)
+    return redirect('/t/')
 
 
 # --- salary ----
