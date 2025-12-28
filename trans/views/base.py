@@ -921,9 +921,24 @@ def totalbalance(request):
         ui.selected = str(u.id) in selected_user_ids
         user_choices.append(ui)
 
-    # pmethod
-    pmgroup_list = PmethodGroup.objects.filter(
+    # pmethod group filter
+    pmgroups_all = PmethodGroup.objects.filter(
         user__in=selected_user_ids_int).order_by('order')
+    selected_pmg_ids = request.POST.getlist('pmgroups')
+    if not selected_pmg_ids:
+        selected_pmg_ids = [str(pmg.id) for pmg in pmgroups_all]
+    selected_pmg_ids_int = [int(pid) for pid in selected_pmg_ids]
+
+    pmgroup_choices = []
+    for pmg in pmgroups_all:
+        pmg_ui = PmethodGroupUi()
+        pmg_ui.id = pmg.id
+        pmg_ui.name = pmg.name
+        pmg_ui.selected = str(pmg.id) in selected_pmg_ids
+        pmgroup_choices.append(pmg_ui)
+
+    # pmethod
+    pmgroup_list = pmgroups_all.filter(id__in=selected_pmg_ids_int)
 
     sum = 0
 
@@ -952,6 +967,7 @@ def totalbalance(request):
         "balance_list": balance_list,
         "sum": sum,
         "user_choices": user_choices,
+        "pmgroup_choices": pmgroup_choices,
     }
     return render(request, 'trans/totalbalance.html', context)
 

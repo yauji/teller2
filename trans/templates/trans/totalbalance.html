@@ -8,6 +8,34 @@
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
+<form method="POST" class="mb-3">
+  {% csrf_token %}
+  <div class="form-group">
+    <label>Users</label><br/>
+    {% for u in user_choices %}
+      <label class="mr-2">
+        <input type="checkbox" name="users" value="{{ u.user.id }}" {% if u.selected %}checked{% endif %}>{{ u.user.username }}
+      </label>
+    {% endfor %}
+    <div class="mt-1">
+      <button type="button" class="btn btn-link btn-xs" id="check-all-users">全選択</button>
+      <button type="button" class="btn btn-link btn-xs" id="uncheck-all-users">全解除</button>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Payment method groups</label><br/>
+    {% for g in pmgroup_choices %}
+      <label class="mr-2">
+        <input type="checkbox" name="pmgroups" value="{{ g.id }}" {% if g.selected %}checked{% endif %}>{{ g.name }}
+      </label>
+    {% endfor %}
+    <div class="mt-1">
+      <button type="button" class="btn btn-link btn-xs" id="check-all-pmg">全選択</button>
+      <button type="button" class="btn btn-link btn-xs" id="uncheck-all-pmg">全解除</button>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+</form>
 
 <table border="1" class="table table-striped">
   <tr>
@@ -26,6 +54,9 @@
     <td>{{b.lastupdated}}</td>
   </tr>
   {% endfor %}
+  {% if balance_list|length == 0 %}
+  <tr><td colspan="5">No data.</td></tr>
+  {% endif %}
 </table>
 
 sum: {{sum| intcomma}}
@@ -36,6 +67,22 @@ sum: {{sum| intcomma}}
 
 {% block exscript %}
 <script type="text/javascript" src="../static/js/trans_monthlyreport.js"></script>
+<script>
+  (function() {
+    function toggle(name, checked) {
+      const boxes = document.querySelectorAll('input[name="' + name + '"]');
+      boxes.forEach(function(b){ b.checked = checked; });
+    }
+    const btnAllUsers = document.getElementById('check-all-users');
+    const btnNoneUsers = document.getElementById('uncheck-all-users');
+    const btnAllPmg = document.getElementById('check-all-pmg');
+    const btnNonePmg = document.getElementById('uncheck-all-pmg');
+    if (btnAllUsers) btnAllUsers.addEventListener('click', function(){ toggle('users', true); });
+    if (btnNoneUsers) btnNoneUsers.addEventListener('click', function(){ toggle('users', false); });
+    if (btnAllPmg) btnAllPmg.addEventListener('click', function(){ toggle('pmgroups', true); });
+    if (btnNonePmg) btnNonePmg.addEventListener('click', function(){ toggle('pmgroups', false); });
+  })();
+</script>
 
 
 {% endblock exscript %}
