@@ -29,6 +29,8 @@ urlpatterns = [
     re_path(r'^jaccs_upload$', views.jaccs_upload, name='jaccs_upload'),
     re_path(r'^jaccs_upload_new$', views.jaccs_upload_new, name='jaccs_upload_new'),
     re_path(r'^jaccs_check$', views.jaccs_check, name='jaccs_check'),
+    re_path(r'^paypay_upload$', views.paypay_upload, name='paypay_upload'),
+    re_path(r'^paypay_check$', views.paypay_check, name='paypay_check'),
 
     # rakuten card
     re_path(r'^rakutencard_upload$', views.rakutencard_upload,
