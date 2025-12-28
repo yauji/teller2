@@ -37,6 +37,7 @@ PM_JACCS_ID = 210
 PM_RAKUTENCARD_ID = 310
 PM_SHINSEI_ID = 13
 PM_RAKUTENBANK_ID = 11
+PM_PAYPAYCARD_ID = 316
 
 
 SUICA_KURIKOSHI = '繰\u3000'
@@ -46,6 +47,7 @@ JACCS_DISCOUNT = 'discount with J-depo:'
 SALARY_MAPPING_FNAME = 'mapping_item_cid.txt'
 SHINSEI_CATEGORY_MAPPING_FNAME = 'mapping_shinsei_category.txt'
 JACCS_CATEGORY_MAPPING_FNAME = 'mapping_jaccs_category.txt'
+PAYPAY_CATEGORY_MAPPING_FNAME = 'mapping_paypay_category.txt'
 SALARY_OTHER_ID = 249
 
 CATEGORY_ID_TRANSPORTATION = 3

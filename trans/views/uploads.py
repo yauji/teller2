@@ -1,4 +1,6 @@
 import datetime
+import csv
+import io
 from datetime import timedelta
 import codecs
 import os
@@ -23,9 +25,11 @@ from .base import (
     PM_RAKUTENCARD_ID,
     PM_SHINSEI_ID,
     PM_RAKUTENBANK_ID,
+    PM_PAYPAYCARD_ID,
     SALARY_MAPPING_FNAME,
     SHINSEI_CATEGORY_MAPPING_FNAME,
     JACCS_CATEGORY_MAPPING_FNAME,
+    PAYPAY_CATEGORY_MAPPING_FNAME,
     SALARY_OTHER_ID,
     SHARE_TYPES_SHARE,
 )
@@ -1260,6 +1264,133 @@ def csv_upload(request):
 
 def csv_check(request):
     suica_shinsei_register(request)
+    return redirect('/t/')
+
+
+def paypay_upload(request):
+    """Upload PayPay card CSV and map categories by keyword (like JACCS)."""
+    categorygroup_list = CategoryGroup.objects.order_by('order')
+
+    category_list = []
+    if len(categorygroup_list) > 0:
+        cg = categorygroup_list[0]
+        clist = Category.objects.filter(group=cg).order_by('order')
+        category_list.extend(clist)
+
+    if request.method == 'GET':
+        context = {'categorygroup_list': categorygroup_list,
+                   'category_list': category_list,
+                   }
+        return render(request, 'trans/paypay_upload.html', context)
+
+    if not request.FILES.get('file'):
+        context = {'categorygroup_list': categorygroup_list,
+                   'category_list': category_list,
+                   'error_message': 'File is mandatory.',
+                   }
+        return render(request, 'trans/paypay_upload.html', context)
+
+    content = _read_uploaded_text(request.FILES['file'])
+
+    # get default cate, pmethod
+    cid = int(request.POST['c'])
+    c_default = Category.objects.get(pk=cid)
+    pm = Pmethod.objects.get(pk=PM_PAYPAYCARD_ID)
+
+    keyword_category_mappings = _load_keyword_category_mapping(
+        PAYPAY_CATEGORY_MAPPING_FNAME)
+    category_cache = {}
+
+    trans_list = []
+    tmpid = 1
+
+    reader = csv.reader(io.StringIO(content))
+    for row in reader:
+        if not row:
+            continue
+        if row[0].startswith('利用日'):
+            continue
+        if len(row) < 6:
+            continue
+
+        try:
+            parsed_date = datetime.datetime.strptime(row[0].strip(), '%Y/%m/%d')
+            date = _make_aware(parsed_date)
+        except ValueError:
+            continue
+
+        name = row[1].strip()
+        expense_raw = _clean_amount(row[5])
+        if expense_raw == '':
+            continue
+        expense_val = int(expense_raw)
+
+        trans = TransUi()
+        trans.id = tmpid
+        tmpid += 1
+        trans.date = date
+        trans.name = name
+        trans.expense = expense_val
+
+        match_text = name
+        trans.category = _resolve_category_from_content(
+            match_text,
+            c_default,
+            keyword_category_mappings,
+            category_cache,
+        ) or c_default
+        trans.pmethod = pm
+        trans.share_type = SHARE_TYPES_SHARE
+        trans.memo = ''
+
+        checktranslist = Trans.objects.filter(
+            date=trans.date, expense=trans.expense, pmethod=pm)
+        if len(checktranslist) > 0:
+            trans.selected = False
+
+        trans_list.append(trans)
+
+    category_list = []
+    if len(categorygroup_list) > 0:
+        # find selected category group
+        if 'cg' in request.POST:
+            cg = CategoryGroup.objects.get(pk=int(request.POST['cg']))
+        else:
+            cg = categorygroup_list[0]
+        clist = Category.objects.filter(group=cg).order_by('order')
+        if 'c' in request.POST:
+            for c in clist:
+                if c.id == int(request.POST['c']):
+                    cui = CategoryUi()
+                    cui.id = c.id
+                    cui.name = c.name
+                    cui.group = c.group
+                    cui.selected = True
+                    category_list.append(cui)
+                else:
+                    category_list.append(c)
+        else:
+            category_list.extend(clist)
+
+    if len(trans_list) > 0:
+        used_category_ids = {
+            t.category.id for t in trans_list if getattr(t, 'category', None)}
+        existing_category_ids = {c.id for c in category_list}
+        missing_ids = used_category_ids - existing_category_ids
+        if missing_ids:
+            missing_categories = Category.objects.filter(
+                id__in=missing_ids).order_by('group__order', 'order')
+            category_list.extend(list(missing_categories))
+
+    context = {'categorygroup_list': categorygroup_list,
+               'category_list': category_list,
+               'trans_list': trans_list,
+               }
+    return render(request, 'trans/paypay_check.html', context)
+
+
+def paypay_check(request):
+    suica_jaccs_register(request)
     return redirect('/t/')
 
 
