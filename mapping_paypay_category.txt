@@ -1,0 +1,4 @@
+# keyword,category_id
+# Add one mapping per line. Example:
+# スーパー,101
+東戸塚エス歯科クリニック,305

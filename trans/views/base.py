@@ -37,6 +37,7 @@ PM_JACCS_ID = 210
 PM_RAKUTENCARD_ID = 310
 PM_SHINSEI_ID = 13
 PM_RAKUTENBANK_ID = 11
+PM_PAYPAYCARD_ID = 316
 
 
 SUICA_KURIKOSHI = '繰\u3000'
@@ -46,6 +47,7 @@ JACCS_DISCOUNT = 'discount with J-depo:'
 SALARY_MAPPING_FNAME = 'mapping_item_cid.txt'
 SHINSEI_CATEGORY_MAPPING_FNAME = 'mapping_shinsei_category.txt'
 JACCS_CATEGORY_MAPPING_FNAME = 'mapping_jaccs_category.txt'
+PAYPAY_CATEGORY_MAPPING_FNAME = 'mapping_paypay_category.txt'
 SALARY_OTHER_ID = 249
 
 CATEGORY_ID_TRANSPORTATION = 3
@@ -907,8 +909,38 @@ def annualreport(request):
 # show totalbalance-----
 @login_required(login_url='/login/')
 def totalbalance(request):
+    # user filter
+    users = User.objects.order_by('id')
+    selected_user_ids = request.POST.getlist('users')
+    if not selected_user_ids:
+        selected_user_ids = [str(u.id) for u in users]
+    selected_user_ids_int = [int(uid) for uid in selected_user_ids]
+
+    user_choices = []
+    for u in users:
+        ui = SharedexpenseUi()
+        ui.user = u
+        ui.selected = str(u.id) in selected_user_ids
+        user_choices.append(ui)
+
+    # pmethod group filter
+    pmgroups_all = PmethodGroup.objects.filter(
+        user__in=selected_user_ids_int).order_by('order')
+    selected_pmg_ids = request.POST.getlist('pmgroups')
+    if not selected_pmg_ids:
+        selected_pmg_ids = [str(pmg.id) for pmg in pmgroups_all]
+    selected_pmg_ids_int = [int(pid) for pid in selected_pmg_ids]
+
+    pmgroup_choices = []
+    for pmg in pmgroups_all:
+        pmg_ui = PmethodGroupUi()
+        pmg_ui.id = pmg.id
+        pmg_ui.name = pmg.name
+        pmg_ui.selected = str(pmg.id) in selected_pmg_ids
+        pmgroup_choices.append(pmg_ui)
+
     # pmethod
-    pmgroup_list = PmethodGroup.objects.order_by('order')
+    pmgroup_list = pmgroups_all.filter(id__in=selected_pmg_ids_int)
 
     sum = 0
 
@@ -936,6 +968,8 @@ def totalbalance(request):
     context = {
         "balance_list": balance_list,
         "sum": sum,
+        "user_choices": user_choices,
+        "pmgroup_choices": pmgroup_choices,
     }
     return render(request, 'trans/totalbalance.html', context)
 
@@ -1208,10 +1242,17 @@ def edit_pmethod(request, pmethod_id):
 
 
 def update_pmethod(request, pmethod_id):
-    pmg = PmethodGroup.objects.get(pk=pmethod_id)
+    pm = get_object_or_404(Pmethod, pk=pmethod_id)
 
-    pmg.name = request.POST['name']
-    pmg.save()
+    try:
+        pmg = PmethodGroup.objects.get(pk=int(request.POST['pmg']))
+    except (PmethodGroup.DoesNotExist, ValueError, TypeError):
+        context = {'error_message': 'Failed to update payment method (group not found).'}
+        return render(request, 'trans/message.html', context)
+
+    pm.name = request.POST.get('name', pm.name)
+    pm.group = pmg
+    pm.save()
 
     return redirect('/t/pmethod')
 
