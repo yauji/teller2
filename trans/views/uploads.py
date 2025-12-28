@@ -1124,6 +1124,29 @@ def csv_upload(request):
     """
     categorygroup_list = CategoryGroup.objects.order_by('order')
 
+    pmethodgroup_list = PmethodGroup.objects.filter(
+        user=request.user).order_by('order')
+    selected_pmg_id = None
+    selected_pm_id = PM_RAKUTENBANK_ID
+    pmethod_list = []
+    if len(pmethodgroup_list) > 0:
+        if 'pmg' in request.POST:
+            selected_pmg_id = int(request.POST['pmg'])
+            pmg = PmethodGroup.objects.get(pk=selected_pmg_id)
+        else:
+            pmg = pmethodgroup_list[0]
+            selected_pmg_id = pmg.id
+        pmethod_list = list(Pmethod.objects.filter(
+            group=pmg).order_by('order'))
+        if 'pm' in request.POST:
+            selected_pm_id = int(request.POST['pm'])
+        else:
+            # default to Rakuten bank id when available
+            if not any(pm.id == PM_RAKUTENBANK_ID for pm in pmethod_list):
+                selected_pm_id = pmethod_list[0].id
+    else:
+        pmethod_list = []
+
     category_list = []
     if len(categorygroup_list) > 0:
         cg = categorygroup_list[0]
@@ -1132,12 +1155,20 @@ def csv_upload(request):
 
     if request.method == 'GET':
         context = {'categorygroup_list': categorygroup_list,
-                   'category_list': category_list}
+                   'category_list': category_list,
+                   'pmethodgroup_list': pmethodgroup_list,
+                   'pmethod_list': pmethod_list,
+                   'selected_pmg_id': selected_pmg_id,
+                   'selected_pm_id': selected_pm_id}
         return render(request, 'trans/csv_upload.html', context)
 
     if not request.FILES.get('file'):
         context = {'categorygroup_list': categorygroup_list,
                    'category_list': category_list,
+                   'pmethodgroup_list': pmethodgroup_list,
+                   'pmethod_list': pmethod_list,
+                   'selected_pmg_id': selected_pmg_id,
+                   'selected_pm_id': selected_pm_id,
                    'error_message': 'File is mandatory.'}
         return render(request, 'trans/csv_upload.html', context)
 
@@ -1147,7 +1178,13 @@ def csv_upload(request):
     # default category, pmethod
     cid = int(request.POST['c'])
     c_default = Category.objects.get(pk=cid)
-    pm = Pmethod.objects.get(pk=PM_RAKUTENBANK_ID)
+    pmid = request.POST.get('pm')
+    try:
+        pm = Pmethod.objects.get(pk=pmid)
+    except (Pmethod.DoesNotExist, ValueError, TypeError):
+        pm = Pmethod.objects.filter(pk=PM_RAKUTENBANK_ID).first()
+        if pm is None and pmethod_list:
+            pm = pmethod_list[0]
 
     trans_list = []
     tmpid = 1
